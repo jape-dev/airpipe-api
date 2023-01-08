@@ -24,7 +24,7 @@ app.add_middleware(
 @app.get("/codex", response_model=Completion, response_description="Code completion response from codex")
 def codex(prompt: str, completion: str = None):
 
-    base = "<|endoftext|>/* I start with a blank HTML page, and incrementally modify it via <script> injection. Written for Chrome. */\n/* Command: Add \"Hello World\", by adding an HTML DOM node */\nvar helloWorld = document.createElement('div');\nhelloWorld.innerHTML = 'Hello World';\ndocument.body.appendChild(helloWorld);\n/* Command: Clear the page. */\nwhile (document.body.firstChild) {\n  document.body.removeChild(document.body.firstChild);\n}\n\n"
+    base = "<|endoftext|>/* I start with a blank HTML page, and incrementally modify it via <script> injection. Written for Chrome. */\n/* Command: Add \"Hello World\", by adding an HTML DOM node */\nvar helloWorld = document.createElement('div');\nhelloWorld.innerHTML = 'Hello World';\ndocument.body.appendChild(helloWorld);\n/* Command: Clear the page. */\nwhile (document.body.firstChild) {\n  document.body.removeChild(document.body.firstChild);\n}\nvar script = document.createElement('script');\nscript.src = 'https://cdn.jsdelivr.net/npm/chart.js@2.9.3';\ndocument.body.appendChild(script);\n\n"
 
     if completion:
         new_line = completion + "\n/* " + f"Command: {prompt} */\n"
@@ -35,7 +35,7 @@ def codex(prompt: str, completion: str = None):
 
     openai.api_key = "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"
     response = openai.Completion.create(
-        model="code-cushman-001",
+        model="code-davinci-002",
         prompt=prompt,
         max_tokens=1000,
         temperature=0,
