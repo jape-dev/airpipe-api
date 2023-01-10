@@ -3,10 +3,27 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import openai
+import google
+# from database import SessionLocal
+from typing import Optional,List
+import models
+from codex import Completion
+from sqlalchemy.orm import declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-from models import Completion
 
 app = FastAPI()
+engine=create_engine("postgresql://vizo:devpassword@postgres:5432/vizo",
+    echo=True
+)
+
+Base=declarative_base()
+
+SessionLocal=sessionmaker(bind=engine)
+
+db=SessionLocal()
+
 
 origins = [
     "http://localhost:3000",
@@ -48,6 +65,13 @@ def codex(prompt: str, completion: str = None):
     completion = Completion(completion=completed_code)
 
     return completion
+
+
+@app.get('/ads', response_model=List[google.GoogleAd], status_code=200)
+def get_all_google_ads():
+    ads = db.query(models.GoogleAd).all()
+
+    return ads
 
 
 if __name__ == '__main__':
