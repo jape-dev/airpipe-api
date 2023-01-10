@@ -2,12 +2,11 @@ from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-import openai
-import google
-# from database import SessionLocal
-from typing import Optional,List
-import models
-from codex import Completion
+from api import google
+from api.database import SessionLocal
+from typing import Optional, List
+from api import models
+from api.codex import Completion
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -37,6 +36,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/hello_world")
+def hello_world():
+    return "Hello World"
 
 @app.get("/codex", response_model=Completion, response_description="Code completion response from codex")
 def codex(prompt: str, completion: str = None):

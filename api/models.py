@@ -1,5 +1,5 @@
 from sqlalchemy.sql.expression import null
-from database import Base
+from api.database import Base
 from sqlalchemy import String,Boolean,Integer,Column,Text
 
 

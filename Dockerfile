@@ -1,5 +1,7 @@
-FROM python:3.8
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
-# CMD [“uvicorn”, main:app”, “ — host=0.0.0.0”, “ — reload”]
-CMD ["uvicorn", main:app, "--host", "0.0.0.0", "--port", "8000"]
+
+FROM python:3.9 
+WORKDIR /code 
+COPY ./requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY ./api /code/api
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
