@@ -10,6 +10,7 @@ from api.codex import Completion
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import openai
 
 
 app = FastAPI()
@@ -40,6 +41,7 @@ app.add_middleware(
 @app.get("/hello_world")
 def hello_world():
     return "Hello World"
+
 
 @app.get("/codex", response_model=Completion, response_description="Code completion response from codex")
 def codex(prompt: str, completion: str = None):
