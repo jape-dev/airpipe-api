@@ -1,16 +1,16 @@
-from sqlalchemy.sql.expression import null
 from api.database import Base
-from sqlalchemy import String,Boolean,Integer,Column,Text
+from sqlalchemy import String, Column, Integer, BigInteger
 
 
 class GoogleAd(Base):
-    __tablename__='google_ads'
-    id=Column(Integer,primary_key=True)
-    name=Column(String(255),nullable=False,unique=True)
-    description=Column(Text)
-    price=Column(Integer,nullable=False)
-    on_offer=Column(Boolean,default=False)
+    __tablename__ = 'google_ads'
 
-
-    def __repr__(self):
-        return f"<Item name={self.name} price={self.price}>"
+    id = Column(Integer(), primary_key=True)
+    campaign_id = Column(BigInteger())
+    campaign = Column(String())
+    ad_group_id = Column(String())
+    ad_group = Column(String())
+    ad_id = Column(String())
+    clicks = Column(Integer())
+    impressions = Column(Integer())
+    engagements = Column(Integer())

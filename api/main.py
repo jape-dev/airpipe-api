@@ -1,29 +1,16 @@
-from fastapi import FastAPI, Request
-from fastapi.encoders import jsonable_encoder
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from api import google
-from api.database import SessionLocal
-from typing import Optional, List
+from api.database import session, engine
+import sqlalchemy as db
+from typing import List
 from api import models
 from api.codex import Completion
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import openai
 
 
 app = FastAPI()
-engine=create_engine("postgresql://vizo:devpassword@postgres:5432/vizo",
-    echo=True
-)
-
-Base=declarative_base()
-
-SessionLocal=sessionmaker(bind=engine)
-
-db=SessionLocal()
-
 
 origins = [
     "http://localhost:3000",
@@ -74,9 +61,51 @@ def codex(prompt: str, completion: str = None):
 
 @app.get('/ads', response_model=List[google.GoogleAd], status_code=200)
 def get_all_google_ads():
-    ads = db.query(models.GoogleAd).all()
+    ads = session.query(models.GoogleAd).all()
 
     return ads
+
+
+@app.get('/table_columns', response_model=google.TableColumns, status_code=200)
+def get_table_columns(table_name: str):
+    connection = engine.connect()
+    result = connection.execute(f"SELECT * FROM {table_name} LIMIT 1")
+    cols = [col for col in result.keys()]
+    table_columns = google.TableColumns(name=table_name, columns=cols)
+
+    return table_columns
+
+
+@app.post('/sql_query', response_model=google.SqlQuery, status_code=200)
+def sql_query(schema: google.TableColumns, prompt: str):
+
+    prompt = f"### Postgres SQL tables, with their properties: \n#\n# {schema.name}({','.join(schema.columns)}) \n#\n### {prompt}\nSELECT"
+    openai.api_key = "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"
+
+    response = openai.Completion.create(
+        model="code-davinci-002",
+        prompt=prompt,
+        temperature=0,
+        max_tokens=150,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0,
+        stop=["#", ";"]
+    )
+
+    query = f"SELECT {response.choices[0].text}"
+    sql_query = google.SqlQuery(query=query)
+
+    return sql_query
+
+
+@app.get('/run_query', response_model=google.QueryResults, status_code=200)
+def run_query(query: str):
+    connection = engine.connect()
+    results = connection.execute(query)
+    query_results = google.QueryResults(results=results.all())
+
+    return query_results
 
 
 if __name__ == '__main__':
