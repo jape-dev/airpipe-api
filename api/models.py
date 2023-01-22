@@ -14,3 +14,12 @@ class GoogleAd(Base):
     clicks = Column(Integer())
     impressions = Column(Integer())
     engagements = Column(Integer())
+
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer(), primary_key=True)
+    email = Column(String())
+    hashed_password = Column(String())
+    access_token = Column(String(), nullable=True)

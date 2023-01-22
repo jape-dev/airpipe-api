@@ -1,13 +1,27 @@
-from fastapi import FastAPI
+from typing import Union
+from datetime import datetime, timedelta
+from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from api import google
-from api.database import session, engine
-import sqlalchemy as db
+from api.database import session, engine, insert_new_user
 from typing import List
 from api import models
 from api.codex import Completion
 import openai
+import requests
+from starlette.responses import RedirectResponse
+from starlette.datastructures import URL
+from api.customer import User, Token, TokenData, UserInDB
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
+from jose import JWTError, jwt
+import sqlalchemy
+
+
+SECRET_KEY = "be5f1733cab0f10fe2b6ad7484cc00f3da94ea1272d3ef83f045f62a41aecf39"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 app = FastAPI()
@@ -24,8 +38,95 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-@app.get("/hello_world")
+# Authentication
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+def authenticate_user(username: str, password: str):
+    user = get_user(username)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    user = get_user(username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+def get_user(username: str):
+    # Change db to get all users from database
+    user = session.query(models.User).filter(models.User.email == username).first()
+    # users = models.User.query.all(
+    print('get user about to be called')
+    if user:
+        print('username in users')
+        user_dict = user.__dict__
+        print(user_dict)
+        return UserInDB(**user_dict)
+
+
+@app.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.get("/users/me/", response_model=User)
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+# Endpoints
+
+@app.get("/")
 def hello_world():
     return "Hello World"
 
@@ -106,6 +207,48 @@ def run_query(query: str):
     query_results = google.QueryResults(results=results.all())
 
     return query_results
+
+
+@app.get('/facebook_auth')
+def facebook_auth():
+    app_id = 3796703967222950
+    # redirect_uri = "http://0.0.0.0:8000/facebook/login"
+    redirect_uri = "https://aefe-2a01-4b00-c004-d500-41b7-6cd9-9c84-69b3.ngrok.io/facebook_login/"
+    state_param = "123456"
+    url = f"https://www.facebook.com/v15.0/dialog/oauth?client_id={app_id}&redirect_uri={redirect_uri}&state={state_param}&config_id=728465868571401"
+
+    return RedirectResponse(url=url)
+
+
+@app.get('/facebook_login')
+def facebook_login(request: Request):
+    app_id = 3796703967222950
+    code = request.query_params['code']
+    client_secret = "bdfb0bcbd3b8c1944532ac2ee4bf79bf"
+    redirect_uri = "https://aefe-2a01-4b00-c004-d500-41b7-6cd9-9c84-69b3.ngrok.io/facebook_login/"
+    auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={client_secret}"
+
+    # Save the access token to the user's database.
+    response = requests.get(auth_url)
+    json = response.json()
+    access_token = json['access_token']
+
+    # Commit access_token to the database.
+
+    return RedirectResponse(url="http://localhost:3000")
+
+
+@app.post('/create_customer', response_model=User)
+def create_customer(user: User):
+
+    hashed_password = get_password_hash(user.hashed_password)
+    new_user = models.User(
+        email=user.email,
+        hashed_password=hashed_password
+    )
+    insert_new_user(new_user)
+
+    return user
 
 
 if __name__ == '__main__':
