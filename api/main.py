@@ -71,7 +71,7 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     return encoded_jwt
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -94,17 +94,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 def get_user(username: str):
     # Change db to get all users from database
     user = session.query(models.User).filter(models.User.email == username).first()
-    # users = models.User.query.all(
-    print('get user about to be called')
     if user:
-        print('username in users')
         user_dict = user.__dict__
-        print(user_dict)
         return UserInDB(**user_dict)
 
 
 @app.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -117,12 +113,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@app.get("/users/me/", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
-
 
 # Endpoints
 
@@ -209,23 +199,14 @@ def run_query(query: str):
     return query_results
 
 
-# @app.get('/facebook_auth')
-# def facebook_auth():
-#     app_id = 3796703967222950
-#     redirect_uri = "https://aefe-2a01-4b00-c004-d500-41b7-6cd9-9c84-69b3.ngrok.io/facebook_login/"
-#     state_param = "123456"
-#     url = f"https://www.facebook.com/v15.0/dialog/oauth?client_id={app_id}&redirect_uri={redirect_uri}&state={state_param}&config_id=728465868571401/"
-
-#     return RedirectResponse(url=url)
-
-
 @app.get('/facebook_login')
 def facebook_login(request: Request):
-    print(request.cookies) # pass cookie through the state instead.
     app_id = 3796703967222950
     code = request.query_params['code']
+    token = request.query_params['state']
+
     client_secret = "bdfb0bcbd3b8c1944532ac2ee4bf79bf"
-    redirect_uri = "https://aefe-2a01-4b00-c004-d500-41b7-6cd9-9c84-69b3.ngrok.io/facebook_login/"
+    redirect_uri = "https://bd44-82-69-4-0.ngrok.io/facebook_login/"
     auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={client_secret}"
 
     # Save the access token to the user's database.
@@ -234,6 +215,12 @@ def facebook_login(request: Request):
     access_token = json['access_token']
 
     # Commit access_token to the database.
+    user: User = get_current_user(token)
+    
+    user = session.query(models.User).filter(models.User.email == user.email).first()
+    user.access_token = access_token
+    session.add(user)
+    session.commit()
 
     return RedirectResponse(url="http://localhost:3000")
 
