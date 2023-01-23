@@ -209,19 +209,19 @@ def run_query(query: str):
     return query_results
 
 
-@app.get('/facebook_auth')
-def facebook_auth():
-    app_id = 3796703967222950
-    # redirect_uri = "http://0.0.0.0:8000/facebook/login"
-    redirect_uri = "https://aefe-2a01-4b00-c004-d500-41b7-6cd9-9c84-69b3.ngrok.io/facebook_login/"
-    state_param = "123456"
-    url = f"https://www.facebook.com/v15.0/dialog/oauth?client_id={app_id}&redirect_uri={redirect_uri}&state={state_param}&config_id=728465868571401"
+# @app.get('/facebook_auth')
+# def facebook_auth():
+#     app_id = 3796703967222950
+#     redirect_uri = "https://aefe-2a01-4b00-c004-d500-41b7-6cd9-9c84-69b3.ngrok.io/facebook_login/"
+#     state_param = "123456"
+#     url = f"https://www.facebook.com/v15.0/dialog/oauth?client_id={app_id}&redirect_uri={redirect_uri}&state={state_param}&config_id=728465868571401/"
 
-    return RedirectResponse(url=url)
+#     return RedirectResponse(url=url)
 
 
 @app.get('/facebook_login')
 def facebook_login(request: Request):
+    print(request.cookies) # pass cookie through the state instead.
     app_id = 3796703967222950
     code = request.query_params['code']
     client_secret = "bdfb0bcbd3b8c1944532ac2ee4bf79bf"
