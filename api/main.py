@@ -17,6 +17,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 import sqlalchemy
+from api.facebook import AdAccount, FacebookQuery, FacebookQueryResults
 
 
 SECRET_KEY = "be5f1733cab0f10fe2b6ad7484cc00f3da94ea1272d3ef83f045f62a41aecf39"
@@ -206,7 +207,7 @@ def facebook_login(request: Request):
     token = request.query_params['state']
 
     client_secret = "bdfb0bcbd3b8c1944532ac2ee4bf79bf"
-    redirect_uri = "https://bd44-82-69-4-0.ngrok.io/facebook_login/"
+    redirect_uri = "https://aefe-2a01-4b00-c004-d500-41b7-6cd9-9c84-69b3.ngrok.io/facebook_login/"
     auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={client_secret}"
 
     # Save the access token to the user's database.
@@ -216,9 +217,10 @@ def facebook_login(request: Request):
 
     # Commit access_token to the database.
     user: User = get_current_user(token)
-    
+
     user = session.query(models.User).filter(models.User.email == user.email).first()
     user.access_token = access_token
+    print("logging user access token here", user.access_token)
     session.add(user)
     session.commit()
 
@@ -236,6 +238,37 @@ def create_customer(user: User):
     insert_new_user(new_user)
 
     return user
+
+
+@app.get('/ad_accounts', response_model=List[AdAccount])
+def ad_accounts(token: str):
+    current_user: User = get_current_user(token)
+    adaccounts = []
+
+    print(current_user.email, current_user.hashed_password)
+    print(current_user.access_token)
+
+    url = f"https://graph.facebook.com/v15.0/me?fields=adaccounts&access_token={current_user.access_token}"
+    response = requests.get(url)
+    json = response.json()
+    accounts = json['adaccounts']['data']
+
+    for account in accounts:
+        id = account['id']
+        account_id = account['account_id']
+        url = f"https://graph.facebook.com/v15.0/{id}?fields=name&access_token={current_user.access_token}"
+        response = requests.get(url)
+        json = response.json()
+        name = json['name']
+
+        adaccount: AdAccount = AdAccount(id=id, account_id=account_id, name=name)
+        adaccounts.append(adaccount)
+
+    return adaccounts
+
+
+@app.post('/run_facebook_query', response_model=FacebookQueryResults)
+def run_facebook_query(query: FacebookQuery, token: str):
 
 
 if __name__ == '__main__':

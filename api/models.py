@@ -1,4 +1,5 @@
 from api.database import Base
+from api.facebook import AdAccount
 from sqlalchemy import String, Column, Integer, BigInteger
 
 
@@ -23,3 +24,4 @@ class User(Base):
     email = Column(String())
     hashed_password = Column(String())
     access_token = Column(String(), nullable=True)
+
