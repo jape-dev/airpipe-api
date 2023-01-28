@@ -9,11 +9,15 @@ class AdAccount(BaseModel):
 
 
 class FacebookQueryResults(BaseModel):
-    id: str
+    results: List
+
+    class Config:
+        orm_mode = True
 
 
 class FacebookQuery(BaseModel):
+    account_id: str
     metrics: List[str]
-    dimensions: List[str]
+    dimension: str
     start_date: int
     end_date: int

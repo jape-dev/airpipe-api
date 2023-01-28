@@ -24,4 +24,3 @@ class User(Base):
     email = Column(String())
     hashed_password = Column(String())
     access_token = Column(String(), nullable=True)
-

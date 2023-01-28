@@ -245,9 +245,6 @@ def ad_accounts(token: str):
     current_user: User = get_current_user(token)
     adaccounts = []
 
-    print(current_user.email, current_user.hashed_password)
-    print(current_user.access_token)
-
     url = f"https://graph.facebook.com/v15.0/me?fields=adaccounts&access_token={current_user.access_token}"
     response = requests.get(url)
     json = response.json()
@@ -261,7 +258,8 @@ def ad_accounts(token: str):
         json = response.json()
         name = json['name']
 
-        adaccount: AdAccount = AdAccount(id=id, account_id=account_id, name=name)
+        adaccount: AdAccount = AdAccount(id=id, account_id=account_id,
+                                         name=name)
         adaccounts.append(adaccount)
 
     return adaccounts
@@ -269,6 +267,21 @@ def ad_accounts(token: str):
 
 @app.post('/run_facebook_query', response_model=FacebookQueryResults)
 def run_facebook_query(query: FacebookQuery, token: str):
+    current_user: User = get_current_user(token)
+    metrics = ','.join(query.metrics)
+
+    # Need to make an API request to get the value of the dimension first?
+    # dimension_url = f"https://graph.facebook.com/v15.0/me?fields=adaccounts&access_token={current_user.access_token}"
+    # response = requests.get(dimension_url)
+    # json = response.json()
+    # dimension = json['data'][query.dimension]
+
+    url = f"https://graph.facebook.com/v15.0/{query.account_id}/insights?fields={metrics}&access_token={current_user.access_token}"
+    response = requests.get(url)
+    json = response.json()
+    data = json['data']
+
+    return FacebookQueryResults(results=data)
 
 
 if __name__ == '__main__':
