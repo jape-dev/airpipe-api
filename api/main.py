@@ -22,7 +22,7 @@ from api.facebook import AdAccount, FacebookQuery, FacebookQueryResults
 
 SECRET_KEY = "be5f1733cab0f10fe2b6ad7484cc00f3da94ea1272d3ef83f045f62a41aecf39"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
 app = FastAPI()
@@ -42,8 +42,8 @@ app.add_middleware(
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Authentication
 
+# Authentication
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -115,8 +115,8 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-# Endpoints
 
+# Endpoints
 @app.get("/")
 def hello_world():
     return "Hello World"
@@ -235,9 +235,12 @@ def create_customer(user: User):
         email=user.email,
         hashed_password=hashed_password
     )
-    insert_new_user(new_user)
-
-    return user
+    exsiting_user = session.query(models.User).filter(models.User.email == user.email).first()
+    if exsiting_user:
+        raise HTTPException(status_code=400, detail="User already exists")
+    else:
+        insert_new_user(new_user)
+        return user
 
 
 @app.get('/ad_accounts', response_model=List[AdAccount])
