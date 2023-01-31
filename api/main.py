@@ -287,5 +287,15 @@ def run_facebook_query(query: FacebookQuery, token: str):
     return FacebookQueryResults(results=data)
 
 
+@app.post('create_new_table')
+def create_new_table(columns: google.TableColumns):
+    connection = engine.connect()
+    # what about the data types?
+    query = f"CREATE TABLE {columns.name} ({columns.columns})"
+    connection.execute(query)
+
+    return {"message": "success"}
+
+
 if __name__ == '__main__':
     uvicorn.run("main:app", port=8000)
