@@ -1,6 +1,6 @@
 from typing import Union
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Request, Depends, HTTPException, status
+from fastapi import FastAPI, Request, Depends, HTTPException, status, Body
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from api import google
@@ -18,6 +18,8 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 import sqlalchemy
 from api.facebook import AdAccount, FacebookQuery, FacebookQueryResults
+import pandas as pd
+from typing import List, Dict, Any
 
 
 SECRET_KEY = "be5f1733cab0f10fe2b6ad7484cc00f3da94ea1272d3ef83f045f62a41aecf39"
@@ -272,13 +274,6 @@ def ad_accounts(token: str):
 def run_facebook_query(query: FacebookQuery, token: str):
     current_user: User = get_current_user(token)
     metrics = ','.join(query.metrics)
-
-    # Need to make an API request to get the value of the dimension first?
-    # dimension_url = f"https://graph.facebook.com/v15.0/me?fields=adaccounts&access_token={current_user.access_token}"
-    # response = requests.get(dimension_url)
-    # json = response.json()
-    # dimension = json['data'][query.dimension]
-
     url = f"https://graph.facebook.com/v15.0/{query.account_id}/insights?fields={metrics}&access_token={current_user.access_token}"
     response = requests.get(url)
     json = response.json()
@@ -287,12 +282,11 @@ def run_facebook_query(query: FacebookQuery, token: str):
     return FacebookQueryResults(results=data)
 
 
-@app.post('create_new_table')
-def create_new_table(columns: google.TableColumns):
-    connection = engine.connect()
-    # what about the data types?
-    query = f"CREATE TABLE {columns.name} ({columns.columns})"
-    connection.execute(query)
+@app.post('/create_new_table')
+def create_new_table(results: google.CurrentResults = Body(...)):
+    df = pd.DataFrame(results.results, columns=results.columns)
+    df = df.apply(pd.to_numeric, errors='ignore')
+    df.to_sql(results.name, engine, if_exists='replace', index=False)
 
     return {"message": "success"}
 

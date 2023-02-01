@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict
 
 
 class GoogleAd(BaseModel):
@@ -28,6 +28,12 @@ class SqlQuery(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class CurrentResults(BaseModel):
+    name: str
+    columns: List[str]
+    results: List[Dict]
 
 
 class QueryResults(BaseModel):
