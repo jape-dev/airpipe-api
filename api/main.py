@@ -188,6 +188,7 @@ def sql_query(schema: google.TableColumns, prompt: str):
     )
 
     query = f"SELECT {response.choices[0].text}"
+    
     sql_query = google.SqlQuery(query=query)
 
     return sql_query
@@ -273,11 +274,43 @@ def ad_accounts(token: str):
 @app.post('/run_facebook_query', response_model=FacebookQueryResults)
 def run_facebook_query(query: FacebookQuery, token: str):
     current_user: User = get_current_user(token)
-    metrics = ','.join(query.metrics)
-    url = f"https://graph.facebook.com/v15.0/{query.account_id}/insights?fields={metrics}&access_token={current_user.access_token}"
+
+    fields = query.dimensions + query.metrics
+    if 'date' in fields:
+        fields.remove('date')
+    fields = ','.join(fields)
+
+    # Need to add in date and actions.
+
+    start_datetime = datetime.fromtimestamp(query.start_date)
+    end_datetime = datetime.fromtimestamp(query.end_date)
+    start_date = start_datetime.strftime("%Y-%m-%d")
+    end_date = end_datetime.strftime("%Y-%m-%d")
+
+    url = f"https://graph.facebook.com/v15.0/{query.account_id}/insights?level=ad&fields={fields}&time_range={{'since':'{start_date}','until':'{end_date}'}}&time_increment=1&access_token={current_user.access_token}"
+
     response = requests.get(url)
+    if response.status_code != 200:
+        print(response.text)
+        raise HTTPException(status_code=400, detail="Facebook query failed")
     json = response.json()
     data = json['data']
+
+    for datum in data:
+        # check if metric doe snot exist in the datum keys and set it to 0.
+        for metric in query.metrics:
+            if metric not in datum.keys():
+                datum[metric] = 0
+
+        if datum['date_start'] == datum['date_stop']:
+            datum['date'] = datum['date_start']
+            del datum['date_start']
+            del datum['date_stop']
+
+            if 'date' not in query.dimensions:
+                del datum['date']
+
+    # need to fill out the rest of the fields with 0 if they do not exists.
 
     return FacebookQueryResults(results=data)
 

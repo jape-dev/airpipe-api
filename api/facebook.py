@@ -18,6 +18,6 @@ class FacebookQueryResults(BaseModel):
 class FacebookQuery(BaseModel):
     account_id: str
     metrics: List[str]
-    dimension: str
+    dimensions: List[str]
     start_date: int
     end_date: int
