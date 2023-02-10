@@ -188,7 +188,6 @@ def sql_query(schema: google.TableColumns, prompt: str):
     )
 
     query = f"SELECT {response.choices[0].text}"
-    
     sql_query = google.SqlQuery(query=query)
 
     return sql_query
@@ -210,7 +209,7 @@ def facebook_login(request: Request):
     token = request.query_params['state']
 
     client_secret = "bdfb0bcbd3b8c1944532ac2ee4bf79bf"
-    redirect_uri = "https://aefe-2a01-4b00-c004-d500-41b7-6cd9-9c84-69b3.ngrok.io/facebook_login/"
+    redirect_uri = "https://ea96-2a01-4b00-c004-d500-b3fa-d43f-faa3-47d9.ngrok.io/facebook_login/"
     auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={client_secret}"
 
     # Save the access token to the user's database.
@@ -219,6 +218,7 @@ def facebook_login(request: Request):
     access_token = json['access_token']
 
     # Commit access_token to the database.
+    print("token inside facebook login", token)
     user: User = get_current_user(token)
 
     user = session.query(models.User).filter(models.User.email == user.email).first()
@@ -322,6 +322,13 @@ def create_new_table(results: google.CurrentResults = Body(...)):
     df.to_sql(results.name, engine, if_exists='replace', index=False)
 
     return {"message": "success"}
+
+
+@app.get('/current_user', response_model=User)
+def current_user(token: str):
+    print("token", token)
+    current_user: User = get_current_user(token)
+    return current_user
 
 
 if __name__ == '__main__':
