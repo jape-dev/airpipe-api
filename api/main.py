@@ -35,7 +35,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:3000",
-    "https://airpipe-api.onrender.com"
+    "https://airpipe.onrender.com"
 ]
 
 app.add_middleware(
