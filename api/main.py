@@ -20,17 +20,22 @@ import sqlalchemy
 from api.facebook import AdAccount, FacebookQuery, FacebookQueryResults
 import pandas as pd
 from typing import List, Dict, Any
+import os
+from api.config import Config
 
 
-SECRET_KEY = "be5f1733cab0f10fe2b6ad7484cc00f3da94ea1272d3ef83f045f62a41aecf39"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+SECRET_KEY = Config.SECRET_KEY
+ALGORITHM = Config.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = Config.ACCESS_TOKEN_EXPIRE_MINUTES
+DOMAIN_URL = Config.DOMAIN_URL
+FB_CLIENT_SECRET = Config.FB_CLIENT_SECRET
 
 
 app = FastAPI()
 
 origins = [
     "http://localhost:3000",
+    "https://airpipe-api.onrender.com"
 ]
 
 app.add_middleware(
@@ -208,9 +213,8 @@ def facebook_login(request: Request):
     code = request.query_params['code']
     token = request.query_params['state']
 
-    client_secret = "bdfb0bcbd3b8c1944532ac2ee4bf79bf"
-    redirect_uri = "https://4695-2a01-4b00-c004-d500-85eb-9006-9a3d-8f91.ngrok.io/facebook_login/"
-    auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={client_secret}"
+    redirect_uri = f"{DOMAIN_URL}/facebook_login/"
+    auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={FB_CLIENT_SECRET}"
 
     # Save the access token to the user's database.
     response = requests.get(auth_url)
