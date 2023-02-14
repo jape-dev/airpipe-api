@@ -2,8 +2,10 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from api.customer import User
+from api.config import Config
 
-engine = create_engine("postgresql://vizo:devpassword@postgres:5432/vizo")
+db_uri = Config.DATABASE_URL
+engine = create_engine(db_uri)
 Base=declarative_base()
 SessionLocal=sessionmaker(bind=engine)
 session = SessionLocal()

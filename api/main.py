@@ -209,21 +209,20 @@ def facebook_login(request: Request):
     token = request.query_params['state']
 
     client_secret = "bdfb0bcbd3b8c1944532ac2ee4bf79bf"
-    redirect_uri = "https://ea96-2a01-4b00-c004-d500-b3fa-d43f-faa3-47d9.ngrok.io/facebook_login/"
+    redirect_uri = "https://4695-2a01-4b00-c004-d500-85eb-9006-9a3d-8f91.ngrok.io/facebook_login/"
     auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={client_secret}"
 
     # Save the access token to the user's database.
     response = requests.get(auth_url)
+
     json = response.json()
     access_token = json['access_token']
 
     # Commit access_token to the database.
-    print("token inside facebook login", token)
     user: User = get_current_user(token)
 
     user = session.query(models.User).filter(models.User.email == user.email).first()
     user.access_token = access_token
-    print("logging user access token here", user.access_token)
     session.add(user)
     session.commit()
 
@@ -296,7 +295,10 @@ def run_facebook_query(query: FacebookQuery, token: str):
     json = response.json()
     data = json['data']
 
+    print(data)
+
     for datum in data:
+        print(datum)
         # check if metric doe snot exist in the datum keys and set it to 0.
         for metric in query.metrics:
             if metric not in datum.keys():
@@ -309,8 +311,6 @@ def run_facebook_query(query: FacebookQuery, token: str):
 
             if 'date' not in query.dimensions:
                 del datum['date']
-
-    # need to fill out the rest of the fields with 0 if they do not exists.
 
     return FacebookQueryResults(results=data)
 
