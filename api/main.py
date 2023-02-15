@@ -35,6 +35,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:3000",
+    "http://localhost:3001",
     "https://airpipe.onrender.com"
 ]
 
