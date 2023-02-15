@@ -231,7 +231,7 @@ def facebook_login(request: Request):
     session.add(user)
     session.commit()
 
-    return RedirectResponse(url="http://localhost:3000")
+    return RedirectResponse(url=DOMAIN_URL)
 
 
 @app.post('/create_customer', response_model=User)
