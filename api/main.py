@@ -202,7 +202,11 @@ def sql_query(schema: google.TableColumns, prompt: str):
 @app.get('/run_query', response_model=google.QueryResults, status_code=200)
 def run_query(query: str):
     connection = engine.connect()
-    results = connection.execute(query)
+    try:
+        results = connection.execute(query)
+    except sqlalchemy.exc.ProgrammingError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     query_results = google.QueryResults(results=results.all())
 
     return query_results
@@ -295,15 +299,11 @@ def run_facebook_query(query: FacebookQuery, token: str):
 
     response = requests.get(url)
     if response.status_code != 200:
-        print(response.text)
         raise HTTPException(status_code=400, detail="Facebook query failed")
     json = response.json()
     data = json['data']
 
-    print(data)
-
     for datum in data:
-        print(datum)
         # check if metric doe snot exist in the datum keys and set it to 0.
         for metric in query.metrics:
             if metric not in datum.keys():
