@@ -232,10 +232,14 @@ def facebook_login(request: Request):
 
     user = session.query(models.User).filter(models.User.email == user.email).first()
     user.access_token = access_token
-    session.add(user)
-    session.commit()
-
-    return RedirectResponse(url=DOMAIN_URL)
+    try:
+        session.add(user)
+        session.commit()
+    except:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="Could not save access token to database.")
+    finally:
+        session.close()
 
 
 @app.post('/create_customer', response_model=User)
