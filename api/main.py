@@ -102,7 +102,13 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 def get_user(username: str):
     # Change db to get all users from database
-    user = session.query(models.User).filter(models.User.email == username).first()
+    try:
+        user = session.query(models.User).filter(models.User.email == username).first()
+    except:
+        session.rollback()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    finally:
+        session.close()
     if user:
         user_dict = user.__dict__
         return UserInDB(**user_dict)
@@ -252,7 +258,13 @@ def create_customer(user: User):
         email=user.email,
         hashed_password=hashed_password
     )
-    exsiting_user = session.query(models.User).filter(models.User.email == user.email).first()
+    try:
+        exsiting_user = session.query(models.User).filter(models.User.email == user.email).first()
+    except:
+        session.rollback()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    finally:
+        session.close()
     if exsiting_user:
         raise HTTPException(status_code=400, detail="User already exists")
     else:
