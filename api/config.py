@@ -14,3 +14,4 @@ class Config(object):
     ALGORITHM = os.getenv("ALGORITHM")
     ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
     FB_CLIENT_SECRET = os.getenv("FB_CLIENT_SECRET")
+    CLIENT_URL = os.getenv("CLIENT_URL")

@@ -29,6 +29,7 @@ ALGORITHM = Config.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = int(Config.ACCESS_TOKEN_EXPIRE_MINUTES)
 DOMAIN_URL = Config.DOMAIN_URL
 FB_CLIENT_SECRET = Config.FB_CLIENT_SECRET
+CLIENT_URL = Config.CLIENT_URL
 
 
 app = FastAPI()
@@ -247,7 +248,7 @@ def facebook_login(request: Request):
     finally:
         session.close()
 
-    return RedirectResponse(url=DOMAIN_URL)
+    return RedirectResponse(url=CLIENT_URL)
 
 
 @app.post('/create_customer', response_model=User)
