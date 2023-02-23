@@ -241,6 +241,8 @@ def facebook_login(request: Request):
     finally:
         session.close()
 
+    return RedirectResponse(url=DOMAIN_URL)
+
 
 @app.post('/create_customer', response_model=User)
 def create_customer(user: User):
