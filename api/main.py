@@ -262,6 +262,7 @@ def create_customer(user: User):
     try:
         exsiting_user = session.query(models.User).filter(models.User.email == user.email).first()
     except BaseException as e:
+        print(e)
         session.rollback()
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
     finally:
