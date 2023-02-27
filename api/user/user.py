@@ -13,7 +13,13 @@ def create_customer(user: User):
 
     hashed_password = get_password_hash(user.hashed_password)
     new_user = UserDB(email=user.email, hashed_password=hashed_password)
-    exsiting_user = session.query(UserDB).filter(UserDB.email == user.email).first()
+    try:
+        exsiting_user = session.query(UserDB).filter(UserDB.email == user.email).first()
+    except:
+        session.rollback()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    finally:
+        session.close()
     if exsiting_user:
         raise HTTPException(status_code=400, detail="User already exists")
     else:

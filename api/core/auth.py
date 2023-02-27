@@ -69,7 +69,13 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 def get_user(username: str):
     # Change db to get all users from database
-    user = session.query(UserDB).filter(UserDB.email == username).first()
+    try:
+        user = session.query(UserDB).filter(UserDB.email == username).first()
+    except:
+        session.rollback()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    finally:
+        session.close()
     if user:
         user_dict = user.__dict__
         return UserInDB(**user_dict)
