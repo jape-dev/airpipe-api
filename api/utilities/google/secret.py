@@ -27,9 +27,9 @@ class Secret:
         # Validate token and return id.
         try:
             idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-            return idinfo['sub']
+            return idinfo["sub"]
         except ValueError:
-            print('Invalid token')
+            print("Invalid token")
             pass
 
     def create_secret_version(self, refresh_token):
@@ -40,7 +40,11 @@ class Secret:
 
             # Create the secret.
             self.client.create_secret(
-                request={"parent": parent, "secret_id": self.id, "secret": {"replication": {"automatic": {}}}}
+                request={
+                    "parent": parent,
+                    "secret_id": self.id,
+                    "secret": {"replication": {"automatic": {}}},
+                }
             )
 
         # Create secret version under secret
@@ -59,7 +63,10 @@ class Secret:
         self.client.add_secret_version(
             request={
                 "parent": parent,
-                "payload": {"data": payload, "data_crc32c": int(crc32c.hexdigest(), 16)},
+                "payload": {
+                    "data": payload,
+                    "data_crc32c": int(crc32c.hexdigest(), 16),
+                },
             }
         )
 

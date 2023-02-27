@@ -14,6 +14,8 @@ from typing import List
 
 
 DOMAIN_URL = Config.DOMAIN_URL
+FB_CLIENT_SECRET = Config.FB_CLIENT_SECRET
+CLIENT_URL = Config.CLIENT_URL
 
 router = APIRouter(prefix="/facebook")
 
@@ -24,7 +26,7 @@ def login(request: Request):
     code = request.query_params["code"]
     token = request.query_params["state"]
 
-    redirect_uri = f"{DOMAIN_URL}/facebook/login/"
+    redirect_uri = f"{DOMAIN_URL}/connector/facebook/login/"
     auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={FB_CLIENT_SECRET}"
 
     # Save the access token to the user's database.
@@ -49,7 +51,7 @@ def login(request: Request):
     finally:
         session.close()
 
-    return RedirectResponse(url=DOMAIN_URL)
+    return RedirectResponse(url=CLIENT_URL)
 
 
 @router.get("/ad_accounts", response_model=List[AdAccount])
