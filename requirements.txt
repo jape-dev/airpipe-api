@@ -29,3 +29,8 @@ python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
 python-dotenv
+google-ads
+google_auth_oauthlib
+itsdangerous
+google-cloud-secret-manager
+google_crc32c
