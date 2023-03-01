@@ -8,4 +8,5 @@ class UserDB(Base):
     id = Column(Integer(), primary_key=True)
     email = Column(String(), unique=True)
     hashed_password = Column(String())
-    access_token = Column(String(), nullable=True)
+    facebook_access_token = Column(String(), nullable=True)
+    google_access_token = Column(String(), nullable=True)

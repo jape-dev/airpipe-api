@@ -14,7 +14,8 @@ class TokenData(BaseModel):
 class User(BaseModel):
     email: str
     hashed_password: str
-    access_token: Optional[str] = None
+    facebook_access_token: Optional[str] = None
+    google_access_token: Optional[str] = None
 
 
 class UserInDB(User):
