@@ -45,6 +45,7 @@ def login(request: Request):
         session.add(user)
         session.commit()
     except Exception as e:
+        print(e)
         session.rollback()
         raise HTTPException(
             status_code=400, detail=f"Could not save access token to database. {e}"

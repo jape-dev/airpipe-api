@@ -52,6 +52,7 @@ def oauth2_callback(request: Request) -> RedirectResponse:
         session.add(user)
         session.commit()
     except Exception as e:
+        print(e)
         session.rollback()
         raise HTTPException(
             status_code=400,
@@ -144,6 +145,7 @@ def handleGoogleTokenException(ex, current_user: User):
             session.add(user)
             session.commit()
         except Exception as e:
+            print(e)
             session.rollback()
             raise HTTPException(
                 status_code=400,
