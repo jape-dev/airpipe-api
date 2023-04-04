@@ -6,12 +6,12 @@ from api.config import Config
 from api.utilities.google.secret import Secret
 import sys
 
-VERSION = "v10"
+VERSION = "v13"
 GOOGLE_ADS_DEVELOPER_TOKEN = Config.GOOGLE_ADS_DEVELOPER_TOKEN
 GOOGLE_CLIENT_ID = Config.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = Config.GOOGLE_CLIENT_SECRET
 
-REFRESH_ERROR = "INVALID REFRESH TOKEN"
+REFRESH_ERROR = "Invalid refresh token"
 
 
 def create_client(token):

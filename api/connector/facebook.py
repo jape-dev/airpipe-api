@@ -1,7 +1,8 @@
 from api.config import Config
 
+from api.models.connector import AdAccount
 from api.models.user import User
-from api.models.facebook import AdAccount, FacebookQuery, FacebookQueryResults
+from api.models.facebook import FacebookQuery, FacebookQueryResults
 from api.core.auth import get_current_user
 from api.database.database import session
 from api.database.models import UserDB
@@ -39,7 +40,7 @@ def login(request: Request):
     user: User = get_current_user(token)
 
     user = session.query(UserDB).filter(UserDB.email == user.email).first()
-    user.access_token = access_token
+    user.facebook_access_token = access_token
     try:
         session.add(user)
         session.commit()
@@ -59,7 +60,7 @@ def ad_accounts(token: str):
     current_user: User = get_current_user(token)
     adaccounts = []
 
-    url = f"https://graph.facebook.com/v15.0/me?fields=adaccounts&access_token={current_user.access_token}"
+    url = f"https://graph.facebook.com/v15.0/me?fields=adaccounts&access_token={current_user.facebook_access_token}"
     response = requests.get(url)
     json = response.json()
     accounts = json["adaccounts"]["data"]
@@ -67,7 +68,7 @@ def ad_accounts(token: str):
     for account in accounts:
         id = account["id"]
         account_id = account["account_id"]
-        url = f"https://graph.facebook.com/v15.0/{id}?fields=name&access_token={current_user.access_token}"
+        url = f"https://graph.facebook.com/v15.0/{id}?fields=name&access_token={current_user.facebook_access_token}"
         response = requests.get(url)
         json = response.json()
         name = json["name"]
@@ -94,7 +95,7 @@ def run_query(query: FacebookQuery, token: str):
     start_date = start_datetime.strftime("%Y-%m-%d")
     end_date = end_datetime.strftime("%Y-%m-%d")
 
-    url = f"https://graph.facebook.com/v15.0/{query.account_id}/insights?level=ad&fields={fields}&time_range={{'since':'{start_date}','until':'{end_date}'}}&time_increment=1&access_token={current_user.access_token}"
+    url = f"https://graph.facebook.com/v15.0/{query.account_id}/insights?level=ad&fields={fields}&time_range={{'since':'{start_date}','until':'{end_date}'}}&time_increment=1&access_token={current_user.facebook_access_token}"
 
     response = requests.get(url)
     if response.status_code != 200:
