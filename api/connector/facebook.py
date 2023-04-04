@@ -44,7 +44,6 @@ def login(request: Request):
     try:
         print("Adding user to database")
         print(user.facebook_access_token)
-        print(user)
         session.add(user)
         session.commit()
     except Exception as e:
