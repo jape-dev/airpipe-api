@@ -10,6 +10,15 @@ class TableColumns(BaseModel):
         orm_mode = True
 
 
+class TabData(BaseModel):
+    tabIndex: int
+    data: List[TableColumns]
+
+
+class Schema(BaseModel):
+    tabs: List[TabData]
+
+
 class SqlQuery(BaseModel):
     query: str
 

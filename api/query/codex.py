@@ -1,7 +1,13 @@
 from fastapi import APIRouter
-from api.models.codex import Completion
-from api.models.data import TableColumns, SqlQuery
 import openai
+from typing import List
+
+from api.config import Config
+from api.models.codex import Completion
+from api.models.data import TableColumns, SqlQuery, Schema
+
+OPEN_API_KEY = Config.OPEN_API_KEY
+
 
 router = APIRouter()
 
@@ -22,7 +28,7 @@ def codex(prompt: str, completion: str = None):
 
     prompt = base + new_line
 
-    openai.api_key = "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"
+    openai.api_key = OPEN_API_KEY
     response = openai.Completion.create(
         model="code-davinci-002",
         prompt=prompt,
@@ -40,14 +46,20 @@ def codex(prompt: str, completion: str = None):
 
 
 @router.post("/sql_query", response_model=SqlQuery, status_code=200)
-def sql_query(schema: TableColumns, prompt: str):
+def sql_query(schema: Schema, prompt: str):
 
-    prompt = f"### Postgres SQL tables, with their properties: \n#\n# {schema.name}({','.join(schema.columns)}) \n#\n### {prompt}\nSELECT"
-    openai.api_key = "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"
+    schema_string = ""
+    for tab in schema.tabs:
+        data = tab.data[-1]
+        schema_string += f"\n# {data.name}({','.join(data.columns)})"
+    prompt = f"### Postgres SQL tables, with their properties: \n#{schema_string} \n#\n### {prompt}\nSELECT"
+    message = [{"role": "user", "content": prompt}]
 
-    response = openai.Completion.create(
-        model="code-davinci-002",
-        prompt=prompt,
+    openai.api_key = OPEN_API_KEY
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=message,
         temperature=0,
         max_tokens=150,
         top_p=1.0,
@@ -56,7 +68,8 @@ def sql_query(schema: TableColumns, prompt: str):
         stop=["#", ";"],
     )
 
-    query = f"SELECT {response.choices[0].text}"
+    query = f"SELECT {response.choices[0].message['content']}"
+    # print(query)
     sql_query = SqlQuery(query=query)
 
     return sql_query

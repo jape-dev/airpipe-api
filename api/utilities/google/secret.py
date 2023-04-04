@@ -29,7 +29,7 @@ class Secret:
             idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
             return idinfo["sub"]
         except ValueError:
-            print("Invalid token")
+            print("INVALID REFRESH TOKEN")
             pass
 
     def create_secret_version(self, refresh_token):

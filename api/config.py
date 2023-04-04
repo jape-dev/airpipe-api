@@ -24,3 +24,4 @@ class Config(object):
     )
     GOOGLE_ADS_DEVELOPER_TOKEN = os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+    OPEN_API_KEY = os.getenv("OPEN_API_KEY")
