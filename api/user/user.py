@@ -15,7 +15,8 @@ def create_customer(user: User):
     new_user = UserDB(email=user.email, hashed_password=hashed_password)
     try:
         exsiting_user = session.query(UserDB).filter(UserDB.email == user.email).first()
-    except:
+    except BaseException as e:
+        print(e)
         session.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
     finally:

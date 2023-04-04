@@ -71,7 +71,8 @@ def get_user(username: str):
     # Change db to get all users from database
     try:
         user = session.query(UserDB).filter(UserDB.email == username).first()
-    except:
+    except BaseException as e:
+        print(e)
         session.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
     finally:
