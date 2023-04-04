@@ -11,12 +11,12 @@ CLIENT_SECRETS_PATH = Config.CLIENT_SECRETS_PATH
 SCOPE = "https://www.googleapis.com/auth/adwords"
 REDIRECT_URI = f"{DOMAIN_URL}/connector/google/oauth2_callback"
 
-p = Path(__file__).with_name(CLIENT_SECRETS_PATH)
-filename = p.absolute()
+# p = Path(__file__).with_name(CLIENT_SECRETS_PATH)
+# filename = p.absolute()
 
 
 def authorize():
-    flow = Flow.from_client_secrets_file(filename, scopes=[SCOPE])
+    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_PATH, scopes=[SCOPE])
     flow.redirect_uri = REDIRECT_URI
 
     # Create an anti-forgery state token as described here:
