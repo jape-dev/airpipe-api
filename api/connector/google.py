@@ -132,7 +132,6 @@ def run_query(query: GoogleQuery, token: str):
                     pass
 
             data.append(data_row)
-    print(data)
     return GoogleQueryResults(results=data)
 
 
