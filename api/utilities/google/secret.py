@@ -11,10 +11,10 @@ PROJECT_ID = Config.GOOGLE_PROJECT_ID
 PROJECT_NUMBER = Config.GOOGLE_PROJECT_NUMBER
 GOOGLE_APPLICATION_CREDENTIALS_PATH = Config.GOOGLE_APPLICATION_CREDENTIALS_PATH
 
-p = Path(__file__).with_name(GOOGLE_APPLICATION_CREDENTIALS_PATH)
-filename = p.absolute()
-print(str(filename))
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(filename)
+# p = Path(__file__).with_name(GOOGLE_APPLICATION_CREDENTIALS_PATH)
+# filename = p.absolute()
+# print(str(filename))
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS_PATH
 
 
 class Secret:
