@@ -37,7 +37,7 @@ def oauth2callback(passthrough_val, state, code, token):
     if passthrough_val != state:
         raise ValueError("State does not match")
 
-    flow = Flow.from_client_secrets_file(filename, scopes=[SCOPE])
+    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_PATH, scopes=[SCOPE])
     flow.redirect_uri = REDIRECT_URI
 
     flow.fetch_token(code=code)
