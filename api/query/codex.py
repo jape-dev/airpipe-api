@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 import openai
-from typing import List
+from typing import Optional
 
 from api.config import Config
 from api.models.codex import Completion
-from api.models.data import TableColumns, SqlQuery, Schema
+from api.models.data import DebugResponse, SqlQuery, Schema
 
 OPEN_API_KEY = Config.OPEN_API_KEY
 
@@ -68,8 +68,56 @@ def sql_query(schema: Schema, prompt: str):
         stop=["#", ";"],
     )
 
-    query = f"SELECT {response.choices[0].message['content']}"
-    # print(query)
+    generated_query = response.choices[0].message["content"]
+
+    if generated_query[0:6] == "SELECT":
+        query = generated_query
+    elif generated_query[0:5] == "ALTER":
+        query = generated_query
+    else:
+        query = f"SELECT {generated_query}"
+
     sql_query = SqlQuery(query=query)
 
     return sql_query
+
+
+@router.post("/debug_prompt", response_model=DebugResponse, status_code=200)
+def debug_prompt(schema: Schema, query: str, error: str, prompt: Optional[str] = None):
+    schema_string = ""
+    for tab in schema.tabs:
+        data = tab.data[-1]
+        schema_string += f"\n# {data.name}({','.join(data.columns)})"
+    if prompt:
+        instruction = f"""For a given set of Postgres SQL tables, with their properties: \n{schema_string}. \nThe following prompt {prompt} 
+        produced the following query: {query}.\n This resulted in the error: {error}.\n
+        Write an updated query that would , but without the error.
+        """
+    else:
+        instruction = f"""For a given set of Postgres SQL tables, with their properties: \n{schema_string}. \nThe following query: {query} 
+        produced the following error: {error}.\n
+        Write an updated query that would produce the same results as the original query, but without the error.
+        """
+    message = [{"role": "user", "content": instruction}]
+
+    openai.api_key = OPEN_API_KEY
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=message,
+        temperature=0,
+        max_tokens=150,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0,
+        stop=["#", ";"],
+    )
+
+    response = DebugResponse(
+        prompt=prompt,
+        query=query,
+        error=error,
+        completion=response.choices[0].message["content"],
+    )
+
+    return response

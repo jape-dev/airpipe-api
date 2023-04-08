@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 class TableColumns(BaseModel):
@@ -37,3 +37,10 @@ class QueryResults(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class DebugResponse(BaseModel):
+    prompt: Optional[str]
+    query: str
+    error: str
+    completion: str

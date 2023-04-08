@@ -2,6 +2,7 @@ from api.models.data import TableColumns, CurrentResults, QueryResults
 from api.database.database import engine
 
 from fastapi import APIRouter, HTTPException, Body
+from fastapi.responses import JSONResponse
 import pandas as pd
 import sqlalchemy
 
@@ -25,7 +26,8 @@ def run_query(query: str):
     try:
         results = connection.execute(query)
     except sqlalchemy.exc.ProgrammingError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        error_msg = str(e)
+        raise HTTPException(status_code=400, detail=error_msg)
 
     query_results = QueryResults(results=results.all())
 

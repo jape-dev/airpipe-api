@@ -123,13 +123,35 @@ def run_query(query: GoogleQuery, token: str):
                 except:
                     pass
             for dimension in query.dimensions:
-                dimension_name = dimension.replace("segments.", "")
-                try:
-                    data_row[dimension.replace("segments.", "")] = row["segments"][
-                        dimension_name
-                    ]
-                except:
-                    pass
+                if dimension.split(".")[0] == "segments":
+                    dimension_name = dimension.replace("segments.", "")
+                    # need to handle campaign / ad_group fields here too.
+                    try:
+                        data_row[dimension.replace("segments.", "")] = row["segments"][
+                            dimension_name
+                        ]
+                    except:
+                        pass
+                elif dimension.split(".")[0] == "ad_group":
+                    dimension_name = dimension.replace("ad_group.", "")
+                    try:
+                        data_row[dimension.replace("ad_group.", "")] = row["ad_group"][
+                            dimension_name
+                        ]
+                    except:
+                        pass
+                elif dimension.split(".")[0] == "campaign":
+                    dimension_name = dimension.replace("campaign.", "")
+                    try:
+                        data_row[dimension.replace("campaign.", "")] = row["campaign"][
+                            dimension_name
+                        ]
+                    except:
+                        pass
+                else:
+                    raise HTTPException(
+                        status_code=400, detail=f"Invalid dimension: {dimension}"
+                    )
 
             data.append(data_row)
     return GoogleQueryResults(results=data)
