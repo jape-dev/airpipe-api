@@ -81,6 +81,10 @@ def ad_accounts(token: str):
 
 @router.post("/run_query", response_model=GoogleQueryResults)
 def run_query(query: GoogleQuery, token: str):
+    def underscore_to_camel_case(s):
+        parts = s.split("_")
+        return parts[0] + "".join(part.title() for part in parts[1:])
+
     current_user: User = get_current_user(token)
 
     fields = query.dimensions + query.metrics
@@ -116,15 +120,18 @@ def run_query(query: GoogleQuery, token: str):
             data_row = {}
             for metric in query.metrics:
                 metric_name = metric.replace("metrics.", "")
+                metric_name = underscore_to_camel_case(metric_name)
                 try:
                     data_row[metric.replace("metrics.", "")] = row["metrics"][
                         metric_name
                     ]
-                except:
+                except BaseException as e:
+                    print(e)
                     pass
             for dimension in query.dimensions:
                 if dimension.split(".")[0] == "segments":
                     dimension_name = dimension.replace("segments.", "")
+                    dimension_name = underscore_to_camel_case(dimension_name)
                     # need to handle campaign / ad_group fields here too.
                     try:
                         data_row[dimension.replace("segments.", "")] = row["segments"][
@@ -134,6 +141,7 @@ def run_query(query: GoogleQuery, token: str):
                         pass
                 elif dimension.split(".")[0] == "ad_group":
                     dimension_name = dimension.replace("ad_group.", "")
+                    dimension_name = underscore_to_camel_case(dimension_name)
                     try:
                         data_row[dimension.replace("ad_group.", "")] = row["ad_group"][
                             dimension_name
@@ -142,6 +150,7 @@ def run_query(query: GoogleQuery, token: str):
                         pass
                 elif dimension.split(".")[0] == "campaign":
                     dimension_name = dimension.replace("campaign.", "")
+                    dimension_name = underscore_to_camel_case(dimension_name)
                     try:
                         data_row[dimension.replace("campaign.", "")] = row["campaign"][
                             dimension_name

@@ -11,7 +11,7 @@ CLIENT_SECRETS_PATH = Config.CLIENT_SECRETS_PATH
 SCOPE = "https://www.googleapis.com/auth/adwords"
 REDIRECT_URI = f"{DOMAIN_URL}/connector/google/oauth2_callback"
 
-p = Path(__file__).with_name(CLIENT_SECRETS_PATH)
+# p = Path(__file__).with_name(CLIENT_SECRETS_PATH)
 # filename = p.absolute()
 filename = CLIENT_SECRETS_PATH
 
