@@ -4,9 +4,11 @@ from api.query import query_router
 from api.user import user_router
 from api.models.data import TabData, Schema, TableColumns
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 from fastapi.utils import get_model_definitions
 from pydantic.schema import get_model_name_map
 from starlette.middleware.sessions import SessionMiddleware
@@ -39,11 +41,7 @@ def custom_openapi() -> Dict[str, Any]:
     # FastAPI routes here, which we still want to present in the
     # generated OpenAPI schema; this is useful
     # for the front-end to generate client-side models
-    flat_models = [
-        TableColumns,
-        TabData,
-        Schema
-    ]
+    flat_models = [TableColumns, TabData, Schema]
     model_name_map = get_model_name_map(flat_models)  # type: ignore
     definitions = get_model_definitions(
         flat_models=flat_models, model_name_map=model_name_map  # type: ignore
@@ -79,7 +77,14 @@ app.include_router(connector_router.router)
 app.include_router(query_router.router)
 app.include_router(user_router.router)
 
+templates = Jinja2Templates(directory="templates")
 
+
+@app.get("/", response_class=HTMLResponse)
+def read_root(request: Request):
+    return templates.TemplateResponse(
+        "google1d76773c48148b4b.html", {"request": request}
+    )
 
 
 if __name__ == "__main__":
