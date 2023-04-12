@@ -62,6 +62,7 @@ origins = [
     "http://localhost:3000",
     "http://localhost:3001",
     "https://airpipe.onrender.com",
+    "https://api-airpipe.com",
 ]
 
 app.add_middleware(
