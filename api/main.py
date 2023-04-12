@@ -77,7 +77,7 @@ app.include_router(connector_router.router)
 app.include_router(query_router.router)
 app.include_router(user_router.router)
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="api/templates")
 
 
 @app.get("/", response_class=HTMLResponse)
