@@ -68,13 +68,37 @@ def ad_accounts(token: str):
     current_user: User = get_current_user(token)
     try:
         client = create_client(current_user.google_access_token)
+        ga_service = client.get_service("GoogleAdsService")
         customer_service = client.get_service("CustomerService")
         accessible_customers = customer_service.list_accessible_customers()
-        resource_names = [
-            AdAccount(id=resource_name.replace("customers/", ""))
-            for resource_name in accessible_customers.resource_names
-        ]
-        return resource_names
+        for resource_name in accessible_customers.resource_names:
+            id = resource_name.replace("customers/", "")
+            query = "SELECT customer_client.id, customer_client.descriptive_name, customer_client.client_customer FROM customer_client"
+            search_request = client.get_type("SearchGoogleAdsStreamRequest")
+            search_request.customer_id = id
+            search_request.query = query
+            stream = ga_service.search_stream(search_request)
+            ad_accounts = []
+            for batch in stream:
+                for result in batch.results:
+                    json_str = json_format.MessageToJson(result._pb)
+                    row = json.loads(json_str)
+                    customer = row["customerClient"]
+
+                    if "descriptiveName" not in customer:
+                        name = "Google ads account"
+                    else:
+                        name = customer["descriptiveName"]
+
+                    ad_accounts.append(
+                        AdAccount(
+                            id=id,
+                            account_id=customer["id"],
+                            name=name,
+                            img="google-ads-icon",
+                        )
+                    )
+        return ad_accounts
     except Exception as ex:
         handleGoogleTokenException(ex, current_user)
 
@@ -129,26 +153,35 @@ def run_query(query: GoogleQuery, token: str):
                     print(e)
                     pass
             for dimension in query.dimensions:
-                if dimension.split(".")[0] == "segments":
-                    dimension_name = dimension.replace("segments.", "")
-                    dimension_name = underscore_to_camel_case(dimension_name)
-                    # need to handle campaign / ad_group fields here too.
-                    try:
-                        data_row[dimension.replace("segments.", "")] = row["segments"][
-                            dimension_name
-                        ]
-                    except:
-                        pass
-                elif dimension.split(".")[0] == "ad_group":
+                dimension_components = dimension.split(".")
+                if dimension_components[0] == "segments":
+                    if dimension_components[1] == "keyword":
+                        try:
+                            data_row["keyword_text"] = row["segments"]["keyword"][
+                                "info"
+                            ]["text"]
+                        except BaseException as e:
+                            print(e)
+
+                    else:
+                        dimension_name = dimension.replace("segments.", "")
+                        dimension_name = underscore_to_camel_case(dimension_name)
+                        try:
+                            data_row[dimension.replace("segments.", "")] = row[
+                                "segments"
+                            ][dimension_name]
+                        except BaseException as e:
+                            print(e)
+                elif dimension_components[0] == "ad_group":
                     dimension_name = dimension.replace("ad_group.", "")
                     dimension_name = underscore_to_camel_case(dimension_name)
                     try:
                         data_row[dimension.replace("ad_group.", "")] = row["ad_group"][
                             dimension_name
                         ]
-                    except:
-                        pass
-                elif dimension.split(".")[0] == "campaign":
+                    except BaseException as e:
+                        print(e)
+                elif dimension_components[0] == "campaign":
                     dimension_name = dimension.replace("campaign.", "")
                     dimension_name = underscore_to_camel_case(dimension_name)
                     try:

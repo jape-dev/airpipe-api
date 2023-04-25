@@ -74,7 +74,7 @@ def ad_accounts(token: str):
         json = response.json()
         name = json["name"]
 
-        adaccount: AdAccount = AdAccount(id=id, account_id=account_id, name=name)
+        adaccount: AdAccount = AdAccount(id=id, account_id=account_id, name=name, img="facebook-icon")
         adaccounts.append(adaccount)
 
     return adaccounts

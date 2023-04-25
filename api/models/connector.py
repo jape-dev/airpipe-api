@@ -6,3 +6,4 @@ class AdAccount(BaseModel):
     id: str
     account_id: Optional[str]
     name: Optional[str]
+    img: Optional[str]
