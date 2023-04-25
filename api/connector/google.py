@@ -71,14 +71,14 @@ def ad_accounts(token: str):
         ga_service = client.get_service("GoogleAdsService")
         customer_service = client.get_service("CustomerService")
         accessible_customers = customer_service.list_accessible_customers()
+        ad_accounts = []
         for resource_name in accessible_customers.resource_names:
             id = resource_name.replace("customers/", "")
-            query = "SELECT customer_client.id, customer_client.descriptive_name, customer_client.client_customer FROM customer_client"
+            query = "SELECT customer_client.id, customer_client.descriptive_name, customer_client.client_customer FROM customer_client WHERE customer_client.manager = False "
             search_request = client.get_type("SearchGoogleAdsStreamRequest")
             search_request.customer_id = id
             search_request.query = query
             stream = ga_service.search_stream(search_request)
-            ad_accounts = []
             for batch in stream:
                 for result in batch.results:
                     json_str = json_format.MessageToJson(result._pb)
