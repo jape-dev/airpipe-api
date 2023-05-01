@@ -1,6 +1,7 @@
 from api.config import Config
 
 from api.models.connector import AdAccount
+from api.core.static_data import ChannelType
 from api.models.user import User
 from api.models.facebook import FacebookQuery, FacebookQueryResults
 from api.core.auth import get_current_user
@@ -74,7 +75,13 @@ def ad_accounts(token: str):
         json = response.json()
         name = json["name"]
 
-        adaccount: AdAccount = AdAccount(id=id, account_id=account_id, name=name, img="facebook-icon")
+        adaccount: AdAccount = AdAccount(
+            id=id,
+            channel=ChannelType.facebook,
+            account_id=account_id,
+            name=name,
+            img="facebook-icon",
+        )
         adaccounts.append(adaccount)
 
     return adaccounts
@@ -88,8 +95,6 @@ def run_query(query: FacebookQuery, token: str):
     if "date" in fields:
         fields.remove("date")
     fields = ",".join(fields)
-
-    # Need to add in date and actions.
 
     start_datetime = datetime.fromtimestamp(query.start_date)
     end_datetime = datetime.fromtimestamp(query.end_date)

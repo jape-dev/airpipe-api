@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 
+from api.models.connector import AdAccount
+from api.models.user import User
+from api.core.static_data import FieldType
+
 
 class TableColumns(BaseModel):
     name: str
@@ -44,3 +48,25 @@ class DebugResponse(BaseModel):
     query: str
     error: str
     completion: str
+
+
+class FieldOption(BaseModel):
+    value: str
+    label: str
+    type: FieldType
+
+
+class DataSource(BaseModel):
+    name: str
+    user: User
+    fields: List[FieldOption]
+    adAccount: AdAccount
+
+
+class DataSourceInDB(BaseModel):
+    user_id: str
+    name: str
+    fields: str
+    channel: str
+    channel_img: str
+    ad_account_id: str
