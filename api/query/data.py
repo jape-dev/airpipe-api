@@ -90,11 +90,14 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
 
     db_user = get_user_by_email(data_source.user.email)
 
+    table_name = create_table_name(data_source)
+
     # Saves data source to database.
     string_fields = ",".join(fields)
     data_source_row = DataSourceDB(
         user_id=db_user.id,
         name=data_source.name,
+        table_name=table_name,
         fields=string_fields,
         channel=data_source.adAccount.channel,
         channel_img=data_source.adAccount.img,
@@ -112,8 +115,6 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
             detail=f"Could not save data_source_row to database. {e}",
         )
 
-    table_name = create_table_name(data_source, data_source_row.id)
-
     results = CurrentResults(
         name=table_name,
         columns=fields,
@@ -130,6 +131,7 @@ def get_data_sources(email: str):
 
     data_sources_db = [
         DataSourceInDB(
+            id=data_source.id,
             name=data_source.name,
             user_id=data_source.user_id,
             fields=data_source.fields,

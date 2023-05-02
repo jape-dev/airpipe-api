@@ -64,6 +64,7 @@ class DataSource(BaseModel):
 
 
 class DataSourceInDB(BaseModel):
+    id: int
     user_id: str
     name: str
     fields: str
