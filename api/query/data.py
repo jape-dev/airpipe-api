@@ -133,6 +133,7 @@ def get_data_sources(email: str):
         DataSourceInDB(
             id=data_source.id,
             name=data_source.name,
+            table_name=data_source.table_name,
             user_id=data_source.user_id,
             fields=data_source.fields,
             channel=data_source.channel,

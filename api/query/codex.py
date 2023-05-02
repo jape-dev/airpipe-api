@@ -1,12 +1,15 @@
 from fastapi import APIRouter
 import openai
 from typing import Optional
+from langchain import OpenAI, SQLDatabase, SQLDatabaseChain, SQLDatabaseToolkit
 
 from api.config import Config
-from api.models.codex import Completion
+from api.models.codex import Completion, Prompt
 from api.models.data import DebugResponse, SqlQuery, Schema
 
+
 OPEN_API_KEY = Config.OPEN_API_KEY
+DATABASE_URL = Config.DATABASE_URL
 
 
 router = APIRouter()
@@ -121,3 +124,15 @@ def debug_prompt(schema: Schema, query: str, error: str, prompt: Optional[str] =
     )
 
     return response
+
+
+@router.get("/ask_model", status_code=200)
+def ask_model(prompt: Prompt):
+    db = SQLDatabase.from_uri(DATABASE_URL, include_tables=[prompt.table])
+    toolkit = SQLDatabaseToolkit(db=db)
+
+    agent_executor = create_sql_agent(
+        llm=OpenAI(temperature=0),
+        toolkit=toolkit,
+        verbose=True
+    )

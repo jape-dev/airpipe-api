@@ -71,3 +71,8 @@ class DataSourceInDB(BaseModel):
     channel: str
     channel_img: str
     ad_account_id: str
+
+
+class DataPrompt(BaseModel):
+    prompt:str
+    table: str

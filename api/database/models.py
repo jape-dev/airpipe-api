@@ -10,7 +10,6 @@ class UserDB(Base):
     hashed_password = Column(String())
     facebook_access_token = Column(String(), nullable=True)
     google_access_token = Column(String(), nullable=True)
-    access_token = Column(String(), nullable=True)
 
 
 class DataSourceDB(Base):
@@ -19,6 +18,7 @@ class DataSourceDB(Base):
     id = Column(Integer(), primary_key=True)
     user_id = Column(Integer())
     name = Column(String())
+    table_name = Column(String())
     fields = Column(String())
     channel = Column(String())
     channel_img = Column(String())
