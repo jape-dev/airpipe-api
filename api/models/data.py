@@ -67,6 +67,7 @@ class DataSourceInDB(BaseModel):
     id: int
     user_id: str
     name: str
+    table_name: str
     fields: str
     channel: str
     channel_img: str
@@ -74,5 +75,5 @@ class DataSourceInDB(BaseModel):
 
 
 class DataPrompt(BaseModel):
-    prompt:str
+    prompt: str
     table: str

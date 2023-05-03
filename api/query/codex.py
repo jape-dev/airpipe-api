@@ -1,7 +1,12 @@
 from fastapi import APIRouter
 import openai
 from typing import Optional
-from langchain import OpenAI, SQLDatabase, SQLDatabaseChain, SQLDatabaseToolkit
+
+from langchain.agents import create_sql_agent
+from langchain.agents.agent_toolkits import SQLDatabaseToolkit
+from langchain.sql_database import SQLDatabase
+from langchain.llms.openai import OpenAI
+from langchain.agents import AgentExecutor
 
 from api.config import Config
 from api.models.codex import Completion, Prompt
@@ -126,13 +131,22 @@ def debug_prompt(schema: Schema, query: str, error: str, prompt: Optional[str] =
     return response
 
 
-@router.get("/ask_model", status_code=200)
-def ask_model(prompt: Prompt):
+@router.post("/ask_question", status_code=200)
+def ask_question(prompt: Prompt):
+    llm_openapi = OpenAI(
+        temperature=0,
+        open_api_key="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",
+    )
     db = SQLDatabase.from_uri(DATABASE_URL, include_tables=[prompt.table])
-    toolkit = SQLDatabaseToolkit(db=db)
+
+    toolkit = SQLDatabaseToolkit(db=db, llm=OPEN_API_KEY)
 
     agent_executor = create_sql_agent(
-        llm=OpenAI(temperature=0),
+        llm=llm_openapi,
         toolkit=toolkit,
-        verbose=True
+        verbose=True,
     )
+
+    result = agent_executor.run(prompt=prompt.prompt)
+
+    print(result)
