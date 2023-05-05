@@ -7,6 +7,7 @@ from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
 from langchain.llms.openai import OpenAI
 from langchain.agents import AgentExecutor
+from langchain.chains import SQLDatabaseChain
 
 from api.config import Config
 from api.models.codex import Completion, Prompt
@@ -135,18 +136,36 @@ def debug_prompt(schema: Schema, query: str, error: str, prompt: Optional[str] =
 def ask_question(prompt: Prompt):
     llm_openapi = OpenAI(
         temperature=0,
-        open_api_key="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",
+        openai_api_key=OPEN_API_KEY,
     )
-    db = SQLDatabase.from_uri(DATABASE_URL, include_tables=[prompt.table])
+    table_name = prompt.table
 
-    toolkit = SQLDatabaseToolkit(db=db, llm=OPEN_API_KEY)
+    db = SQLDatabase.from_uri(DATABASE_URL, include_tables=[table_name])
+    # db._all_tables = [table_name]
+    # db._include_tables = [table_name]
 
-    agent_executor = create_sql_agent(
-        llm=llm_openapi,
-        toolkit=toolkit,
-        verbose=True,
+    toolkit = SQLDatabaseToolkit(db=db, llm=llm_openapi)
+
+    agent = create_sql_agent(
+        llm=llm_openapi, toolkit=toolkit, verbose=True, return_intermediate_steps=True
     )
 
-    result = agent_executor.run(prompt=prompt.prompt)
+    # db_chain = SQLDatabaseChain(
+    #     llm=llm_openapi,
+    #     database=db,
+    #     verbose=True,
+    #     return_intermediate_steps=True,
+    # )
 
-    print(result)
+    # agent_executor = AgentExecutor(agent=agent, return_intermediate_steps=True)
+
+    input = prompt.prompt
+
+    # Run the chain with a query
+    result = agent.run(input)
+
+    print(result[0])
+
+    # intermediate_steps = result["intermediate_steps"]
+
+    # return intermediate_steps[-1]

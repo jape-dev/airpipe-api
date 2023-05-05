@@ -15,9 +15,12 @@ def get_keys(list_of_dicts):
 def create_table_name(data_source: DataSource, id: Optional[int] = None) -> str:
     if id is None:
         id = "".join(
-            random.SystemRandom().choice(string.ascii_uppercase + string.digits)
+            random.SystemRandom().choice(string.ascii_lowercase + string.digits)
             for _ in range(4)
         )
 
-    table_name = f"{data_source.adAccount.channel}-{data_source.name}-{id}"
+    data_source_name = data_source.name.replace(" ", "_")
+    data_source_name = data_source_name.replace("-", "_")
+
+    table_name = data_source.adAccount.channel + data_source_name + id
     return table_name
