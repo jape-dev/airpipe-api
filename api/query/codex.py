@@ -14,7 +14,7 @@ from api.config import Config
 from api.models.codex import Completion, Prompt, ChainResult
 from api.models.data import DebugResponse, SqlQuery, Schema
 from api.utilities.string import remove_decimal
-from api.utilities.data import tuples_to_dicts, tuples_to_recharts_dict
+from api.utilities.data import tuples_to_recharts_dict
 
 
 OPEN_API_KEY = Config.OPEN_API_KEY
