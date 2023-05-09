@@ -112,7 +112,7 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
         session.rollback()
         raise HTTPException(
             status_code=400,
-            detail=f"Could not save data_source_row to database. {e}",
+            detail=f"Could not save data_source_row to databas3e. {e}",
         )
 
     results = CurrentResults(

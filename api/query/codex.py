@@ -8,10 +8,13 @@ from langchain.sql_database import SQLDatabase
 from langchain.llms.openai import OpenAI
 from langchain.agents import AgentExecutor
 from langchain.chains import SQLDatabaseChain
+from langchain.prompts.prompt import PromptTemplate
 
 from api.config import Config
-from api.models.codex import Completion, Prompt
+from api.models.codex import Completion, Prompt, ChainResult
 from api.models.data import DebugResponse, SqlQuery, Schema
+from api.utilities.string import remove_decimal
+from api.utilities.data import tuples_to_dicts, tuples_to_recharts_dict
 
 
 OPEN_API_KEY = Config.OPEN_API_KEY
@@ -132,40 +135,57 @@ def debug_prompt(schema: Schema, query: str, error: str, prompt: Optional[str] =
     return response
 
 
-@router.post("/ask_question", status_code=200)
-def ask_question(prompt: Prompt):
+@router.post("/ask_question", response_model=ChainResult, status_code=200)
+def ask_question(prompt: Prompt) -> ChainResult:
     llm_openapi = OpenAI(
         temperature=0,
         openai_api_key=OPEN_API_KEY,
     )
+
     table_name = prompt.table
-
     db = SQLDatabase.from_uri(DATABASE_URL, include_tables=[table_name])
-    # db._all_tables = [table_name]
-    # db._include_tables = [table_name]
 
-    toolkit = SQLDatabaseToolkit(db=db, llm=llm_openapi)
-
-    agent = create_sql_agent(
-        llm=llm_openapi, toolkit=toolkit, verbose=True, return_intermediate_steps=True
+    db_chain = SQLDatabaseChain(
+        llm=llm_openapi,
+        database=db,
+        verbose=True,
+        return_intermediate_steps=True,
+        top_k=100
     )
 
-    # db_chain = SQLDatabaseChain(
-    #     llm=llm_openapi,
-    #     database=db,
-    #     verbose=True,
-    #     return_intermediate_steps=True,
-    # )
-
-    # agent_executor = AgentExecutor(agent=agent, return_intermediate_steps=True)
-
     input = prompt.prompt
+    result = db_chain(input)
 
-    # Run the chain with a query
-    result = agent.run(input)
+    data = remove_decimal(result["intermediate_steps"][-1])
+    data_json = tuples_to_recharts_dict(data)
+    data_string = remove_decimal(result["intermediate_steps"][-1], is_list=False)
+    answer = result["result"]
 
-    print(result[0])
+    result = ChainResult(
+        sql_result=data, string_result=data_string, json_result=data_json, answer=answer
+    )
 
-    # intermediate_steps = result["intermediate_steps"]
+    return result
 
-    # return intermediate_steps[-1]
+
+@router.post("/chart_type", status_code=200)
+def chart_type(input: str) -> str:
+    prompt = f"The following are the possible chart types supported by the code provided: area, bar, line, composed, scatter, pie, radar, radialBar, treemap, and funnel. Given the data: {input}, identify the chart type the user wants to display. Return just one word"
+
+    openai.api_key = OPEN_API_KEY
+
+    message = [{"role": "user", "content": prompt}]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=message,
+        temperature=0,
+        max_tokens=10,
+        n=1,
+        frequency_penalty=0.5,
+        presence_penalty=0.5,
+    )
+
+    completion = response.choices[0].message["content"]
+
+    return completion
