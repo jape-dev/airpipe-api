@@ -16,7 +16,6 @@ class User(BaseModel):
     hashed_password: str
     facebook_access_token: Optional[str] = None
     google_access_token: Optional[str] = None
-    access_token: Optional[str] = None
 
 
 class UserInDB(User):

@@ -1,5 +1,6 @@
 from api.config import Config
 from api.core.auth import get_current_user
+from api.core.static_data import ChannelType
 from api.database.database import session
 from api.utilities.google.auth import authorize, oauth2callback
 from api.utilities.google.ga_runner import REFRESH_ERROR, create_client
@@ -7,12 +8,12 @@ from api.database.models import UserDB
 from api.models.user import User
 from api.models.google import GoogleQuery, GoogleQueryResults
 from api.models.connector import AdAccount
+from api.utilities.string import underscore_to_camel_case
 from google.protobuf import json_format
 
 from datetime import datetime
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.encoders import jsonable_encoder
-from starlette.responses import JSONResponse
 from typing import List
 
 import json
@@ -93,6 +94,7 @@ def ad_accounts(token: str):
                     ad_accounts.append(
                         AdAccount(
                             id=id,
+                            channel=ChannelType.google,
                             account_id=customer["id"],
                             name=name,
                             img="google-ads-icon",
@@ -105,9 +107,6 @@ def ad_accounts(token: str):
 
 @router.post("/run_query", response_model=GoogleQueryResults)
 def run_query(query: GoogleQuery, token: str):
-    def underscore_to_camel_case(s):
-        parts = s.split("_")
-        return parts[0] + "".join(part.title() for part in parts[1:])
 
     current_user: User = get_current_user(token)
 

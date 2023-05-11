@@ -1,11 +1,21 @@
-from api.models.data import TableColumns, CurrentResults, QueryResults
-from api.database.database import engine
+from api.models.data import TableColumns, CurrentResults, QueryResults, DataSource
+from api.database.database import engine, session
+from api.database.crud import get_user_by_email
+from api.core.static_data import ChannelType, FieldType
+from api.core.google import build_google_query, fetch_google_query
+from api.core.facebook import fetch_facebook_data
+from api.database.models import DataSourceDB
+from api.database.crud import get_data_sources_by_user_id
+from api.models.data import DataSourceInDB
+from api.models.google import GoogleQuery
+from api.models.facebook import FacebookQuery
+from api.utilities.data import create_table_name
+
 
 from fastapi import APIRouter, HTTPException, Body
-from fastapi.responses import JSONResponse
 import pandas as pd
 import sqlalchemy
-
+from typing import List
 
 router = APIRouter()
 
@@ -41,3 +51,96 @@ def create_new_table(results: CurrentResults = Body(...)):
     df.to_sql(results.name, engine, if_exists="replace", index=False)
 
     return {"message": "success"}
+
+
+@router.post("/add_data_source")
+def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
+    # Reads data source
+    account_id = data_source.adAccount.id
+    metrics = [
+        field.value for field in data_source.fields if field.type == FieldType.metric
+    ]
+    dimensions = [
+        field.value for field in data_source.fields if field.type == FieldType.dimension
+    ]
+    fields = metrics + dimensions
+
+    # Builds query depending on the channel type
+    if data_source.adAccount.channel == ChannelType.google:
+
+        data_query = build_google_query(fields=fields)
+        print(data_query)
+        query = GoogleQuery(
+            account_id=account_id, metrics=metrics, dimensions=dimensions
+        )
+        data = fetch_google_query(
+            current_user=data_source.user, query=query, data_query=data_query
+        )
+
+    elif data_source.adAccount.channel == ChannelType.facebook:
+        query = FacebookQuery(
+            account_id=account_id, metrics=metrics, dimensions=dimensions
+        )
+        data = fetch_facebook_data(current_user=data_source.user, query=query)
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Channel type { data_source.adAccount.channel} not supported.",
+        )
+
+    db_user = get_user_by_email(data_source.user.email)
+
+    table_name = create_table_name(data_source)
+
+    # Saves data source to database.
+    string_fields = ",".join(fields)
+    data_source_row = DataSourceDB(
+        user_id=db_user.id,
+        name=data_source.name,
+        table_name=table_name,
+        fields=string_fields,
+        channel=data_source.adAccount.channel,
+        channel_img=data_source.adAccount.img,
+        ad_account_id=data_source.adAccount.id,
+    )
+
+    try:
+        session.add(data_source_row)
+        session.commit()
+    except Exception as e:
+        print(e)
+        session.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not save data_source_row to databas3e. {e}",
+        )
+
+    results = CurrentResults(
+        name=table_name,
+        columns=fields,
+        results=data,
+    )
+
+    return results
+
+
+@router.get("/data_sources", response_model=List[DataSourceInDB], status_code=200)
+def get_data_sources(email: str):
+    db_user = get_user_by_email(email)
+    data_sources = get_data_sources_by_user_id(db_user.id)
+
+    data_sources_db = [
+        DataSourceInDB(
+            id=data_source.id,
+            name=data_source.name,
+            table_name=data_source.table_name,
+            user_id=data_source.user_id,
+            fields=data_source.fields,
+            channel=data_source.channel,
+            channel_img=data_source.channel_img,
+            ad_account_id=data_source.ad_account_id,
+        )
+        for data_source in data_sources
+    ]
+
+    return data_sources_db

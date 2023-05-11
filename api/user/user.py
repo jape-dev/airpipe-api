@@ -1,4 +1,5 @@
-from api.database.database import session, insert_new_user
+from api.database.database import session
+from api.database.crud import insert_new_user
 from api.database.models import UserDB
 from api.models.user import User
 from api.core.auth import get_password_hash

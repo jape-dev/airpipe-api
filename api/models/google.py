@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 
 class GoogleQueryResults(BaseModel):
@@ -13,5 +13,5 @@ class GoogleQuery(BaseModel):
     account_id: str
     metrics: List[str]
     dimensions: List[str]
-    start_date: int
-    end_date: int
+    start_date: Optional[int]
+    end_date: Optional[int]
