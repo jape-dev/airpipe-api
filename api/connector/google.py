@@ -33,17 +33,25 @@ def auth(request: Request) -> RedirectResponse:
     passthrough_val = auth_info["passthrough_val"]
     url = auth_info["authorization_url"]
     response = RedirectResponse(url=url)
-    response.set_cookie("token", token)
-    response.set_cookie("google_token", google_token)
-    response.set_cookie("passthrough_val", passthrough_val)
+    response.set_cookie("token", token,
+            httponly=True,
+            samesite="none",
+            secure=True,)
+    response.set_cookie("google_token", google_token, 
+                httponly=True,
+            samesite="none",
+            secure=True,)
+    response.set_cookie("passthrough_val", passthrough_val,httponly=True,
+            samesite="none",
+            secure=True,)
     return response
 
 @router.get("/oauth2_callback")
-def oauth2_callback(request: Request, sessionKey: Union[str, None] = Cookie(None), google_token: Union[str, None] = Cookie(None), token: Union[str, None] = Cookie(None), passthrough_val: Union[str, None] = Cookie(None))  -> RedirectResponse:
+def oauth2_callback(request: Request)  -> RedirectResponse:
     print(request.cookies)
-    # google_token = request.cookies.get("google_token")
-    # token = request.cookies.get("token")
-    # passthrough_val = request.cookies.get("passthrough_val")
+    google_token = request.cookies.get("google_token")
+    token = request.cookies.get("token")
+    passthrough_val = request.cookies.get("passthrough_val")
     state = request.query_params["state"]
     print("state", state)
     print("passthrough_val", passthrough_val)
