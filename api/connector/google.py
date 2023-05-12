@@ -15,10 +15,10 @@ from fastapi import Cookie
 from datetime import datetime
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.encoders import jsonable_encoder
-from typing import List, Union
+from typing import List
 
 import json
-from starlette.responses import RedirectResponse, Response
+from starlette.responses import RedirectResponse
 
 CLIENT_URL = Config.CLIENT_URL
 
@@ -33,28 +33,22 @@ def auth(request: Request) -> RedirectResponse:
     passthrough_val = auth_info["passthrough_val"]
     url = auth_info["authorization_url"]
     response = RedirectResponse(url=url)
-    response.set_cookie("token", token,
-            httponly=True,
-            samesite="none",
-            secure=True,)
-    response.set_cookie("google_token", google_token, 
-                httponly=True,
-            samesite="none",
-            secure=True,)
-    response.set_cookie("passthrough_val", passthrough_val,httponly=True,
-            samesite="none",
-            secure=True,)
+    response.set_cookie("token", token, httponly=True, samesite="none", secure=True)
+    response.set_cookie(
+        "google_token", google_token, httponly=True, samesite="none", secure=True
+    )
+    response.set_cookie(
+        "passthrough_val", passthrough_val, httponly=True, samesite="none", secure=True
+    )
     return response
 
+
 @router.get("/oauth2_callback")
-def oauth2_callback(request: Request)  -> RedirectResponse:
-    print(request.cookies)
+def oauth2_callback(request: Request) -> RedirectResponse:
     google_token = request.cookies.get("google_token")
     token = request.cookies.get("token")
     passthrough_val = request.cookies.get("passthrough_val")
     state = request.query_params["state"]
-    print("state", state)
-    print("passthrough_val", passthrough_val)
     code = request.query_params["code"]
     oauth2callback(passthrough_val, state, code, google_token)
     user: User = get_current_user(token)
@@ -77,7 +71,6 @@ def oauth2_callback(request: Request)  -> RedirectResponse:
     response.delete_cookie("google_token")
     response.delete_cookie("passthrough_val")
     return response
-
 
 
 @router.get("/ad_accounts", response_model=List[AdAccount])
