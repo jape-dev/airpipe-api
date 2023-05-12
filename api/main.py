@@ -73,7 +73,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, secure=True)
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 app.include_router(connector_router.router)
 app.include_router(query_router.router)
