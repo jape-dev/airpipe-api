@@ -28,9 +28,9 @@ router = APIRouter(prefix="/google")
 def auth(request: Request) -> RedirectResponse:
     token = request.query_params["token"]
     google_token = request.query_params["googleToken"]
-    print("getting google_token from query params", google_token)
     request.session["token"] = token
     request.session["google_token"] = google_token
+    print("request session after auth", request.session)
     auth_info = authorize()
     passthtough_val = auth_info["passthrough_val"]
     request.session["passthrough_val"] = passthtough_val
