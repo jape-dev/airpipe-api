@@ -30,13 +30,12 @@ def auth(request: Request) -> RedirectResponse:
     google_token = request.query_params["googleToken"]
     request.session["token"] = token
     request.session["google_token"] = google_token
-    print("request session after auth", request.session)
     auth_info = authorize()
     passthtough_val = auth_info["passthrough_val"]
     request.session["passthrough_val"] = passthtough_val
     url = auth_info["authorization_url"]
     return RedirectResponse(url=url)
-
+e
 
 @router.get("/oauth2_callback")
 def oauth2_callback(request: Request) -> RedirectResponse:
