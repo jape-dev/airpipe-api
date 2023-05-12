@@ -40,8 +40,8 @@ def auth(request: Request) -> RedirectResponse:
 
 @router.get("/oauth2_callback")
 def oauth2_callback(request: Request) -> RedirectResponse:
+    print("request session", request.session)
     google_token = request.session["google_token"]
-    print("getting google_token from session", google_token)
     token = request.session["token"]
     state = request.query_params["state"]
     code = request.query_params["code"]
