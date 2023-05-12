@@ -10,11 +10,12 @@ from api.models.google import GoogleQuery, GoogleQueryResults
 from api.models.connector import AdAccount
 from api.utilities.string import underscore_to_camel_case
 from google.protobuf import json_format
+from fastapi import Cookie
 
 from datetime import datetime
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.encoders import jsonable_encoder
-from typing import List
+from typing import List, Union
 
 import json
 from starlette.responses import RedirectResponse, Response
@@ -35,15 +36,14 @@ def auth(request: Request) -> RedirectResponse:
     response.set_cookie("token", token)
     response.set_cookie("google_token", google_token)
     response.set_cookie("passthrough_val", passthrough_val)
-    url = auth_info["authorization_url"]
     return response
 
 @router.get("/oauth2_callback")
-def oauth2_callback(request: Request) -> RedirectResponse:
+def oauth2_callback(request: Request, sessionKey: Union[str, None] = Cookie(None), google_token: Union[str, None] = Cookie(None), token: Union[str, None] = Cookie(None), passthrough_val: Union[str, None] = Cookie(None))  -> RedirectResponse:
     print(request.cookies)
-    google_token = request.cookies.get("google_token")
-    token = request.cookies.get("token")
-    passthrough_val = request.cookies.get("passthrough_val")
+    # google_token = request.cookies.get("google_token")
+    # token = request.cookies.get("token")
+    # passthrough_val = request.cookies.get("passthrough_val")
     state = request.query_params["state"]
     print("state", state)
     print("passthrough_val", passthrough_val)
