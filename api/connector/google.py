@@ -32,9 +32,9 @@ def auth(request: Request) -> RedirectResponse:
     passthrough_val = auth_info["passthrough_val"]
     url = auth_info["authorization_url"]
     response = RedirectResponse(url=url)
-    response.set_cookie("token", token, secure=True, httponly=True)
-    response.set_cookie("google_token", google_token, secure=True, httponly=True)
-    response.set_cookie("passthrough_val", passthrough_val, secure=True, httponly=True)
+    response.set_cookie("token", token)
+    response.set_cookie("google_token", google_token)
+    response.set_cookie("passthrough_val", passthrough_val)
     url = auth_info["authorization_url"]
     return response
 
