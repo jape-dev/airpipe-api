@@ -17,7 +17,7 @@ from fastapi.encoders import jsonable_encoder
 from typing import List
 
 import json
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, Response
 
 CLIENT_URL = Config.CLIENT_URL
 
@@ -28,25 +28,26 @@ router = APIRouter(prefix="/google")
 def auth(request: Request) -> RedirectResponse:
     token = request.query_params["token"]
     google_token = request.query_params["googleToken"]
-    request.session["token"] = token
-    request.session["google_token"] = google_token
     auth_info = authorize()
-    passthtough_val = auth_info["passthrough_val"]
-    request.session["passthrough_val"] = passthtough_val
+    passthrough_val = auth_info["passthrough_val"]
     url = auth_info["authorization_url"]
-    return RedirectResponse(url=url)
-
+    response = RedirectResponse(url=url)
+    response.set_cookie("token", token, secure=True, httponly=True)
+    response.set_cookie("google_token", google_token, secure=True, httponly=True)
+    response.set_cookie("passthrough_val", passthrough_val, secure=True, httponly=True)
+    url = auth_info["authorization_url"]
+    return response
 
 @router.get("/oauth2_callback")
 def oauth2_callback(request: Request) -> RedirectResponse:
-    print("request session", request.session)
-    google_token = request.session["google_token"]
-    token = request.session["token"]
+    google_token = request.cookies.get("google_token")
+    token = request.cookies.get("token")
+    passthrough_val = request.cookies.get("passthrough_val")
     state = request.query_params["state"]
+    print("state", state)
+    print("passthrough_val", passthrough_val)
     code = request.query_params["code"]
-    passthrough_val = request.session["passthrough_val"]
     oauth2callback(passthrough_val, state, code, google_token)
-    # Commit access_token to the database.
     user: User = get_current_user(token)
     user = session.query(UserDB).filter(UserDB.email == user.email).first()
     user.google_access_token = google_token
@@ -62,7 +63,12 @@ def oauth2_callback(request: Request) -> RedirectResponse:
         )
     finally:
         session.close()
-    return RedirectResponse(url=CLIENT_URL)
+    response = RedirectResponse(url=CLIENT_URL)
+    response.delete_cookie("token")
+    response.delete_cookie("google_token")
+    response.delete_cookie("passthrough_val")
+    return response
+
 
 
 @router.get("/ad_accounts", response_model=List[AdAccount])
