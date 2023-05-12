@@ -35,7 +35,7 @@ def auth(request: Request) -> RedirectResponse:
     request.session["passthrough_val"] = passthtough_val
     url = auth_info["authorization_url"]
     return RedirectResponse(url=url)
-e
+
 
 @router.get("/oauth2_callback")
 def oauth2_callback(request: Request) -> RedirectResponse:
