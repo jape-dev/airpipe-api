@@ -40,6 +40,7 @@ def auth(request: Request) -> RedirectResponse:
 
 @router.get("/oauth2_callback")
 def oauth2_callback(request: Request) -> RedirectResponse:
+    print(request.cookies)
     google_token = request.cookies.get("google_token")
     token = request.cookies.get("token")
     passthrough_val = request.cookies.get("passthrough_val")
