@@ -44,6 +44,21 @@ def run_query(query: str):
     return query_results
 
 
+@router.get("/table_results", response_model=CurrentResults, status_code=200)
+def table_results(table_name: str):
+    query = f'SELECT * FROM "{table_name}"'
+    connection = engine.connect()
+    try:
+        results = connection.execute(query)
+    except sqlalchemy.exc.ProgrammingError as e:
+        error_msg = str(e)
+        raise HTTPException(status_code=400, detail=error_msg)
+
+    current_results = CurrentResults(name=table_name, results=results.all(), columns=list(results.keys()))
+
+    return current_results
+
+
 @router.post("/create_new_table")
 def create_new_table(results: CurrentResults = Body(...)):
     df = pd.DataFrame(results.results, columns=results.columns)
