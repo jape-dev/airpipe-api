@@ -61,6 +61,8 @@ class DataSource(BaseModel):
     user: User
     fields: List[FieldOption]
     adAccount: AdAccount
+    start_date: str
+    end_date: str
 
 
 class DataSourceInDB(BaseModel):
@@ -72,6 +74,8 @@ class DataSourceInDB(BaseModel):
     channel: str
     channel_img: str
     ad_account_id: str
+    start_date: str
+    end_date: str
 
 
 class DataPrompt(BaseModel):

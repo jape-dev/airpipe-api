@@ -23,3 +23,5 @@ class DataSourceDB(Base):
     channel = Column(String())
     channel_img = Column(String())
     ad_account_id = Column(String())
+    start_date = Column(String())
+    end_date = Column(String())

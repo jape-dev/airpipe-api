@@ -83,14 +83,14 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
     # Builds query depending on the channel type
     if data_source.adAccount.channel == ChannelType.google:
 
-        data_query = build_google_query(fields=fields)
-        print(data_query)
+        data_query = build_google_query(fields=fields, start_date=data_source.start_date, end_date=data_source.end_date)
         query = GoogleQuery(
-            account_id=account_id, metrics=metrics, dimensions=dimensions
+            account_id=account_id, metrics=metrics, dimensions=dimensions, start_date=data_source.start_date, end_date=data_source.end_date
         )
         data = fetch_google_query(
             current_user=data_source.user, query=query, data_query=data_query
         )
+        fields = [f.split('.')[-1] for f in fields]
 
     elif data_source.adAccount.channel == ChannelType.facebook:
         query = FacebookQuery(
@@ -117,6 +117,8 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
         channel=data_source.adAccount.channel,
         channel_img=data_source.adAccount.img,
         ad_account_id=data_source.adAccount.id,
+        start_date=data_source.start_date,
+        end_date=data_source.end_date,
     )
 
     try:
@@ -140,7 +142,7 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
 
 
 @router.get("/data_sources", response_model=List[DataSourceInDB], status_code=200)
-def get_data_sources(email: str):
+def data_sources(email: str):
     db_user = get_user_by_email(email)
     data_sources = get_data_sources_by_user_id(db_user.id)
 
@@ -154,6 +156,8 @@ def get_data_sources(email: str):
             channel=data_source.channel,
             channel_img=data_source.channel_img,
             ad_account_id=data_source.ad_account_id,
+            start_date=data_source.start_date,
+            end_date=data_source.end_date,
         )
         for data_source in data_sources
     ]
