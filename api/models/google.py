@@ -13,5 +13,5 @@ class GoogleQuery(BaseModel):
     account_id: str
     metrics: List[str]
     dimensions: List[str]
-    start_date: Optional[int]
-    end_date: Optional[int]
+    start_date: str
+    end_date: str

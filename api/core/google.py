@@ -42,20 +42,15 @@ def handleGoogleTokenException(ex, current_user: User):
 
 
 def build_google_query(
-    fields: List[str], start_date: Optional[str] = None, end_date: Optional[str] = None
+    fields: List[str], start_date: str, end_date: str
 ) -> str:
     fields = ",".join(fields)
-    if start_date is None or end_date is None:
-        data_query = f"""
-            SELECT {fields}
-            FROM ad_group_ad
-        """
-    else:
-        data_query = f"""
-            SELECT {fields}
-            FROM ad_group_ad
-            WHERE segments.date BETWEEN "{start_date}" AND "{end_date}"
-        """
+
+    data_query = f"""
+        SELECT {fields}
+        FROM ad_group_ad
+        WHERE segments.date BETWEEN "{start_date}" AND "{end_date}"
+    """
     return data_query
 
 
@@ -131,6 +126,7 @@ def fetch_google_query(
                         status_code=400, detail=f"Invalid dimension: {dimension}"
                     )
 
+            
             data.append(data_row)
 
     return data
