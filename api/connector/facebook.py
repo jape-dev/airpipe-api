@@ -35,7 +35,14 @@ def login(request: Request):
     response = requests.get(auth_url)
 
     json = response.json()
-    access_token = json["access_token"]
+    try:
+        access_token = json["access_token"]
+    except KeyError as e:
+        print(json)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not get access token from Facebook. Error {e}. Response: {json}",
+        )
 
     # Commit access_token to the database.
     user: User = get_current_user(token)
