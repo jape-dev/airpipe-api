@@ -61,7 +61,9 @@ def login(request: Request):
     finally:
         session.close()
 
-    return RedirectResponse(url=CLIENT_URL)
+    redirect_client_url = f"{CLIENT_URL}/add-data/"
+
+    return RedirectResponse(url=redirect_client_url)
 
 
 @router.get("/ad_accounts", response_model=List[AdAccount])
