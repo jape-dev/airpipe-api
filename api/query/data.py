@@ -4,6 +4,7 @@ from api.database.crud import get_user_by_email
 from api.core.static_data import ChannelType, FieldType
 from api.core.google import build_google_query, fetch_google_query
 from api.core.facebook import fetch_facebook_data
+from api.core.data import create_field_list
 from api.database.models import DataSourceDB
 from api.database.crud import get_data_sources_by_user_id
 from api.models.data import DataSourceInDB
@@ -54,7 +55,9 @@ def table_results(table_name: str):
         error_msg = str(e)
         raise HTTPException(status_code=400, detail=error_msg)
 
-    current_results = CurrentResults(name=table_name, results=results.all(), columns=list(results.keys()))
+    current_results = CurrentResults(
+        name=table_name, results=results.all(), columns=list(results.keys())
+    )
 
     return current_results
 
@@ -72,25 +75,26 @@ def create_new_table(results: CurrentResults = Body(...)):
 def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
     # Reads data source
     account_id = data_source.adAccount.id
-    metrics = [
-        field.value for field in data_source.fields if field.type == FieldType.metric
-    ]
-    dimensions = [
-        field.value for field in data_source.fields if field.type == FieldType.dimension
-    ]
-    fields = metrics + dimensions
+    fields, metrics, dimensions = create_field_list(data_source.fields)
 
     # Builds query depending on the channel type
     if data_source.adAccount.channel == ChannelType.google:
 
-        data_query = build_google_query(fields=fields, start_date=data_source.start_date, end_date=data_source.end_date)
+        data_query = build_google_query(
+            fields=fields,
+            start_date=data_source.start_date,
+            end_date=data_source.end_date,
+        )
         query = GoogleQuery(
-            account_id=account_id, metrics=metrics, dimensions=dimensions, start_date=data_source.start_date, end_date=data_source.end_date
+            account_id=account_id,
+            metrics=metrics,
+            dimensions=dimensions,
+            start_date=data_source.start_date,
+            end_date=data_source.end_date,
         )
         data = fetch_google_query(
             current_user=data_source.user, query=query, data_query=data_query
         )
-        fields = [f.split('.')[-1] for f in fields]
 
     elif data_source.adAccount.channel == ChannelType.facebook:
         query = FacebookQuery(
@@ -129,12 +133,16 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
         session.rollback()
         raise HTTPException(
             status_code=400,
-            detail=f"Could not save data_source_row to databas3e. {e}",
+            detail=f"Could not save data_source_row to database. {e}",
         )
+
+    columns, metrics, dimensions = create_field_list(
+        data_source.fields, use_alt_value=True, split_value=True
+    )
 
     results = CurrentResults(
         name=table_name,
-        columns=fields,
+        columns=columns,
         results=data,
     )
 

@@ -54,6 +54,7 @@ class FieldOption(BaseModel):
     value: str
     label: str
     type: FieldType
+    alt_value: Optional[str] = None
 
 
 class DataSource(BaseModel):

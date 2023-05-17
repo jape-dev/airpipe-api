@@ -28,7 +28,8 @@ def login(request: Request):
     code = request.query_params["code"]
     token = request.query_params["state"]
 
-    redirect_uri = f"https://api-airpipe.com/connector/facebook/login/"
+    redirect_uri = f"{DOMAIN_URL}/connector/facebook/login/"
+    redirect_uri = redirect_uri.replace("www.", "")
     auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={FB_CLIENT_SECRET}"
 
     # Save the access token to the user's database.
