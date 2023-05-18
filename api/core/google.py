@@ -113,6 +113,16 @@ def fetch_google_query(
                         ]
                     except BaseException as e:
                         print(e)
+                elif dimension_components[0] == "ad_group_ad":
+                    dimension_name = dimension.replace("ad_group_ad.ad.", "")
+                    dimension_name = underscore_to_camel_case(dimension_name)
+
+                    try:
+                        data_row[dimension.replace("ad_group_ad.ad.", "")] = row["ad_group_ad"]["ad"][
+                            dimension_name
+                        ]
+                    except BaseException as e:
+                        print(e)
                 elif dimension_components[0] == "campaign":
                     dimension_name = dimension.replace("campaign.", "")
                     dimension_name = underscore_to_camel_case(dimension_name)
@@ -128,7 +138,5 @@ def fetch_google_query(
                     )
 
             data.append(data_row)
-
-    print("Data", data)
 
     return data
