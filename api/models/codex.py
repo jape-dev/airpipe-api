@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 
 class Completion(BaseModel):
@@ -7,12 +7,11 @@ class Completion(BaseModel):
 
 
 class Prompt(BaseModel):
-    prompt: str
+    input: str
     table: str
 
 
 class ChainResult(BaseModel):
-    sql_result: List
-    string_result: str
-    json_result: List
+    result: Optional[List]
     answer: str
+    column_options: Optional[List[str]]
