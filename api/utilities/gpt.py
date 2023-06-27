@@ -4,6 +4,10 @@ import openai
 OPEN_API_KEY = Config.OPEN_API_KEY
 
 
+def create_schema_link():
+    pass
+
+
 def chat_completion(prompt):
 
     openai.api_key = OPEN_API_KEY
