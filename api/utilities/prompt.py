@@ -1,23 +1,16 @@
 import ast
 from typing import List
 
-
-from api.core.static_data import ForeignKeys, ChannelType
-from api.models.data import DataSourceInDB, DataSource
+from api.core.static_data import ChannelType
+from api.models.data import DataSource, DataSourceInDB
 from api.utilities.data import get_table_schema
-
-
-schema_linking_prompt = '''
-Foreign_keys = [course.dept_name = department.dept_name,instructor.dept_name = department.dept_name,section.building = classroom.building,section.room_number = classroom.room_number,section.course_id = course.course_id,teaches.ID = instructor.ID,teaches.course_id = section.course_id,teaches.sec_id = section.sec_id,teaches.semester = section.semester,teaches.year = section.year,student.dept_name = department.dept_name,takes.ID = student.ID,takes.course_id = section.course_id,takes.sec_id = section.sec_id,takes.semester = section.semester,takes.year = section.year,advisor.s_ID = student.ID,advisor.i_ID = instructor.ID,prereq.prereq_id = course.course_id,prereq.course_id = course.course_id]
-Q: "Find the buildings which have rooms with capacity more than 50."
-A: Let’s think step by step. In the question "Find the buildings which have rooms with capacity more than 50.", we are asked:
-"the buildings which have rooms" so we need column = [classroom.capacity]
-"rooms with capacity" so we need column = [classroom.building]
-Based on the columns and tables, we need these Foreign_keys = [].
-Based on the tables, columns, and Foreign_keys, The set of possible cell values are = [50]. So the Schema_links are:
-Schema_links: [classroom.building,classroom.capacity,50]
-'''
-
+from api.utilities.din import (
+    schema_linking_prompt,
+    classification_prompt,
+    easy_prompt,
+    medium_prompt,
+    hard_prompt,
+)
 
 
 def get_missing_column_prompt(table_info, dialect, input):
@@ -69,39 +62,183 @@ def extract_columns(completion: str) -> List[str]:
     return columns
 
 
-def get_table_info(table_name: str) -> str:
+def get_table_info(tables: List[str]) -> str:
     """
     Get the table schema
 
     Args:
-        table_name (str): The name of the table 
+        table_name (str): The name of the table
 
     Returns:
         str: The table schema
 
     """
-    columns = get_table_schema(table_name)
-    return f"Table {table_name}, columns = [*, {', '.join(columns)}]"
+    table_info = ""
+    for table in tables:
+        columns = get_table_schema(table)
+        table_line = f"Table {table}, columns = [*, {', '.join(columns)}]\n"
+        table_info += table_line
+    return table_info
 
 
-def get_foreign_keys(tables: List[DataSource]) -> str:
+def get_foreign_keys(tables: List[DataSourceInDB]) -> str:
 
     facebook_fields = []
     google_fields = []
     # get all the columns from each table.
     if len(tables) > 1:
         for table in tables:
-            channel = table.adAccount.channel
+            channel = table.channel
             fields = table.fields
             for field in fields:
                 if field.label == "Date":
-                    if channel == ChannelType.facebook:
+                    if channel == "facebook":
                         facebook_fields.append(field.value)
-                    elif channel == ChannelType.google:
+                    elif channel == "google":
                         google_fields.append(field.value)
+
+    print(facebook_fields)
+    print(google_fields)
 
     # Create a string for foreign keys facebook.fields == google.fields
     if len(facebook_fields) > 0 and len(google_fields) > 0:
         return f"[{facebook_fields[0]} == {google_fields[0]}]"
     else:
-        return None
+        return "[]"
+
+
+def schema_linking_prompt_maker(
+    question: str, tables: List[str], data_sources: List[DataSourceInDB]
+):
+    """
+    Generates a prompt for schema linking based on a question, table name, and data sources.
+
+    Args:
+        question (str): The question for which the schema linking prompt is generated.
+        table_name (str): The name of the table.
+        data_sources (List[DataSource]): A list of data sources.
+
+    Returns:
+        str: The generated prompt for schema linking.
+
+    """
+    instruction = "# Find the schema_links for generating SQL queries for each question based on the database schema and Foreign keys.\n"
+    fields = get_table_info(tables)
+    foreign_keys = "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
+    prompt = (
+        instruction
+        + schema_linking_prompt
+        + fields
+        + foreign_keys
+        + 'Q: "'
+        + question
+        + """"\nA: Let’s think step by step."""
+    )
+
+    return prompt
+
+
+def classification_prompt_maker(
+    question: str,
+    tables: List[str],
+    data_sources: List[DataSourceInDB],
+    schema_links: str,
+):
+    instruction = "# For the given question, classify it as EASY, NON-NESTED, or NESTED based on nested queries and JOIN.\n"
+    instruction += "\nif need nested queries: predict NESTED\n"
+    instruction += "elif need JOIN and don't need nested queries: predict NON-NESTED\n"
+    instruction += (
+        "elif don't need JOIN and don't need nested queries: predict EASY\n\n"
+    )
+    fields = get_table_info(tables)
+    fields += "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
+    fields += get_table_info(tables)
+    fields += "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
+    fields += "\n"
+    prompt = (
+        instruction
+        + fields
+        + classification_prompt
+        + 'Q: "'
+        + question
+        + "\nschema_links: "
+        + schema_links
+        + "\nA: Let’s think step by step."
+    )
+
+    return prompt
+
+
+def hard_prompt_maker(
+    question: str,
+    tables: List[str],
+    data_sources: List[DataSourceInDB],
+    schema_links: str,
+    sub_questions: str,
+):
+    instruction = "# Use the intermediate representation and the schema links to generate the SQL queries for each of the questions.\n"
+    # fields = get_table_info("college_2")
+    # fields += "Foreign_keys = " + get_foreign_keys("college_2") + "\n"
+    fields = get_table_info(tables)
+    fields += "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
+    stepping = f"""\nA: Let's think step by step. "{question}" can be solved by knowing the answer to the following sub-question "{sub_questions}"."""
+    fields += "\n"
+    prompt = (
+        instruction
+        + fields
+        + hard_prompt
+        + 'Q: "'
+        + question
+        + '"'
+        + "\nschema_links: "
+        + schema_links
+        + stepping
+        + '\nThe SQL query for the sub-question"'
+    )
+
+    return prompt
+
+
+def medium_prompt_maker(
+    question: str,
+    tables: List[str],
+    data_sources: List[DataSourceInDB],
+    schema_links: str,
+):
+    instruction = "# Use the the schema links and Intermediate_representation to generate the SQL queries for each of the questions.\n"
+    # fields = get_table_info("college_2")
+    # fields += "Foreign_keys = " + get_foreign_keys("college_2") + "\n"
+    fields = get_table_info(tables)
+    fields += "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
+    fields += "\n"
+    prompt = (
+        instruction
+        + fields
+        + medium_prompt
+        + 'Q: "'
+        + question
+        + "\nSchema_links: "
+        + schema_links
+        + "\nA: Let’s think step by step."
+    )
+
+    return prompt
+
+
+def easy_prompt_maker(question: str, tables: List[str], schema_links: str):
+    instruction = "# Use the the schema links to generate the SQL queries for each of the questions.\n"
+    fields = get_table_info(tables)
+    fields += get_table_info(question)
+    fields += "\n"
+    prompt = (
+        instruction
+        + fields
+        + easy_prompt
+        + 'Q: "'
+        + question
+        + "\nSchema_links: "
+        + schema_links
+        + "\nSQL:"
+    )
+
+    return prompt

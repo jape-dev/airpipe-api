@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 import openai
-from typing import Optional
+from typing import List
+import time
 
 from langchain.sql_database import SQLDatabase
 from langchain.llms.openai import OpenAI
@@ -8,6 +9,7 @@ from langchain.chains import SQLDatabaseChain
 
 from api.config import Config
 from api.models.codex import Prompt, ChainResult
+from api.models.data import DataSourceInDB
 from api.utilities.string import remove_decimal
 from api.utilities.data import tuples_to_recharts_dict
 from api.utilities.prompt import (
@@ -15,7 +17,14 @@ from api.utilities.prompt import (
     get_ambiguity_prompt,
     extract_columns,
 )
-from api.utilities.gpt import chat_completion
+from api.utilities.gpt import chat_completion, din_completion
+from api.utilities.prompt import (
+    schema_linking_prompt_maker,
+    classification_prompt_maker,
+    easy_prompt_maker,
+    medium_prompt_maker,
+    hard_prompt_maker,
+)
 
 
 OPEN_API_KEY = Config.OPEN_API_KEY
@@ -108,3 +117,101 @@ def chart_type(input: str) -> str:
     completion = response.choices[0].message["content"]
 
     return completion
+
+
+@router.post("/din_sql", status_code=200)
+def din_sql(
+    question: str, tables: List[str], data_sources: List[DataSourceInDB]
+) -> str:
+    print("endpoint being called")
+
+    # schema_links = None
+    # while schema_links is None:
+    # print("looping in schema links")
+    # try:
+    prompt = schema_linking_prompt_maker(question, tables, data_sources)
+    print(prompt)
+    schema_links = din_completion(prompt)
+    print("schema_links: ", schema_links)
+    # except BaseException as e:
+    #     print(e)
+    #     time.sleep(3)
+    #     pass
+
+    return schema_links
+
+    # try:
+    #     schema_links = schema_links.split("Schema_links: ")[1]
+    # except BaseException:
+    #     print("Slicing error for the schema_linking module")
+    #     schema_links = "[]"
+
+    # classification = None
+    # while classification is None:
+    #     print("looping in classification")
+    #     try:
+    #         classification = din_completion(
+    #             classification_prompt_maker(
+    #                 question, tables, data_sources, schema_links[1:]
+    #             )
+    #         )
+    #         print("classification: ", classification)
+    #     except BaseException:
+    #         time.sleep(3)
+    #         pass
+
+    # try:
+    #     predicted_class = classification.split("Label: ")[1]
+    # except BaseException:
+    #     print("Slicing error for the classification module")
+    #     predicted_class = '"NESTED"'
+
+    # if '"EASY"' in predicted_class:
+    #     print("EASY")
+    #     SQL = None
+    #     while SQL is None:
+    #         try:
+    #             SQL = din_completion(easy_prompt_maker(question, tables, schema_links))
+    #         except BaseException:
+    #             time.sleep(3)
+    #             pass
+    # elif '"NON-NESTED"' in predicted_class:
+    #     print("NON-NESTED")
+    #     SQL = None
+    #     while SQL is None:
+    #         try:
+    #             SQL = din_completion(
+    #                 medium_prompt_maker(
+    #                     question, tables, data_sources, schema_links[1:]
+    #                 )
+    #             )
+    #         except BaseException:
+    #             time.sleep(3)
+    #             pass
+    #     try:
+    #         SQL = SQL.split("SQL: ")[1]
+    #     except BaseException:
+    #         print("SQL slicing error")
+    #         SQL = "SELECT"
+    # else:
+    #     sub_questions = classification.split('questions = ["')[1].split('"]')[0]
+    #     print("NESTED")
+    #     SQL = None
+    #     while SQL is None:
+    #         try:
+    #             SQL = din_completion(
+    #                 hard_prompt_maker(
+    #                     question, tables, data_sources, schema_links[1:], sub_questions
+    #                 )
+    #             )
+    #         except BaseException:
+    #             time.sleep(3)
+    #             pass
+    #     try:
+    #         SQL = SQL.split("SQL: ")[1]
+    #     except BaseException:
+    #         print("SQL slicing error")
+    #         SQL = "SELECT"
+    # print(SQL)
+
+    # return SQL
