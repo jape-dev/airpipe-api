@@ -8,7 +8,7 @@ class Completion(BaseModel):
 
 class Prompt(BaseModel):
     input: str
-    table: str
+    tables: List[str]
 
 
 class ChainResult(BaseModel):

@@ -37,6 +37,7 @@ class CurrentResults(BaseModel):
 
 
 class QueryResults(BaseModel):
+    columns: List[str]
     results: List
 
     class Config:

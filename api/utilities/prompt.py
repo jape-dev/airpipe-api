@@ -62,7 +62,7 @@ def extract_columns(completion: str) -> List[str]:
     return columns
 
 
-def get_table_info(tables: List[str]) -> str:
+def get_table_info(tables: List[DataSourceInDB]) -> str:
     """
     Get the table schema
 
@@ -75,30 +75,32 @@ def get_table_info(tables: List[str]) -> str:
     """
     table_info = ""
     for table in tables:
-        columns = get_table_schema(table)
-        table_line = f"Table {table}, columns = [*, {', '.join(columns)}]\n"
+        table_name = table.table_name
+        columns = get_table_schema(table_name)
+        table_line = f"Table {table_name}, columns = [*, {', '.join(columns)}]\n"
         table_info += table_line
     return table_info
 
 
 def get_foreign_keys(tables: List[DataSourceInDB]) -> str:
-
     facebook_fields = []
     google_fields = []
     # get all the columns from each table.
+    # Need to use the field list here.
     if len(tables) > 1:
         for table in tables:
             channel = table.channel
             fields = table.fields
+            fields = fields.split(",")
             for field in fields:
-                if field.label == "Date":
+                if field in ["date", "segments.date"]:
                     if channel == "facebook":
-                        facebook_fields.append(field.value)
+                        table_field = f"{table.table_name}.{field}"
+                        facebook_fields.append(table_field)
                     elif channel == "google":
-                        google_fields.append(field.value)
-
-    print(facebook_fields)
-    print(google_fields)
+                        field = field.split(".")[-1]
+                        table_field = f"{table.table_name}.{field}"
+                        google_fields.append(table_field)
 
     # Create a string for foreign keys facebook.fields == google.fields
     if len(facebook_fields) > 0 and len(google_fields) > 0:
@@ -107,9 +109,7 @@ def get_foreign_keys(tables: List[DataSourceInDB]) -> str:
         return "[]"
 
 
-def schema_linking_prompt_maker(
-    question: str, tables: List[str], data_sources: List[DataSourceInDB]
-):
+def schema_linking_prompt_maker(question: str, data_sources: List[DataSourceInDB]):
     """
     Generates a prompt for schema linking based on a question, table name, and data sources.
 
@@ -123,7 +123,7 @@ def schema_linking_prompt_maker(
 
     """
     instruction = "# Find the schema_links for generating SQL queries for each question based on the database schema and Foreign keys.\n"
-    fields = get_table_info(tables)
+    fields = get_table_info(data_sources)
     foreign_keys = "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
     prompt = (
         instruction
@@ -140,7 +140,6 @@ def schema_linking_prompt_maker(
 
 def classification_prompt_maker(
     question: str,
-    tables: List[str],
     data_sources: List[DataSourceInDB],
     schema_links: str,
 ):
@@ -150,9 +149,7 @@ def classification_prompt_maker(
     instruction += (
         "elif don't need JOIN and don't need nested queries: predict EASY\n\n"
     )
-    fields = get_table_info(tables)
-    fields += "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
-    fields += get_table_info(tables)
+    fields = get_table_info(data_sources)
     fields += "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
     fields += "\n"
     prompt = (
@@ -171,15 +168,12 @@ def classification_prompt_maker(
 
 def hard_prompt_maker(
     question: str,
-    tables: List[str],
     data_sources: List[DataSourceInDB],
     schema_links: str,
     sub_questions: str,
 ):
     instruction = "# Use the intermediate representation and the schema links to generate the SQL queries for each of the questions.\n"
-    # fields = get_table_info("college_2")
-    # fields += "Foreign_keys = " + get_foreign_keys("college_2") + "\n"
-    fields = get_table_info(tables)
+    fields = get_table_info(data_sources)
     fields += "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
     stepping = f"""\nA: Let's think step by step. "{question}" can be solved by knowing the answer to the following sub-question "{sub_questions}"."""
     fields += "\n"
@@ -201,14 +195,11 @@ def hard_prompt_maker(
 
 def medium_prompt_maker(
     question: str,
-    tables: List[str],
     data_sources: List[DataSourceInDB],
     schema_links: str,
 ):
     instruction = "# Use the the schema links and Intermediate_representation to generate the SQL queries for each of the questions.\n"
-    # fields = get_table_info("college_2")
-    # fields += "Foreign_keys = " + get_foreign_keys("college_2") + "\n"
-    fields = get_table_info(tables)
+    fields = get_table_info(data_sources)
     fields += "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
     fields += "\n"
     prompt = (
@@ -225,10 +216,11 @@ def medium_prompt_maker(
     return prompt
 
 
-def easy_prompt_maker(question: str, tables: List[str], schema_links: str):
+def easy_prompt_maker(
+    question: str, data_sources: List[DataSourceInDB], schema_links: str
+):
     instruction = "# Use the the schema links to generate the SQL queries for each of the questions.\n"
-    fields = get_table_info(tables)
-    fields += get_table_info(question)
+    fields = get_table_info(data_sources)
     fields += "\n"
     prompt = (
         instruction
