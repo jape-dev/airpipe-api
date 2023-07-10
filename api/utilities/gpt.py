@@ -1,7 +1,10 @@
 from api.config import Config
 import openai
+from langchain.memory import PostgresChatMessageHistory
+
 
 OPEN_API_KEY = Config.OPEN_API_KEY
+DATABASE_URL = Config.DATABASE_URL
 
 
 def create_schema_link():
@@ -47,3 +50,12 @@ def din_completion(prompt):
     )
 
     return response["choices"][0]["message"]["content"]
+
+
+def get_message_history(session_id: str) -> PostgresChatMessageHistory:
+    history = PostgresChatMessageHistory(
+        connection_string=DATABASE_URL,
+        session_id=session_id,
+    )
+
+    return history

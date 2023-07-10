@@ -382,3 +382,42 @@ Intermediate_representation: select course.title , course.credits from classroom
 SQL: SELECT T3.title ,  T3.credits FROM classroom AS T1 LEFT JOIN SECTION AS T2 ON T1.building  =  T2.building AND T1.room_number  =  T2.room_number LEFT JOIN course AS T3 ON T2.course_id  =  T3.course_id WHERE T1.capacity  =  (SELECT max(capacity) FROM classroom)
 
 """
+
+
+ambiguity_prompt = """Table advisor, columns = [*,ID, s_ID,i_ID]
+Table classroom, columns = [*,building,room_number,capacity]
+Table course, columns = [*,course_id,title,dept_name,credits]
+Table department, columns = [*,dept_name,building,budget]
+Table instructor, columns = [*,ID,name,dept_name,salary]
+Table prereq, columns = [*,course_id,prereq_id]
+Table section, columns = [*,course_id,sec_id,semester,year,building,room_number,time_slot_id]
+Table student, columns = [*,ID,name,dept_name,tot_cred]
+Table takes, columns = [*,ID,course_id,sec_id,semester,year,grade]
+Table teaches, columns = [*,ID,course_id,sec_id,semester,year]
+Table time_slot, columns = [*,time_slot_id,day,start_hr,start_min,end_hr,end_min]
+Foreign_keys = [course.dept_name = department.dept_name,instructor.dept_name = department.dept_name,section.building = classroom.building,section.room_number = classroom.room_number,section.course_id = course.course_id,teaches.ID = instructor.ID,teaches.course_id = section.course_id,teaches.sec_id = section.sec_id,teaches.semester = section.semester,teaches.year = section.year,student.dept_name = department.dept_name,takes.ID = student.ID,takes.course_id = section.course_id,takes.sec_id = section.sec_id,takes.semester = section.semester,takes.year = section.year,advisor.s_ID = student.ID,advisor.i_ID = instructor.ID,prereq.prereq_id = course.course_id,prereq.course_id = course.course_id]
+
+Q: "What is the total number of people who work in the engineering department"
+A: Let’s think step by step. In the question "What is the total number of people who work in the engineering department", we are asked:
+"the total number of people" which could be columns [instructor.ID] or [student.ID]
+Ambiguity: By "total number of people" are you referring to [instructor.ID] or [student.ID] ?
+
+Q: "What is the total number of students who studied engineering"
+A: Let’s think step by step. In the question "What is the total number of students who studied engineering", we are asked:
+"the total number of students" so we need column = [student.ID]
+"who studied engineering", which could be columns [course.title] or [department.dept_name]
+Ambiguity: By "who studied engineering" are you referring to [course.title] or [department.dept_name] ?
+
+Q: "What is the total number of advisers that advise more than 10 people"
+A: Let’s think step by step. In the question "What is the total number of advisers that advise more than 10 people", we are asked:
+"the total number of advisers" so we need column = [advisor.ID]
+"advise more than 10 people", which could be columns [advisor.s_ID] or [adviser.i_ID]
+Ambiguity: By "advise more than 10 people" are you referring to [advisor.s_ID] or [adviser.i_ID] ?
+
+Q: "Find the buildings which have rooms with capacity more than 50."
+A: Let’s think step by step. In the question "Find the buildings which have rooms with capacity more than 50.", we are asked:
+"the buildings which have rooms" so we need column = [classroom.capacity]
+"rooms with capacity" so we need column = [classroom.building]
+Ambiguity: ""
+
+"""
