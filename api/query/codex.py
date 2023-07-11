@@ -137,7 +137,6 @@ def schema_links(question: str, data_sources: List[DataSourceInDB]) -> str:
 def ambiguity_checker(
     input: str, data_sources: List[DataSourceInDB], session_id: str
 ) -> str:
-
     history = get_message_history(session_id)
     messages = history.messages
 
@@ -209,75 +208,8 @@ def ambiguity_checker(
 
 
 @router.post("/handle_ambiguity_columns", status_code=200)
-def ambiguity_checker(
-    input: str, data_sources: List[DataSourceInDB], session_id: str
-) -> str:
+def ambiguity_checker(input: str, data_sources: List[DataSourceInDB]) -> str:
+    prompt = ambiguity_prompt_maker(input, data_sources)
+    guide = din_completion(prompt)
 
-    history = get_message_history(session_id)
-    messages = history.messages
-
-    if len(messages) == 0:
-        history.add_user_message(input)
-        prompt = schema_linking_prompt_maker(input, data_sources)
-        schema_links = din_completion(prompt)
-        tables_names = [ds.table_name for ds in data_sources]
-        db = SQLDatabase.from_uri(DATABASE_URL, include_tables=tables_names)
-        table_info = db.table_info
-        prompt = ambiguity_prompt_maker(table_info, input, schema_links)
-        guide = din_completion(prompt)
-
-    else:
-        # Okay so now memory works - need to find an exit point
-        prompt = schema_linking_prompt_maker(messages[0].content, data_sources)
-        schema_links = din_completion(prompt)
-        tables_names = [ds.table_name for ds in data_sources]
-        db = SQLDatabase.from_uri(DATABASE_URL, include_tables=tables_names)
-        table_info = db.table_info
-
-        prefix = f"""
-        You are a helpful AI SQL analyst having a conversaion with a human that guides the user to refine their question based on available
-        tables and columns:
-
-        {table_info}
-
-        and schema_links: {schema_links}
-
-        """
-
-        template = (
-            prefix
-            + """
-        The conversation so far:
-        {chat_history}
-        Human: {human_input}
-
-        Given the user's original question, ask the user to clairfy what they mean
-        in order to select the right schema_link. This includes any ambiguous column names.
-
-        Return the question in the format:
-
-        Clarification: clarification question here
-
-        If it is already clear what the schema_link needs to be used. Just return 
-        Clarification: complete
-
-        """
-        )
-
-        prompt = PromptTemplate(
-            input_variables=["chat_history", "human_input"],
-            template=template,
-        )
-        memory = ConversationBufferMemory(memory_key="chat_history", history=history)
-
-        llm_chain = LLMChain(
-            llm=OpenAI(temperature=0, openai_api_key=OPEN_API_KEY),
-            verbose=True,
-            prompt=prompt,
-            memory=memory,
-        )
-        guide = llm_chain.predict(human_input=input)
-        history.add_user_message(input)
-
-    history.add_ai_message(guide)
     return guide
