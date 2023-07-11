@@ -24,7 +24,6 @@ from starlette.responses import RedirectResponse
 
 from google.analytics.admin import AnalyticsAdminServiceClient
 
-
 # #  C:\repos\vizo-api\api\utilities\google\airpipe-378522-ed48c2ad4a0d.json
 
 
@@ -37,25 +36,26 @@ filename = str(p.absolute())
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = filename
 
 
-
-
-
 router = APIRouter(prefix="/google-analytics")
+
 
 @router.get("/ad_accounts", response_model=List[AdAccount])
 def ad_accounts(token: str):
     current_user: User = get_current_user(token)
-    try:
-        client = AnalyticsAdminServiceClient()
-        print(client)
-        ad_accounts = []
-        results = client.list_accounts()
-        for account in results:
-            print("Google Analytics Account: ", account)
+    client = AnalyticsAdminServiceClient()
+    ad_accounts = []
+    results = client.list_accounts()
+    for account in results:
+        id = account.name.replace("accounts/", "")
+        ad_accounts.append(
+            AdAccount(
+                id=id,
+                channel=ChannelType.google_analytics,
+                img="google-analytics-icon",
+            )
+        )
 
-        return ad_accounts
-    except Exception as ex:
-        handleGoogleTokenException(ex, current_user)
+    return ad_accounts
 
 
 def handleGoogleTokenException(ex, current_user: User):
