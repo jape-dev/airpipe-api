@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 import openai
 from typing import List
+import re
 
 from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
@@ -9,7 +10,7 @@ from langchain.llms.openai import OpenAI
 from langchain.chains import SQLDatabaseChain
 
 from api.config import Config
-from api.models.codex import Prompt, ChainResult
+from api.models.codex import Prompt, ChainResult, AmbiguousColumns
 from api.models.data import DataSourceInDB
 from api.utilities.gpt import get_message_history
 from api.utilities.string import remove_decimal
@@ -207,9 +208,26 @@ def ambiguity_checker(
     return guide
 
 
-@router.post("/handle_ambiguity_columns", status_code=200)
-def ambiguity_checker(input: str, data_sources: List[DataSourceInDB]) -> str:
+@router.post("/check_ambiguous_columns", status_code=200)
+def check_ambiguous_columns(
+    input: str, data_sources: List[DataSourceInDB]
+) -> AmbiguousColumns:
     prompt = ambiguity_prompt_maker(input, data_sources)
-    guide = din_completion(prompt)
+    ambiguities = din_completion(prompt)
 
-    return guide
+    try:
+        ambiguities = ambiguities.split("Ambiguity: ")[1]
+    except BaseException:
+        print("Slicing error for the ambiguity module")
+        ambiguities = "[]"
+
+    if ambiguities == "":
+        return None
+    else:
+        term = re.findall(r'"([^"]*)"', ambiguities)
+        columns = re.findall(r"\[(.*?)\]", ambiguities)
+        ambigious_columns = AmbiguousColumns(
+            statement=ambiguities, term=term, columns=columns
+        )
+
+    return ambigious_columns

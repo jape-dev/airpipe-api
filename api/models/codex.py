@@ -15,3 +15,9 @@ class ChainResult(BaseModel):
     result: Optional[List]
     answer: str
     column_options: Optional[List[str]]
+
+
+class AmbiguousColumns(BaseModel):
+    statement: str
+    term: List
+    columns: List
