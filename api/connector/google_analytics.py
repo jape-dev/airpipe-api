@@ -23,6 +23,7 @@ from pathlib import Path
 from starlette.responses import RedirectResponse
 
 from google.analytics.admin import AnalyticsAdminServiceClient
+from google.analytics.admin_v1alpha.types import ListPropertiesRequest
 
 # #  C:\repos\vizo-api\api\utilities\google\airpipe-378522-ed48c2ad4a0d.json
 
@@ -47,13 +48,24 @@ def ad_accounts(token: str):
     results = client.list_accounts()
     for account in results:
         id = account.name.replace("accounts/", "")
-        ad_accounts.append(
-            AdAccount(
-                id=id,
-                channel=ChannelType.google_analytics,
-                img="google-analytics-icon",
+        properties = client.list_properties(ListPropertiesRequest(filter=f"parent:accounts/{id}", show_deleted=False))
+        for property_ in properties:
+            print(property_, "\n\n")
+            property_id = property_.name.replace("properties/", "")
+            name = property_.display_name.replace("display_name:", "")
+            ad_accounts.append(
+                AdAccount(
+                    id=property_id, 
+                    account_id=id,
+                    channel=ChannelType.google_analytics,
+                    name=name,
+                    img="google-analytics-icon",
+                )
             )
-        )
+        
+
+    #my property id - 365962034
+
 
     return ad_accounts
 
