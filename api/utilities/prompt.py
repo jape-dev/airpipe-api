@@ -12,6 +12,7 @@ from api.utilities.din import (
     hard_prompt,
     column_ambiguity_prompt,
     update_question_prompt,
+    join_type_ambiguity_prompt,
 )
 
 
@@ -320,7 +321,7 @@ def join_type_ambiguity_prompt_maker(question: str, data_sources: List[DataSourc
     foreign_keys = "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
     prompt = (
         instruction
-        + column_ambiguity_prompt
+        + join_type_ambiguity_prompt
         + fields
         + foreign_keys
         + 'Q: "'

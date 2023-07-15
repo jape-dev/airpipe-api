@@ -444,43 +444,58 @@ Ambiguities: None
 """
 
 
-update_question_prompt = """Table advisor, columns = [*,ID, s_ID,i_ID]
-Table classroom, columns = [*,building,room_number,capacity]
-Table course, columns = [*,course_id,title,dept_name,credits]
-Table department, columns = [*,dept_name,building,budget]
-Table instructor, columns = [*,ID,name,dept_name,salary]
-Table prereq, columns = [*,course_id,prereq_id]
-Table section, columns = [*,course_id,sec_id,semester,year,building,room_number,time_slot_id]
-Table student, columns = [*,ID,name,dept_name,tot_cred]
-Table takes, columns = [*,ID,course_id,sec_id,semester,year,grade]
-Table teaches, columns = [*,ID,course_id,sec_id,semester,year]
-Table time_slot, columns = [*,time_slot_id,day,start_hr,start_min,end_hr,end_min]
-Foreign_keys = [course.dept_name = department.dept_name,instructor.dept_name = department.dept_name,section.building = classroom.building,section.room_number = classroom.room_number,section.course_id = course.course_id,teaches.ID = instructor.ID,teaches.course_id = section.course_id,teaches.sec_id = section.sec_id,teaches.semester = section.semester,teaches.year = section.year,student.dept_name = department.dept_name,takes.ID = student.ID,takes.course_id = section.course_id,takes.sec_id = section.sec_id,takes.semester = section.semester,takes.year = section.year,advisor.s_ID = student.ID,advisor.i_ID = instructor.ID,prereq.prereq_id = course.course_id,prereq.course_id = course.course_id]
+# update_question_prompt = """Table advisor, columns = [*,ID, s_ID,i_ID]
+# Table classroom, columns = [*,building,room_number,capacity]
+# Table course, columns = [*,course_id,title,dept_name,credits]
+# Table department, columns = [*,dept_name,building,budget]
+# Table instructor, columns = [*,ID,name,dept_name,salary]
+# Table prereq, columns = [*,course_id,prereq_id]
+# Table section, columns = [*,course_id,sec_id,semester,year,building,room_number,time_slot_id]
+# Table student, columns = [*,ID,name,dept_name,tot_cred]
+# Table takes, columns = [*,ID,course_id,sec_id,semester,year,grade]
+# Table teaches, columns = [*,ID,course_id,sec_id,semester,year]
+# Table time_slot, columns = [*,time_slot_id,day,start_hr,start_min,end_hr,end_min]
+# Foreign_keys = [course.dept_name = department.dept_name,instructor.dept_name = department.dept_name,section.building = classroom.building,section.room_number = classroom.room_number,section.course_id = course.course_id,teaches.ID = instructor.ID,teaches.course_id = section.course_id,teaches.sec_id = section.sec_id,teaches.semester = section.semester,teaches.year = section.year,student.dept_name = department.dept_name,takes.ID = student.ID,takes.course_id = section.course_id,takes.sec_id = section.sec_id,takes.semester = section.semester,takes.year = section.year,advisor.s_ID = student.ID,advisor.i_ID = instructor.ID,prereq.prereq_id = course.course_id,prereq.course_id = course.course_id]
 
-Given the original question: "What is the total number of people who work in the engineering department"
-And the AI's clarification question: By "total number of people" are you referring to [instructor.ID] or [student.ID] ?
-To which the user responded: Both
-The updated question is: What is the distinct count of instructor.ID and student.ID who work in the engineering department"
+# Given the original question: "What is the total number of people who work in the engineering department"
+# And the AI's clarification question: By "total number of people" are you referring to [instructor.ID] or [student.ID] ?
+# To which the user responded: Both
+# The updated question is: What is the distinct count of instructor.ID and student.ID who work in the engineering department"
 
-Given the original question: "What is the total number of students who studied engineering"
-And the AI's clarification question: By "who studied engineering" are you referring to [course.title] or [department.dept_name] ?
-To which the user responded: [course.title]
-The updated question is: What is the total number of students who have a course.title as 'Engineering'
+# Given the original question: "What is the total number of students who studied engineering"
+# And the AI's clarification question: By "who studied engineering" are you referring to [course.title] or [department.dept_name] ?
+# To which the user responded: [course.title]
+# The updated question is: What is the total number of students who have a course.title as 'Engineering'
 
-Given the original question: "What is the total number of advisers that advise more than 10 people"
-And the AI's clarification question: By "advise more than 10 people" are you referring to [advisor.s_ID] or [adviser.i_ID] ?
-To which the user responded: [advisor.s_ID]
-The updated question is: What is the total number of advisers that advise more than 10 [advisor.s_ID]
+# Given the original question: "What is the total number of advisers that advise more than 10 people"
+# And the AI's clarification question: By "advise more than 10 people" are you referring to [advisor.s_ID] or [adviser.i_ID] ?
+# To which the user responded: [advisor.s_ID]
+# The updated question is: What is the total number of advisers that advise more than 10 [advisor.s_ID]
 
-"""
+# """
 
-update_question_prompt_2 = """Table Facebook, columns = [*,clicks,impressions,date]
+update_question_prompt = """Table Facebook, columns = [*,clicks,impressions,date]
 Table Google, columns = [*,clicks,impressions,date]
 Foreign_keys = [Facebook.date = Google.date]
 
 Given the original question: "What are the clicks for each date?"
-And the AI's clarification question: By "advise more than 10 people" are you referring to [advisor.s_ID] or [adviser.i_ID] ?
-To which the user responded: [advisor.s_ID]
-The updated question is: What is the total number of advisers that advise more than 10 [advisor.s_ID]
+And the AI's clarification question: By "the clicks for each date" are you referring to Facebook.clicks or Google.clicks? And by "for each date" are you referring to Facebook.date or Google.date?
+To which the user responded: both sets of clicks and both dates 
+The updated question is: What are the [Facebook.clicks] and [Google.clicks] for each [Facebook.date] or [Google.date]?
+
+Given the original question: "What are the clicks for each date?"
+And the AI's clarification question: By "the clicks for each date" are you referring to [Facebook.clicks] or [Google.clicks]? And by "for each date" are you referring to [Facebook.date] or [Google.date]?
+To which the user responded: Facebook.clicks and Facebook.date
+The updated question is: What are the [Facebook.clicks] for each [Facebook.date] ?
+
+Given the original question: "What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date ?"
+And the AI's clarification question: By "for each Facebook.date or Google.date" do you only want to see clicks where the date matches for Google and Facebook, or clicks on all dates?
+To which the user responded: only where date matches
+The updated question is: What are the Facebook.clicks and Google.clicks where Facebook.date = Google.date ?
+
+Given the original question: "What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date ?"
+And the AI's clarification question: By "for each Facebook.date or Google.date" do you only want to see clicks where the date matches for Google and Facebook, or clicks on all dates?
+To which the user responded: on all dates
+The updated question is: What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date using a FULL OUTER JOIN ?
 
 """

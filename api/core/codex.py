@@ -134,6 +134,7 @@ def debug_agent(question: str, sql: str, data_sources: List[DataSourceInDB]) -> 
 def update_question(question: str, statement: str, answer: str):
     prompt = update_question_prompt_maker(question, statement, answer)
     updated_question = din_completion(prompt)
+    print("updated question:", updated_question)
 
     return updated_question
 
@@ -187,10 +188,10 @@ def remove_join_type_ambiguities(
         return None
     else:
         term = re.findall(r'"([^"]*)"', ambiguities)
-        ambigious_columns = BaseAmbiguities(
+        ambigious_base = BaseAmbiguities(
             question=input,
             statement=ambiguities,
             term=term,
         )
 
-    return ambigious_columns
+    return ambigious_base
