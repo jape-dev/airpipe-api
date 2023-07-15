@@ -281,7 +281,10 @@ def ambiguity_prompt_maker(question: str, data_sources: List[DataSourceInDB]):
         str: The generated prompt for schema linking.
 
     """
-    instruction = "# Find the ambiguities in column names for generating SQL queries for each question based on the database schema and Foreign keys.\n If ambiguities found, return Ambiguities: ambigious column names. Otherwise return Ambiguities: ""
+    instruction = (
+        "# Find the ambiguities in column names for generating SQL queries for each question based on the database schema and Foreign keys.\n If ambiguities found, return Ambiguities: ambigious column names. Otherwise return Ambiguities: "
+        ""
+    )
     fields = get_table_info(data_sources)
     foreign_keys = "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
     prompt = (
