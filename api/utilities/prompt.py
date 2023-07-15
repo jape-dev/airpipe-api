@@ -314,7 +314,7 @@ def join_type_ambiguity_prompt_maker(question: str, data_sources: List[DataSourc
 
     """
     instruction = (
-        "# Find the ambiguities in join types for generating SQL queries for each question based on the database schema and Foreign keys.\n If ambiguities found, return Ambiguities: the type of join required. Otherwise return Ambiguities: None "
+        "# Find the ambiguities in column names for generating SQL queries for each question based on the database schema and Foreign keys.\n If ambiguities found, return Ambiguities: ambigious column names. Otherwise return Ambiguities: "
         ""
     )
     fields = get_table_info(data_sources)
