@@ -1,6 +1,7 @@
 import datetime
 import openai
-from typing import List
+import re
+from typing import List, Union
 from langchain.agents import initialize_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
@@ -11,6 +12,7 @@ from langchain import PromptTemplate
 
 from api.config import Config
 from api.models.data import DataSourceInDB
+from api.models.codex import AmbiguousColumns, BaseAmbiguities
 from api.utilities.gpt import din_completion
 from api.utilities.prompt import (
     schema_linking_prompt_maker,
@@ -18,6 +20,9 @@ from api.utilities.prompt import (
     easy_prompt_maker,
     medium_prompt_maker,
     hard_prompt_maker,
+    column_ambiguity_prompt_maker,
+    join_type_ambiguity_prompt_maker,
+    update_question_prompt_maker,
 )
 
 DATABASE_URL = Config.DATABASE_URL
@@ -36,6 +41,7 @@ def get_din_sql(question: str, data_sources: List[DataSourceInDB]):
     #
     prompt = classification_prompt_maker(question, data_sources, schema_links[1:])
     classification = din_completion(prompt)
+    print("classification:", classification)
 
     try:
         predicted_class = classification.split("Label: ")[1]
@@ -123,3 +129,69 @@ def debug_agent(question: str, sql: str, data_sources: List[DataSourceInDB]) -> 
     debugged_sql = agent.run(formatted_prompt)
 
     return debugged_sql
+
+
+def update_question(question: str, statement: str, answer: str):
+    prompt = update_question_prompt_maker(question, statement, answer)
+    updated_question = din_completion(prompt)
+    print("updated question:", updated_question)
+
+    return updated_question
+
+
+def remove_column_ambiguities(
+    input: str, data_sources: List[DataSourceInDB]
+) -> Union[AmbiguousColumns, None]:
+
+    prompt = column_ambiguity_prompt_maker(input, data_sources)
+    ambiguities = din_completion(prompt)
+
+    print(ambiguities)
+
+    try:
+        ambiguities = ambiguities.split("Ambiguities: ")[1]
+    except BaseException:
+        print("Slicing error for the ambiguity module")
+        ambiguities = "[]"
+        return None
+
+    if ambiguities == "None":
+        return None
+    else:
+        term = re.findall(r'"([^"]*)"', ambiguities)
+        columns = re.findall(r"\[(.*?)\]", ambiguities)
+        ambigious_columns = AmbiguousColumns(
+            question=input,
+            statement=ambiguities,
+            term=term,
+            columns=columns,
+        )
+
+    return ambigious_columns
+
+
+def remove_join_type_ambiguities(
+    input: str, data_sources: List[DataSourceInDB]
+) -> Union[BaseAmbiguities, None]:
+
+    prompt = join_type_ambiguity_prompt_maker(input, data_sources)
+    ambiguities = din_completion(prompt)
+
+    try:
+        ambiguities = ambiguities.split("Ambiguities: ")[1]
+    except BaseException:
+        print("Slicing error for the ambiguity module")
+        ambiguities = "[]"
+        return None
+
+    if ambiguities == "None":
+        return None
+    else:
+        term = re.findall(r'"([^"]*)"', ambiguities)
+        ambigious_base = BaseAmbiguities(
+            question=input,
+            statement=ambiguities,
+            term=term,
+        )
+
+    return ambigious_base

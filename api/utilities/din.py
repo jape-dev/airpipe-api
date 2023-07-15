@@ -272,34 +272,34 @@ Q: "Find the total number of students and total number of instructors for each d
 Schema_links: [department.dept_name = student.dept_name,student.id,department.dept_name = instructor.dept_name,instructor.id]
 A: Let’s think step by step. For creating the SQL for the given question, we need to join these tables = [department,student,instructor]. First, create an intermediate representation, then use it to construct the SQL query.
 Intermediate_representation: "select count( distinct student.ID) , count( distinct instructor.ID) , department.dept_name from department  group by instructor.dept_name
-SQL: SELECT count(DISTINCT T2.id) ,  count(DISTINCT T3.id) ,  T3.dept_name FROM department AS T1 LEFT JOIN student AS T2 ON T1.dept_name  =  T2.dept_name LEFT JOIN instructor AS T3 ON T1.dept_name  =  T3.dept_name GROUP BY T3.dept_name
+SQL: SELECT count(DISTINCT T2.id) ,  count(DISTINCT T3.id) ,  T3.dept_name FROM department AS T1 LEFT OUTER JOIN student AS T2 ON T1.dept_name  =  T2.dept_name LEFT OUTER JOIN instructor AS T3 ON T1.dept_name  =  T3.dept_name GROUP BY T3.dept_name
 
 Q: "Find the title of courses that have two prerequisites?"
 Schema_links: [course.title,course.course_id = prereq.course_id]
 A: Let’s think step by step. For creating the SQL for the given question, we need to join these tables = [course,prereq]. First, create an intermediate representation, then use it to construct the SQL query.
 Intermediate_representation: select course.title from course  where  count ( prereq.* )  = 2  group by prereq.course_id
-SQL: SELECT T1.title FROM course AS T1 LEFT JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  =  2
+SQL: SELECT T1.title FROM course AS T1 LEFT OUTER JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  =  2
 
 Q: "Find the name of students who took any class in the years of 2009 and 2010."
 Schema_links: [student.name,student.id = takes.id,takes.YEAR,2009,2010]
 A: Let’s think step by step. For creating the SQL for the given question, we need to join these tables = [student,takes]. First, create an intermediate representation, then use it to construct the SQL query.
 Intermediate_representation: select  distinct student.name from student  where  takes.year = 2009  or  takes.year = 2010
-SQL: SELECT DISTINCT T1.name FROM student AS T1 LEFT JOIN takes AS T2 ON T1.id  =  T2.id WHERE T2.YEAR  =  2009 OR T2.YEAR  =  2010
+SQL: SELECT DISTINCT T1.name FROM student AS T1 LEFT OUTER JOIN takes AS T2 ON T1.id  =  T2.id WHERE T2.YEAR  =  2009 OR T2.YEAR  =  2010
 
 Q: "list in alphabetic order all course names and their instructors' names in year 2008."
 Schema_links: [course.title,course.course_id = teaches.course_id,teaches.id = instructor.id,instructor.name,teaches.year,2008]
 A: Let’s think step by step. For creating the SQL for the given question, we need to join these tables = [course,teaches,instructor]. First, create an intermediate representation, then use it to construct the SQL query.
 Intermediate_representation: select course.title , instructor.name from course  where  teaches.year = 2008  order by course.title asc
-SQL: SELECT T1.title ,  T3.name FROM course AS T1 LEFT JOIN teaches AS T2 ON T1.course_id  =  T2.course_id LEFT JOIN instructor AS T3 ON T2.id  =  T3.id WHERE T2.YEAR  =  2008 ORDER BY T1.title
+SQL: SELECT T1.title ,  T3.name FROM course AS T1 LEFT OUTER JOIN teaches AS T2 ON T1.course_id  =  T2.course_id LEFT OUTER JOIN instructor AS T3 ON T2.id  =  T3.id WHERE T2.YEAR  =  2008 ORDER BY T1.title
 
 """
 hard_prompt = """Q: "Find the title of courses that have two prerequisites?"
 Schema_links: [course.title,course.course_id = prereq.course_id]
 A: Let's think step by step. "Find the title of courses that have two prerequisites?" can be solved by knowing the answer to the following sub-question "What are the titles for courses with two prerequisites?".
-The SQL query for the sub-question "What are the titles for courses with two prerequisites?" is SELECT T1.title FROM course AS T1 LEFT JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  =  2
+The SQL query for the sub-question "What are the titles for courses with two prerequisites?" is SELECT T1.title FROM course AS T1 LEFT OUTER JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  =  2
 So, the answer to the question "Find the title of courses that have two prerequisites?" is =
 Intermediate_representation: select course.title from course  where  count ( prereq.* )  = 2  group by prereq.course_id
-SQL: SELECT T1.title FROM course AS T1 LEFT JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  =  2
+SQL: SELECT T1.title FROM course AS T1 LEFT OUTER JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  =  2
 
 Q: "Find the name and building of the department with the highest budget."
 Schema_links: [department.dept_name,department.building,department.budget]
@@ -315,7 +315,7 @@ A: Let's think step by step. "Find the title, credit, and department name of cou
 The SQL query for the sub-question "What is the title, credit value, and department name for courses with more than one prerequisite?" is SELECT T1.title ,  T1.credits , T1.dept_name FROM course AS T1 JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  >  1
 So, the answer to the question "Find the name and building of the department with the highest budget." is =
 Intermediate_representation: select course.title , course.credits , course.dept_name from course  where  count ( prereq.* )  > 1  group by prereq.course_id 
-SQL: SELECT T1.title ,  T1.credits , T1.dept_name FROM course AS T1 LEFT JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  >  1
+SQL: SELECT T1.title ,  T1.credits , T1.dept_name FROM course AS T1 LEFT OUTER JOIN prereq AS T2 ON T1.course_id  =  T2.course_id GROUP BY T2.course_id HAVING count(*)  >  1
 
 Q: "Give the name and building of the departments with greater than average budget."
 Schema_links: [department.dept_name,department.building,department.budget]
@@ -368,10 +368,10 @@ SQL: SELECT min(salary) ,  dept_name FROM instructor GROUP BY dept_name HAVING a
 Q: "What is the course title of the prerequisite of course Mobile Computing?"
 Schema_links: [course.title,course.course_id = prereq.course_id,prereq.prereq_id,course.title,Mobile Computing]
 A: Let's think step by step. "What is the course title of the prerequisite of course Mobile Computing?" can be solved by knowing the answer to the following sub-question "What are the ids of the prerequisite of course Mobile Computing?".
-The SQL query for the sub-question "What are the ids of the prerequisite of course Mobile Computing?" is SSELECT T1.prereq_id FROM prereq AS T1 LEFT JOIN course AS T2 ON T1.course_id  =  T2.course_id WHERE T2.title  =  'Mobile Computing'
+The SQL query for the sub-question "What are the ids of the prerequisite of course Mobile Computing?" is SSELECT T1.prereq_id FROM prereq AS T1 LEFT OUTER JOIN course AS T2 ON T1.course_id  =  T2.course_id WHERE T2.title  =  'Mobile Computing'
 So, the answer to the question "What is the course title of the prerequisite of course Mobile Computing?" is =
 Intermediate_representation: select course.title from course  where  @.@ in prereq.*  and  course.title = \"Mobile Computing\"
-SQL: SELECT title FROM course WHERE course_id IN (SELECT T1.prereq_id FROM prereq AS T1 LEFT JOIN course AS T2 ON T1.course_id  =  T2.course_id WHERE T2.title  =  'Mobile Computing')
+SQL: SELECT title FROM course WHERE course_id IN (SELECT T1.prereq_id FROM prereq AS T1 LEFT OUTER JOIN course AS T2 ON T1.course_id  =  T2.course_id WHERE T2.title  =  'Mobile Computing')
 
 Q: "Give the title and credits for the course that is taught in the classroom with the greatest capacity."
 Schema_links: [classroom.capacity,classroom.building = SECTION.building,classroom.room_number = SECTION.room_number,course.title,course.credits,course.course_id = SECTION.course_id]
@@ -379,12 +379,12 @@ A: Let's think step by step. "Give the title and credits for the course that is 
 The SQL query for the sub-question "What is the capacity of the largest room?" is (SELECT max(capacity) FROM classroom)
 So, the answer to the question "Give the title and credits for the course that is taught in the classroom with the greatest capacity." is =
 Intermediate_representation: select course.title , course.credits from classroom  order by classroom.capacity desc limit 1"
-SQL: SELECT T3.title ,  T3.credits FROM classroom AS T1 LEFT JOIN SECTION AS T2 ON T1.building  =  T2.building AND T1.room_number  =  T2.room_number LEFT JOIN course AS T3 ON T2.course_id  =  T3.course_id WHERE T1.capacity  =  (SELECT max(capacity) FROM classroom)
+SQL: SELECT T3.title ,  T3.credits FROM classroom AS T1 LEFT OUTER JOIN SECTION AS T2 ON T1.building  =  T2.building AND T1.room_number  =  T2.room_number LEFT OUTER JOIN course AS T3 ON T2.course_id  =  T3.course_id WHERE T1.capacity  =  (SELECT max(capacity) FROM classroom)
 
 """
 
 
-ambiguity_prompt = """Table advisor, columns = [*,ID, s_ID,i_ID]
+column_ambiguity_prompt = """Table advisor, columns = [*,ID, s_ID,i_ID]
 Table classroom, columns = [*,building,room_number,capacity]
 Table course, columns = [*,course_id,title,dept_name,credits]
 Table department, columns = [*,dept_name,building,budget]
@@ -400,24 +400,102 @@ Foreign_keys = [course.dept_name = department.dept_name,instructor.dept_name = d
 Q: "What is the total number of people who work in the engineering department"
 A: Let’s think step by step. In the question "What is the total number of people who work in the engineering department", we are asked:
 "the total number of people" which could be columns [instructor.ID] or [student.ID]
-Ambiguity: By "total number of people" are you referring to [instructor.ID] or [student.ID] ?
+Ambiguities: By "total number of people" are you referring to [instructor.ID] or [student.ID] ?
 
 Q: "What is the total number of students who studied engineering"
 A: Let’s think step by step. In the question "What is the total number of students who studied engineering", we are asked:
 "the total number of students" so we need column = [student.ID]
 "who studied engineering", which could be columns [course.title] or [department.dept_name]
-Ambiguity: By "who studied engineering" are you referring to [course.title] or [department.dept_name] ?
+Ambiguities: By "who studied engineering" are you referring to [course.title] or [department.dept_name] ?
 
 Q: "What is the total number of advisers that advise more than 10 people"
 A: Let’s think step by step. In the question "What is the total number of advisers that advise more than 10 people", we are asked:
 "the total number of advisers" so we need column = [advisor.ID]
 "advise more than 10 people", which could be columns [advisor.s_ID] or [adviser.i_ID]
-Ambiguity: By "advise more than 10 people" are you referring to [advisor.s_ID] or [adviser.i_ID] ?
+Ambiguities: By "advise more than 10 people" are you referring to [advisor.s_ID] or [adviser.i_ID] ?
 
 Q: "Find the buildings which have rooms with capacity more than 50."
 A: Let’s think step by step. In the question "Find the buildings which have rooms with capacity more than 50.", we are asked:
 "the buildings which have rooms" so we need column = [classroom.capacity]
 "rooms with capacity" so we need column = [classroom.building]
-Ambiguity: ""
+Ambiguities: None
+
+"""
+
+
+join_type_ambiguity_prompt = """Table Facebook, columns = [*,clicks,impressions,date]
+Table Google, columns = [*,clicks,impressions,date]
+Foreign_keys = [Facebook.date = Google.date]
+
+Q: "What are the clicks for both google and facebook?"
+A: Let’s think step by step. In the question "What are the clicks for both google and facebook?", we are asked:
+"the clicks for both google" so we need column = [Facebook.clicks]
+"and facebook?" so we need column = [Facebook.clicks]
+Based on the columns and tables, we need these Foreign_keys = [Facebook.date = Google.date].
+Ambiguities: By "for both google and facebook" do you only want to see clicks where the date matches for Google and Facebook, or clicks on all dates?
+
+Q: "What are the dates that has clicks for both google and facebook?"
+A: Let’s think step by step. In the question "What are the clicks for both google and facebook?", we are asked:
+"the clicks for both google" so we need column = [Facebook.clicks]
+"and facebook?" so we need column = [Facebook.clicks]
+Based on the columns and tables, we need these Foreign_keys = [Facebook.date = Google.date].
+Ambiguities: None
+
+"""
+
+
+# update_question_prompt = """Table advisor, columns = [*,ID, s_ID,i_ID]
+# Table classroom, columns = [*,building,room_number,capacity]
+# Table course, columns = [*,course_id,title,dept_name,credits]
+# Table department, columns = [*,dept_name,building,budget]
+# Table instructor, columns = [*,ID,name,dept_name,salary]
+# Table prereq, columns = [*,course_id,prereq_id]
+# Table section, columns = [*,course_id,sec_id,semester,year,building,room_number,time_slot_id]
+# Table student, columns = [*,ID,name,dept_name,tot_cred]
+# Table takes, columns = [*,ID,course_id,sec_id,semester,year,grade]
+# Table teaches, columns = [*,ID,course_id,sec_id,semester,year]
+# Table time_slot, columns = [*,time_slot_id,day,start_hr,start_min,end_hr,end_min]
+# Foreign_keys = [course.dept_name = department.dept_name,instructor.dept_name = department.dept_name,section.building = classroom.building,section.room_number = classroom.room_number,section.course_id = course.course_id,teaches.ID = instructor.ID,teaches.course_id = section.course_id,teaches.sec_id = section.sec_id,teaches.semester = section.semester,teaches.year = section.year,student.dept_name = department.dept_name,takes.ID = student.ID,takes.course_id = section.course_id,takes.sec_id = section.sec_id,takes.semester = section.semester,takes.year = section.year,advisor.s_ID = student.ID,advisor.i_ID = instructor.ID,prereq.prereq_id = course.course_id,prereq.course_id = course.course_id]
+
+# Given the original question: "What is the total number of people who work in the engineering department"
+# And the AI's clarification question: By "total number of people" are you referring to [instructor.ID] or [student.ID] ?
+# To which the user responded: Both
+# The updated question is: What is the distinct count of instructor.ID and student.ID who work in the engineering department"
+
+# Given the original question: "What is the total number of students who studied engineering"
+# And the AI's clarification question: By "who studied engineering" are you referring to [course.title] or [department.dept_name] ?
+# To which the user responded: [course.title]
+# The updated question is: What is the total number of students who have a course.title as 'Engineering'
+
+# Given the original question: "What is the total number of advisers that advise more than 10 people"
+# And the AI's clarification question: By "advise more than 10 people" are you referring to [advisor.s_ID] or [adviser.i_ID] ?
+# To which the user responded: [advisor.s_ID]
+# The updated question is: What is the total number of advisers that advise more than 10 [advisor.s_ID]
+
+# """
+
+update_question_prompt = """Table Facebook, columns = [*,clicks,impressions,date]
+Table Google, columns = [*,clicks,impressions,date]
+Foreign_keys = [Facebook.date = Google.date]
+
+Given the original question: "What are the clicks for each date?"
+And the AI's clarification question: By "the clicks for each date" are you referring to Facebook.clicks or Google.clicks? And by "for each date" are you referring to Facebook.date or Google.date?
+To which the user responded: both sets of clicks and both dates 
+The updated question is: What are the [Facebook.clicks] and [Google.clicks] for each [Facebook.date] or [Google.date]?
+
+Given the original question: "What are the clicks for each date?"
+And the AI's clarification question: By "the clicks for each date" are you referring to [Facebook.clicks] or [Google.clicks]? And by "for each date" are you referring to [Facebook.date] or [Google.date]?
+To which the user responded: Facebook.clicks and Facebook.date
+The updated question is: What are the [Facebook.clicks] for each [Facebook.date] ?
+
+Given the original question: "What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date ?"
+And the AI's clarification question: By "for each Facebook.date or Google.date" do you only want to see clicks where the date matches for Google and Facebook, or clicks on all dates?
+To which the user responded: only where date matches
+The updated question is: What are the Facebook.clicks and Google.clicks where Facebook.date = Google.date ?
+
+Given the original question: "What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date ?"
+And the AI's clarification question: By "for each Facebook.date or Google.date" do you only want to see clicks where the date matches for Google and Facebook, or clicks on all dates?
+To which the user responded: on all dates
+The updated question is: What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date using a FULL OUTER JOIN ?
 
 """
