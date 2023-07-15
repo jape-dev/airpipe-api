@@ -36,11 +36,12 @@ def run_query(query: str):
     connection = engine.connect()
     try:
         results = connection.execute(query)
+        columns = list(results.keys())
     except sqlalchemy.exc.ProgrammingError as e:
         error_msg = str(e)
         raise HTTPException(status_code=400, detail=error_msg)
 
-    query_results = QueryResults(results=results.all())
+    query_results = QueryResults(columns=columns, results=results.all())
 
     return query_results
 
@@ -79,7 +80,6 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
 
     # Builds query depending on the channel type
     if data_source.adAccount.channel == ChannelType.google:
-
         data_query = build_google_query(
             fields=fields,
             start_date=data_source.start_date,

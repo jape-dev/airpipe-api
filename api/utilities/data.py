@@ -2,6 +2,11 @@ from api.models.data import DataSource
 from typing import Optional
 import random, string
 import json
+from sqlalchemy import MetaData
+from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import sessionmaker
+
+from api.database.database import session, engine
 
 
 def get_keys(list_of_dicts):
@@ -73,3 +78,34 @@ def tuples_to_recharts_dict(tuples_list, as_json=False):
 
     # Return the list of JSON strings
     return dicts_list
+
+
+def get_table_schema(table_name):
+    """
+    Get the table schema
+
+    Args:
+        table_name (str): The name of the table
+
+    Returns:
+        list: A list of column names
+
+    """
+    # Create a metadata object
+    metadata = MetaData(bind=engine)
+    metadata.reflect()
+
+    # Get the table object using the inspector
+    table = metadata.tables.get(table_name)
+
+    # Check if the table exists
+    if table is not None:
+        # Use SQLAlchemy's inspector to get the column names
+        inspector = inspect(engine)
+        columns = inspector.get_columns(table_name)
+
+        # Extract the column names
+        column_names = [column['name'] for column in columns]
+        return column_names
+    else:
+        return None

@@ -24,6 +24,7 @@ types-pytz==2022.7.0.0
 typing_extensions==4.4.0
 urllib3==1.26.13
 uvicorn==0.20.0
+psycopg==3.1.9
 psycopg2==2.9.5
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
@@ -37,4 +38,4 @@ google_crc32c
 protobuf==4.22.1
 alembic==1.7.7
 jinja2==3.1.2
-langchain==0.0.155
+langchain==0.0.220
