@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 import openai
-from typing import List
-import re
+from typing import List, Union
 
 from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
@@ -10,7 +9,14 @@ from langchain.llms.openai import OpenAI
 from langchain.chains import SQLDatabaseChain
 
 from api.config import Config
-from api.models.codex import Prompt, ChainResult, AmbiguousColumns
+from api.core.codex import (
+    debug_agent,
+    get_din_sql,
+    remove_column_ambiguities,
+    remove_join_type_ambiguities,
+    update_question,
+)
+from api.models.codex import Prompt, ChainResult, AmbiguousColumns, BaseAmbiguities
 from api.models.data import DataSourceInDB
 from api.utilities.gpt import get_message_history
 from api.utilities.string import remove_decimal
@@ -19,11 +25,10 @@ from api.utilities.prompt import (
     get_missing_column_prompt,
     get_ambiguity_prompt,
     extract_columns,
-    ambiguity_prompt_maker,
+    column_ambiguity_prompt_maker,
     schema_linking_prompt_maker,
 )
 from api.utilities.gpt import chat_completion, din_completion
-from api.core.codex import debug_agent, get_din_sql
 
 
 OPEN_API_KEY = Config.OPEN_API_KEY
@@ -138,6 +143,7 @@ def schema_links(question: str, data_sources: List[DataSourceInDB]) -> str:
 def ambiguity_checker(
     input: str, data_sources: List[DataSourceInDB], session_id: str
 ) -> str:
+
     history = get_message_history(session_id)
     messages = history.messages
 
@@ -148,7 +154,7 @@ def ambiguity_checker(
         tables_names = [ds.table_name for ds in data_sources]
         db = SQLDatabase.from_uri(DATABASE_URL, include_tables=tables_names)
         table_info = db.table_info
-        prompt = ambiguity_prompt_maker(table_info, input, schema_links)
+        prompt = column_ambiguity_prompt_maker(table_info, input, schema_links)
         guide = din_completion(prompt)
 
     else:
@@ -208,26 +214,28 @@ def ambiguity_checker(
     return guide
 
 
-@router.post("/check_ambiguous_columns", status_code=200)
+@router.post(
+    "/check_ambiguous_columns",
+    status_code=200,
+)
 def check_ambiguous_columns(
-    input: str, data_sources: List[DataSourceInDB]
-) -> AmbiguousColumns:
-    prompt = ambiguity_prompt_maker(input, data_sources)
-    ambiguities = din_completion(prompt)
+    input: str,
+    data_sources: List[DataSourceInDB],
+    ambiguities: Union[AmbiguousColumns, BaseAmbiguities] = None,
+) -> Union[AmbiguousColumns, BaseAmbiguities, str]:
 
-    try:
-        ambiguities = ambiguities.split("Ambiguity: ")[1]
-    except BaseException:
-        print("Slicing error for the ambiguity module")
-        ambiguities = "[]"
+    if ambiguities is not None:
+        input = update_question(ambiguities.question, ambiguities.statement, input)
 
-    if ambiguities == "":
-        return None
+    # Currently not running any ambiguities because ambiguities is None
+    # Check type of ambiguities
+    if isinstance(ambiguities, AmbiguousColumns) or ambiguities is None:
+        ambiguities = remove_column_ambiguities(input, data_sources)
+        if ambiguities is None:
+            print("remove join type being called")
+            ambiguities = remove_join_type_ambiguities(input, data_sources)
+
+    if ambiguities:
+        return ambiguities
     else:
-        term = re.findall(r'"([^"]*)"', ambiguities)
-        columns = re.findall(r"\[(.*?)\]", ambiguities)
-        ambigious_columns = AmbiguousColumns(
-            statement=ambiguities, term=term, columns=columns
-        )
-
-    return ambigious_columns
+        return input
