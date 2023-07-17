@@ -2,6 +2,7 @@ import datetime
 import openai
 import re
 from typing import List, Union
+from api.database.database import engine
 from langchain.agents import initialize_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
@@ -71,12 +72,10 @@ def get_din_sql(question: str, data_sources: List[DataSourceInDB]):
 def debug_agent(question: str, sql: str, data_sources: List[DataSourceInDB]) -> str:
     openai.open_api_key = OPEN_API_KEY
 
-    tables_names = [ds.table_name for ds in data_sources]
+    tables_names = [ds.name for ds in data_sources]
+    schema = data_sources[0].db_schema
+    db = SQLDatabase(engine, schema=schema, include_tables=tables_names)
 
-    db = SQLDatabase.from_uri(
-        DATABASE_URL,
-        include_tables=tables_names,
-    )
     toolkit = SQLDatabaseToolkit(
         db=db,
         llm=OpenAI(temperature=0, openai_api_key=OPEN_API_KEY),
@@ -142,7 +141,6 @@ def update_question(question: str, statement: str, answer: str):
 def remove_column_ambiguities(
     input: str, data_sources: List[DataSourceInDB]
 ) -> Union[AmbiguousColumns, None]:
-
     prompt = column_ambiguity_prompt_maker(input, data_sources)
     ambiguities = din_completion(prompt)
 
@@ -173,7 +171,6 @@ def remove_column_ambiguities(
 def remove_join_type_ambiguities(
     input: str, data_sources: List[DataSourceInDB]
 ) -> Union[BaseAmbiguities, None]:
-
     prompt = join_type_ambiguity_prompt_maker(input, data_sources)
     ambiguities = din_completion(prompt)
 

@@ -18,6 +18,7 @@ from api.core.codex import (
 )
 from api.models.codex import Prompt, ChainResult, AmbiguousColumns, BaseAmbiguities
 from api.models.data import DataSourceInDB
+from api.database.database import engine
 from api.utilities.gpt import get_message_history
 from api.utilities.string import remove_decimal
 from api.utilities.data import tuples_to_recharts_dict
@@ -143,7 +144,6 @@ def schema_links(question: str, data_sources: List[DataSourceInDB]) -> str:
 def ambiguity_checker(
     input: str, data_sources: List[DataSourceInDB], session_id: str
 ) -> str:
-
     history = get_message_history(session_id)
     messages = history.messages
 
@@ -223,7 +223,6 @@ def check_ambiguous_columns(
     data_sources: List[DataSourceInDB],
     ambiguities: Union[AmbiguousColumns, BaseAmbiguities] = None,
 ) -> Union[AmbiguousColumns, BaseAmbiguities, str]:
-
     if ambiguities is not None:
         input = update_question(ambiguities.question, ambiguities.statement, input)
 

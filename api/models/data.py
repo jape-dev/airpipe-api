@@ -70,6 +70,7 @@ class DataSource(BaseModel):
 class DataSourceInDB(BaseModel):
     id: int
     user_id: str
+    db_schema: str
     name: str
     table_name: str
     fields: str

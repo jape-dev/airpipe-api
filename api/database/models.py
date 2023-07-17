@@ -18,6 +18,7 @@ class DataSourceDB(Base):
     id = Column(Integer(), primary_key=True)
     user_id = Column(Integer())
     name = Column(String())
+    db_schema = Column(String())
     table_name = Column(String())
     fields = Column(String())
     channel = Column(String())

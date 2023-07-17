@@ -110,7 +110,7 @@ def get_table_info(tables: List[DataSourceInDB]) -> str:
     table_info = ""
     for table in tables:
         table_name = table.table_name
-        columns = get_table_schema(table_name)
+        columns = [item.split(".")[1] for item in table.fields.split(",")]
         table_line = f"Table {table_name}, columns = [*, {', '.join(columns)}]\n"
         table_info += table_line
     return table_info

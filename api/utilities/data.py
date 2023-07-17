@@ -80,7 +80,7 @@ def tuples_to_recharts_dict(tuples_list, as_json=False):
     return dicts_list
 
 
-def get_table_schema(table_name):
+def get_table_schema(schema: str, table_name: str):
     """
     Get the table schema
 
@@ -92,7 +92,7 @@ def get_table_schema(table_name):
 
     """
     # Create a metadata object
-    metadata = MetaData(bind=engine)
+    metadata = MetaData(bind=engine, schema=schema)
     metadata.reflect()
 
     # Get the table object using the inspector
@@ -102,10 +102,11 @@ def get_table_schema(table_name):
     if table is not None:
         # Use SQLAlchemy's inspector to get the column names
         inspector = inspect(engine)
-        columns = inspector.get_columns(table_name)
+        columns = inspector.get_columns(table_name, schema=schema)
 
         # Extract the column names
-        column_names = [column['name'] for column in columns]
+        column_names = [column["name"] for column in columns]
         return column_names
     else:
+        print("table could not be found")
         return None
