@@ -55,9 +55,7 @@ def build_google_query(fields: List[str], start_date: str, end_date: str) -> str
     return data_query
 
 
-def fetch_google_query(
-    current_user: User, query: GoogleQuery, data_query: str
-) -> List[object]:
+def fetch_google_query(current_user: User, query: GoogleQuery, data_query: str) -> List[object]:
     try:
         client = create_client(current_user.google_access_token)
         ga_service = client.get_service("GoogleAdsService")
