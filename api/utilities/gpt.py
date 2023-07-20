@@ -12,7 +12,6 @@ def create_schema_link():
 
 
 def chat_completion(prompt):
-
     openai.api_key = OPEN_API_KEY
 
     message = [{"role": "user", "content": prompt}]
@@ -32,8 +31,7 @@ def chat_completion(prompt):
     return completion
 
 
-def din_completion(prompt):
-
+def din_completion(prompt, model="gpt-3.5-turbo"):
     openai.api_key = OPEN_API_KEY
 
     response = openai.ChatCompletion.create(

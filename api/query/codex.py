@@ -12,8 +12,7 @@ from api.config import Config
 from api.core.codex import (
     debug_agent,
     get_din_sql,
-    remove_column_ambiguities,
-    remove_join_type_ambiguities,
+    remove_all_ambiguities,
     update_question,
 )
 from api.models.codex import Prompt, ChainResult, AmbiguousColumns, BaseAmbiguities
@@ -225,14 +224,9 @@ def check_ambiguous_columns(
 ) -> Union[AmbiguousColumns, BaseAmbiguities, str]:
     if ambiguities is not None:
         input = update_question(ambiguities.question, ambiguities.statement, input)
-
-    # Currently not running any ambiguities because ambiguities is None
-    # Check type of ambiguities
-    if isinstance(ambiguities, AmbiguousColumns) or ambiguities is None:
-        ambiguities = remove_column_ambiguities(input, data_sources)
-        if ambiguities is None:
-            print("remove join type being called")
-            ambiguities = remove_join_type_ambiguities(input, data_sources)
+        ambiguities = remove_all_ambiguities(input, data_sources)
+    else:
+        ambiguities = remove_all_ambiguities(input, data_sources)
 
     if ambiguities:
         return ambiguities

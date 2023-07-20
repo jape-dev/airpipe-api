@@ -11,8 +11,10 @@ from api.utilities.din import (
     medium_prompt,
     hard_prompt,
     column_ambiguity_prompt,
+    master_ambiguity_prompt,
     update_question_prompt,
     join_type_ambiguity_prompt,
+    master_ambiguity_prompt,
 )
 
 
@@ -110,7 +112,11 @@ def get_table_info(tables: List[DataSourceInDB]) -> str:
     table_info = ""
     for table in tables:
         table_name = table.table_name
-        columns = [item.split(".")[1] for item in table.fields.split(",")]
+        print(table.fields)
+        columns = [
+            item.split(".")[1] if "." in item else item
+            for item in table.fields.split(",")
+        ]
         table_line = f"Table {table_name}, columns = [*, {', '.join(columns)}]\n"
         table_info += table_line
     return table_info
@@ -283,16 +289,45 @@ def column_ambiguity_prompt_maker(question: str, data_sources: List[DataSourceIn
 
     """
     instruction = (
-        "# Find the ambiguities in column names for generating SQL queries for each question based on the database schema and Foreign keys.\n If ambiguities found, return Ambiguities: ambigious column names. Otherwise return Ambiguities: None "
+        "# Find the ambiguities in column names for generating SQL queries for each question based on the database schema. \n If ambiguities found, return Ambiguities: ambigious column names. Otherwise return Ambiguities: None "
         ""
     )
     fields = get_table_info(data_sources)
-    foreign_keys = "Foreign_keys = " + get_foreign_keys(data_sources) + "\n"
     prompt = (
         instruction
         + column_ambiguity_prompt
         + fields
-        + foreign_keys
+        + 'Q: "'
+        + question
+        + """"\nA: Let’s think step by step."""
+    )
+
+    return prompt
+
+
+def unknown_term_ambiguity_prompt_maker(
+    question: str, data_sources: List[DataSourceInDB]
+):
+    """
+    Generates a prompt for schema linking based on a question, table name, and data sources.
+
+    Args:
+        question (str): The question for which the schema linking prompt is generated.
+        data_sources (List[DataSource]): A list of data sources.
+
+    Returns:
+        str: The generated prompt for ambiguous columns.
+
+    """
+    instruction = (
+        "# Find the ambiguous terms for generating SQL queries for each question based on the database schema. \n If ambiguities found, return Ambiguities: ambigious terms. Otherwise return Ambiguities: None "
+        ""
+    )
+    fields = get_table_info(data_sources)
+    prompt = (
+        instruction
+        + column_ambiguity_prompt
+        + fields
         + 'Q: "'
         + question
         + """"\nA: Let’s think step by step."""
@@ -328,6 +363,37 @@ def join_type_ambiguity_prompt_maker(question: str, data_sources: List[DataSourc
         + question
         + """"\nA: Let’s think step by step."""
     )
+
+    return prompt
+
+
+def master_ambiguity_prompt_maker(question: str, data_sources: List[DataSourceInDB]):
+    """
+    Generates a prompt for schema linking based on a question, table name, and data sources.
+
+    Args:
+        question (str): The question for which the schema linking prompt is generated.
+        data_sources (List[DataSource]): A list of data sources.
+
+    Returns:
+        str: The generated prompt for join type ambiguiites
+
+    """
+    instruction = (
+        "# Find the ambiguities in the question for generating SQL queries for each question based on the database schema.\n If ambiguities found, return Ambiguities: description of ambiguity . Otherwise return Ambiguities: "
+        ""
+    )
+    fields = get_table_info(data_sources)
+    prompt = (
+        instruction
+        + master_ambiguity_prompt
+        + fields
+        + 'Q: "'
+        + question
+        + """"\nA: Let’s think step by step."""
+    )
+
+    print(prompt)
 
     return prompt
 

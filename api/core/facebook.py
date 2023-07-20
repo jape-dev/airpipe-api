@@ -26,7 +26,7 @@ def fetch_facebook_data(current_user: User, query: FacebookQuery) -> List[object
         start_date = start_datetime.strftime("%Y-%m-%d")
         end_date = end_datetime.strftime("%Y-%m-%d")
 
-    url = f"https://graph.facebook.com/v15.0/{query.account_id}/insights?level=ad&fields={fields}&time_range={{'since':'{start_date}','until':'{end_date}'}}&time_increment=1&access_token={current_user.facebook_access_token}"
+    url = f"https://graph.facebook.com/v17.0/{query.account_id}/insights?level=ad&fields={fields}&time_range={{'since':'{start_date}','until':'{end_date}'}}&time_increment=1&access_token={current_user.facebook_access_token}"
 
     print(url)
     response = requests.get(url)

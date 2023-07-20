@@ -23,6 +23,8 @@ from api.utilities.prompt import (
     hard_prompt_maker,
     column_ambiguity_prompt_maker,
     join_type_ambiguity_prompt_maker,
+    unknown_term_ambiguity_prompt_maker,
+    master_ambiguity_prompt_maker,
     update_question_prompt_maker,
 )
 
@@ -111,7 +113,7 @@ def debug_agent(question: str, sql: str, data_sources: List[DataSourceInDB]) -> 
         4. Repeat step 3 until you have a valid result. Finish and exit with the updated SQL query. The answer should be the updated SQL query. Not the result of the query.
 
         You are writing SQL for the {sql_dialect} dialect.
-        Convert all dates the format YYYY-MM-DD. The current day is {current_date} if the user references the date.
+        Convert all dates the format YYYY-MM-DD. The current day is {current_date} if the user references today's date.
         The user's original question: {question}
             The SQL: {sql}
         Begin!
@@ -132,7 +134,7 @@ def debug_agent(question: str, sql: str, data_sources: List[DataSourceInDB]) -> 
 
 def update_question(question: str, statement: str, answer: str):
     prompt = update_question_prompt_maker(question, statement, answer)
-    updated_question = din_completion(prompt)
+    updated_question = din_completion(prompt, model="gpt-4")
     print("updated question:", updated_question)
 
     return updated_question
@@ -143,8 +145,6 @@ def remove_column_ambiguities(
 ) -> Union[AmbiguousColumns, None]:
     prompt = column_ambiguity_prompt_maker(input, data_sources)
     ambiguities = din_completion(prompt)
-
-    print(ambiguities)
 
     try:
         ambiguities = ambiguities.split("Ambiguities: ")[1]
@@ -168,11 +168,63 @@ def remove_column_ambiguities(
     return ambigious_columns
 
 
+def remove_unknown_term_ambiguities(
+    input: str, data_sources: List[DataSourceInDB]
+) -> Union[BaseAmbiguities, None]:
+    prompt = unknown_term_ambiguity_prompt_maker(input, data_sources)
+    ambiguities = din_completion(prompt)
+
+    try:
+        ambiguities = ambiguities.split("Ambiguities: ")[1]
+    except BaseException:
+        print("Slicing error for the ambiguity module")
+        ambiguities = "[]"
+        return None
+
+    if ambiguities == "None":
+        return None
+    else:
+        term = re.findall(r'"([^"]*)"', ambiguities)
+        ambigious_base = BaseAmbiguities(
+            question=input,
+            statement=ambiguities,
+            term=term,
+        )
+
+    return ambigious_base
+
+
 def remove_join_type_ambiguities(
     input: str, data_sources: List[DataSourceInDB]
 ) -> Union[BaseAmbiguities, None]:
     prompt = join_type_ambiguity_prompt_maker(input, data_sources)
     ambiguities = din_completion(prompt)
+
+    try:
+        ambiguities = ambiguities.split("Ambiguities: ")[1]
+    except BaseException:
+        print("Slicing error for the ambiguity module")
+        ambiguities = "[]"
+        return None
+
+    if ambiguities == "None":
+        return None
+    else:
+        term = re.findall(r'"([^"]*)"', ambiguities)
+        ambigious_base = BaseAmbiguities(
+            question=input,
+            statement=ambiguities,
+            term=term,
+        )
+
+    return ambigious_base
+
+
+def remove_all_ambiguities(
+    input: str, data_sources: List[DataSourceInDB]
+) -> Union[BaseAmbiguities, None]:
+    prompt = master_ambiguity_prompt_maker(input, data_sources)
+    ambiguities = din_completion(prompt, model="gpt-4")
 
     try:
         ambiguities = ambiguities.split("Ambiguities: ")[1]

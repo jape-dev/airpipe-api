@@ -384,40 +384,22 @@ SQL: SELECT T3.title ,  T3.credits FROM classroom AS T1 LEFT OUTER JOIN SECTION 
 """
 
 
-column_ambiguity_prompt = """Table advisor, columns = [*,ID, s_ID,i_ID]
-Table classroom, columns = [*,building,room_number,capacity]
-Table course, columns = [*,course_id,title,dept_name,credits]
-Table department, columns = [*,dept_name,building,budget]
-Table instructor, columns = [*,ID,name,dept_name,salary]
-Table prereq, columns = [*,course_id,prereq_id]
-Table section, columns = [*,course_id,sec_id,semester,year,building,room_number,time_slot_id]
-Table student, columns = [*,ID,name,dept_name,tot_cred]
-Table takes, columns = [*,ID,course_id,sec_id,semester,year,grade]
-Table teaches, columns = [*,ID,course_id,sec_id,semester,year]
-Table time_slot, columns = [*,time_slot_id,day,start_hr,start_min,end_hr,end_min]
-Foreign_keys = [course.dept_name = department.dept_name,instructor.dept_name = department.dept_name,section.building = classroom.building,section.room_number = classroom.room_number,section.course_id = course.course_id,teaches.ID = instructor.ID,teaches.course_id = section.course_id,teaches.sec_id = section.sec_id,teaches.semester = section.semester,teaches.year = section.year,student.dept_name = department.dept_name,takes.ID = student.ID,takes.course_id = section.course_id,takes.sec_id = section.sec_id,takes.semester = section.semester,takes.year = section.year,advisor.s_ID = student.ID,advisor.i_ID = instructor.ID,prereq.prereq_id = course.course_id,prereq.course_id = course.course_id]
+column_ambiguity_prompt = """Table user_data , columns = [*, date, google_impressions, google_clicks, google_conversions, facebook_impressions, facebook_clicks, facebook_conversions]
 
-Q: "What is the total number of people who work in the engineering department"
-A: Let’s think step by step. In the question "What is the total number of people who work in the engineering department", we are asked:
-"the total number of people" which could be columns [instructor.ID] or [student.ID]
-Ambiguities: By "total number of people" are you referring to [instructor.ID] or [student.ID] ?
+Q: "What are the clicks for each date?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"the clicks" which could be columns [facebook_clicks] or [google_clicks]
+Ambiguities: By "the clicks" are you referring to [facebook_clicks] or [google_clicks] ?
 
-Q: "What is the total number of students who studied engineering"
-A: Let’s think step by step. In the question "What is the total number of students who studied engineering", we are asked:
-"the total number of students" so we need column = [student.ID]
-"who studied engineering", which could be columns [course.title] or [department.dept_name]
-Ambiguities: By "who studied engineering" are you referring to [course.title] or [department.dept_name] ?
+Q: "What are the clicks per conversion for each date?"
+A: Let’s think step by step. In the question "What are the clicks per conversion for each date?", we are asked:
+"the clicks" which could be columns [facebook_clicks] or [google_clicks]
+"per conversion" which could be columns [facebook_conversions] or [google_conversions]
+Ambiguities: By "the clicks" are you referring to [facebook_clicks] or [google_clicks] and by "per conversion" are you referring to [facebook_conversions] or [google_conversions] ?
 
-Q: "What is the total number of advisers that advise more than 10 people"
-A: Let’s think step by step. In the question "What is the total number of advisers that advise more than 10 people", we are asked:
-"the total number of advisers" so we need column = [advisor.ID]
-"advise more than 10 people", which could be columns [advisor.s_ID] or [adviser.i_ID]
-Ambiguities: By "advise more than 10 people" are you referring to [advisor.s_ID] or [adviser.i_ID] ?
-
-Q: "Find the buildings which have rooms with capacity more than 50."
-A: Let’s think step by step. In the question "Find the buildings which have rooms with capacity more than 50.", we are asked:
-"the buildings which have rooms" so we need column = [classroom.capacity]
-"rooms with capacity" so we need column = [classroom.building]
+Q: "What are the facebook impressions for each date?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"facebook impressions" so we needs column = [facebook_impressions]
 Ambiguities: None
 
 """
@@ -440,6 +422,88 @@ A: Let’s think step by step. In the question "What are the clicks for both goo
 "and facebook?" so we need column = [Facebook.clicks]
 Based on the columns and tables, we need these Foreign_keys = [Facebook.date = Google.date].
 Ambiguities: None
+
+"""
+
+unknown_term_ambiguity_prompt = """Table user_data , columns = [*, date, google_impressions, google_clicks, google_conversions, facebook_impressions, facebook_clicks, facebook_conversions]
+
+Q: "What are the jacks for each date?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"the clicks" which does not look like any of the columns 
+Ambiguities: Sorry I did not recognise the term "jacks", could you clarify what you mean by this? 
+
+Q: "What are the facebook clicks for for each window?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"the clicks" so need columns = [facebook_clicks]
+"for each window?" which does not look like any of the columns
+Ambiguities: Sorry I did not recognise the term "window", could you clarify what you mean by this? 
+
+Q: "What are the facebook impressions for each date?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"facebook impressions" so we needs column = [facebook_impressions]
+Ambiguities: None
+
+"""
+
+
+master_ambiguity_prompt = """Table user_data , columns = [*, date, google_impressions, google_clicks, google_conversions, facebook_impressions, facebook_clicks, facebook_conversions]
+
+Q: "What are the clicks for each date?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"the clicks" which could be columns [facebook_clicks] or [google_clicks]
+Ambiguities: By "the clicks" are you referring to [facebook_clicks] or [google_clicks] ?
+
+Q: "What are the clicks per conversion for each date?"
+A: Let’s think step by step. In the question "What are the clicks per conversion for each date?", we are asked:
+"the clicks" which could be columns [facebook_clicks] or [google_clicks]
+"per conversion" which could be columns [facebook_conversions] or [google_conversions]
+Ambiguities: By "the clicks" are you referring to [facebook_clicks] or [google_clicks] and by "per conversion" are you referring to [facebook_conversions] or [google_conversions] ?
+
+Q: "What are the facebook impressions for each date?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"facebook impressions" so we needs column = [facebook_impressions]
+Ambiguities: None
+
+Q: "What are the jacks for each date?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"the clicks" which does not look like any of the columns 
+Ambiguities: Sorry I did not recognise the term "jacks", could you clarify what you mean by this? 
+
+Q: "What are the facebook clicks for for each window?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"the clicks" so need columns = [facebook_clicks]
+"for each window?" which does not look like any of the columns
+Ambiguities: Sorry I did not recognise the term "window", could you clarify what you mean by this? 
+
+Q: "What are the facebook impressions for each date?"
+A: Let’s think step by step. In the question "What are the clicks for each date?", we are asked:
+"facebook impressions" so we needs column = [facebook_impressions]
+Ambiguities: None
+
+"""
+
+
+update_question_prompt = """Table user_data , columns = [*, date, google_impressions, google_clicks, google_conversions, facebook_impressions, facebook_clicks, facebook_conversions]
+
+Given the original question: "What are the clicks for each date?"
+And the AI's clarification question: By "the clicks for each date" are you referring to [facebook_clicks] or [google_clicks] ?
+To which the user responded: both
+The updated question is: What are the facebook_clicks and google_clicks for each date?
+
+Given the original question: "What are the clicks for each date?"
+And the AI's clarification question: By "the clicks for each date" are you referring to [facebook_clicks] or [google_clicks] ?
+To which the user responded: facebook
+The updated question is: What are the facebook_clicks for each date?
+
+Given the original question: "What are the clicks per conversion for each date?"
+And the AI's clarification question: By "the clicks" are you referring to [facebook_clicks] or [google_clicks] and by "per conversion" are you referring to [facebook_conversions] or [google_conversions] ?
+To which the user responded: both
+The updated question is: What are the facebook_clicks per facebook_conversions and google_clicks per facebook_conversions for each date?
+
+Given the original question: "What are the clicks per conversion for each date?"
+And the AI's clarification question: By "the clicks" are you referring to [facebook_clicks] or [google_clicks] and by "per conversion" are you referring to [facebook_conversions] or [google_conversions] ?
+To which the user responded: google_clicks and google_conversions
+The updated question is: What are the google_clicks per google_conversions for each date?
 
 """
 
@@ -474,28 +538,66 @@ Ambiguities: None
 
 # """
 
-update_question_prompt = """Table Facebook, columns = [*,clicks,impressions,date]
-Table Google, columns = [*,clicks,impressions,date]
-Foreign_keys = [Facebook.date = Google.date]
+# update_question_prompt = """Table Facebook, columns = [*,clicks,impressions,date]
+# Table Google, columns = [*,clicks,impressions,date]
+# Foreign_keys = [Facebook.date = Google.date]
 
-Given the original question: "What are the clicks for each date?"
-And the AI's clarification question: By "the clicks for each date" are you referring to Facebook.clicks or Google.clicks? And by "for each date" are you referring to Facebook.date or Google.date?
-To which the user responded: both sets of clicks and both dates 
-The updated question is: What are the [Facebook.clicks] and [Google.clicks] for each [Facebook.date] or [Google.date]?
+# Given the original question: "What are the clicks for each date?"
+# And the AI's clarification question: By "the clicks for each date" are you referring to Facebook.clicks or Google.clicks? And by "for each date" are you referring to Facebook.date or Google.date?
+# To which the user responded: both sets of clicks and both dates
+# The updated question is: What are the [Facebook.clicks] and [Google.clicks] for each [Facebook.date] or [Google.date]?
 
-Given the original question: "What are the clicks for each date?"
-And the AI's clarification question: By "the clicks for each date" are you referring to [Facebook.clicks] or [Google.clicks]? And by "for each date" are you referring to [Facebook.date] or [Google.date]?
-To which the user responded: Facebook.clicks and Facebook.date
-The updated question is: What are the [Facebook.clicks] for each [Facebook.date] ?
+# Given the original question: "What are the clicks for each date?"
+# And the AI's clarification question: By "the clicks for each date" are you referring to [Facebook.clicks] or [Google.clicks]? And by "for each date" are you referring to [Facebook.date] or [Google.date]?
+# To which the user responded: Facebook.clicks and Facebook.date
+# The updated question is: What are the [Facebook.clicks] for each [Facebook.date] ?
 
-Given the original question: "What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date ?"
-And the AI's clarification question: By "for each Facebook.date or Google.date" do you only want to see clicks where the date matches for Google and Facebook, or clicks on all dates?
-To which the user responded: only where date matches
-The updated question is: What are the Facebook.clicks and Google.clicks where Facebook.date = Google.date ?
+# Given the original question: "What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date ?"
+# And the AI's clarification question: By "for each Facebook.date or Google.date" do you only want to see clicks where the date matches for Google and Facebook, or clicks on all dates?
+# To which the user responded: only where date matches
+# The updated question is: What are the Facebook.clicks and Google.clicks where Facebook.date = Google.date ?
 
-Given the original question: "What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date ?"
-And the AI's clarification question: By "for each Facebook.date or Google.date" do you only want to see clicks where the date matches for Google and Facebook, or clicks on all dates?
-To which the user responded: on all dates
-The updated question is: What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date using a FULL OUTER JOIN ?
+# Given the original question: "What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date ?"
+# And the AI's clarification question: By "for each Facebook.date or Google.date" do you only want to see clicks where the date matches for Google and Facebook, or clicks on all dates?
+# To which the user responded: on all dates
+# The updated question is: What are the Facebook.clicks and Google.clicks for each Facebook.date or Google.date using a FULL OUTER JOIN ?
 
-"""
+# """
+
+# column_ambiguity_prompt = """Table advisor, columns = [*,ID, s_ID,i_ID]
+# Table classroom, columns = [*,building,room_number,capacity]
+# Table course, columns = [*,course_id,title,dept_name,credits]
+# Table department, columns = [*,dept_name,building,budget]
+# Table instructor, columns = [*,ID,name,dept_name,salary]
+# Table prereq, columns = [*,course_id,prereq_id]
+# Table section, columns = [*,course_id,sec_id,semester,year,building,room_number,time_slot_id]
+# Table student, columns = [*,ID,name,dept_name,tot_cred]
+# Table takes, columns = [*,ID,course_id,sec_id,semester,year,grade]
+# Table teaches, columns = [*,ID,course_id,sec_id,semester,year]
+# Table time_slot, columns = [*,time_slot_id,day,start_hr,start_min,end_hr,end_min]
+# Foreign_keys = [course.dept_name = department.dept_name,instructor.dept_name = department.dept_name,section.building = classroom.building,section.room_number = classroom.room_number,section.course_id = course.course_id,teaches.ID = instructor.ID,teaches.course_id = section.course_id,teaches.sec_id = section.sec_id,teaches.semester = section.semester,teaches.year = section.year,student.dept_name = department.dept_name,takes.ID = student.ID,takes.course_id = section.course_id,takes.sec_id = section.sec_id,takes.semester = section.semester,takes.year = section.year,advisor.s_ID = student.ID,advisor.i_ID = instructor.ID,prereq.prereq_id = course.course_id,prereq.course_id = course.course_id]
+
+# Q: "What is the total number of people who work in the engineering department"
+# A: Let’s think step by step. In the question "What is the total number of people who work in the engineering department", we are asked:
+# "the total number of people" which could be columns [instructor.ID] or [student.ID]
+# Ambiguities: By "total number of people" are you referring to [instructor.ID] or [student.ID] ?
+
+# Q: "What is the total number of students who studied engineering"
+# A: Let’s think step by step. In the question "What is the total number of students who studied engineering", we are asked:
+# "the total number of students" so we need column = [student.ID]
+# "who studied engineering", which could be columns [course.title] or [department.dept_name]
+# Ambiguities: By "who studied engineering" are you referring to [course.title] or [department.dept_name] ?
+
+# Q: "What is the total number of advisers that advise more than 10 people"
+# A: Let’s think step by step. In the question "What is the total number of advisers that advise more than 10 people", we are asked:
+# "the total number of advisers" so we need column = [advisor.ID]
+# "advise more than 10 people", which could be columns [advisor.s_ID] or [adviser.i_ID]
+# Ambiguities: By "advise more than 10 people" are you referring to [advisor.s_ID] or [adviser.i_ID] ?
+
+# Q: "Find the buildings which have rooms with capacity more than 50."
+# A: Let’s think step by step. In the question "Find the buildings which have rooms with capacity more than 50.", we are asked:
+# "the buildings which have rooms" so we need column = [classroom.capacity]
+# "rooms with capacity" so we need column = [classroom.building]
+# Ambiguities: None
+
+# """
