@@ -76,6 +76,7 @@ def fetch_google_query(current_user: User, query: GoogleQuery, data_query: str) 
                 metric_name = metric.replace("metrics.", "")
                 metric_name = underscore_to_camel_case(metric_name)
                 try:
+                    # row["metrics"][metric_name] = 
                     data_row[metric.replace("metrics.", "")] = row["metrics"][
                         metric_name
                     ]

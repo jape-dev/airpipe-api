@@ -21,7 +21,6 @@ import json
 from starlette.responses import RedirectResponse
 
 
-
 CLIENT_URL = Config.CLIENT_URL
 
 router = APIRouter(prefix="/google")
@@ -44,6 +43,8 @@ def auth(request: Request) -> RedirectResponse:
     response.set_cookie(
         "passthrough_val", passthrough_val, httponly=True, samesite="none", secure=True
     )
+    response.set_cookie("channel", channel, httponly=True, samesite="none", secure=True)
+
     return response
 
 
@@ -52,15 +53,10 @@ def oauth2_callback(request: Request) -> RedirectResponse:
     google_token = request.cookies.get("google_token")
     token = request.cookies.get("token")
     passthrough_val = request.cookies.get("passthrough_val")
+    channel = request.cookies.get("channel")
     state = request.query_params["state"]
     code = request.query_params["code"]
-
-    scope = request.query_params["scope"]
-    if "analytics.readonly" in scope:
-        channel_type = ChannelType.google_analytics
-    else:
-        channel_type = ChannelType.google
-    
+    channel_type = ChannelType[channel]
 
     oauth2callback(passthrough_val, state, code, google_token, channel_type)
     user: User = get_current_user(token)
@@ -133,7 +129,6 @@ def ad_accounts(token: str):
 
 @router.post("/run_query", response_model=GoogleQueryResults)
 def run_query(query: GoogleQuery, token: str):
-
     current_user: User = get_current_user(token)
 
     fields = query.dimensions + query.metrics

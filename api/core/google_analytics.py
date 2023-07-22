@@ -19,23 +19,6 @@ from google.analytics.data_v1beta.types import (
 
 
 def fetch_google_analytics_query(current_user: User, query: GoogleAnalyticsQuery):
-
-
-    # if query.start_date is None or query.end_date is None:
-    #     # today's date
-    #     end_date = datetime.today().strftime("%Y-%m-%d")
-
-    #     # today's date minus one year
-    #     start_date = datetime.today() - timedelta(days=365)
-    #     start_date = start_date.strftime("%Y-%m-%d")
-    # else:
-    #     start_datetime = datetime.fromtimestamp(query.start_date)
-    #     end_datetime = datetime.fromtimestamp(query.end_date)
-    #     start_date = start_datetime.strftime("%Y-%m-%d")
-    #     end_date = end_datetime.strftime("%Y-%m-%d")
-
-    start = datetime.strptime(query.start_date, '%Y%m%d')
-    end = datetime.strptime(query.end_date, '%Y%m%d')
         
     client = BetaAnalyticsDataClient()
 
