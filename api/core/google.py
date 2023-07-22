@@ -118,9 +118,9 @@ def fetch_google_query(
                     dimension_name = underscore_to_camel_case(dimension_name)
 
                     try:
-                        data_row[dimension.replace("ad_group_ad.ad.", "")] = row["ad_group_ad"]["ad"][
-                            dimension_name
-                        ]
+                        data_row[dimension.replace("ad_group_ad.ad.", "")] = row[
+                            "ad_group_ad"
+                        ]["ad"][dimension_name]
                     except BaseException as e:
                         print(e)
                 elif dimension_components[0] == "campaign":
@@ -140,3 +140,7 @@ def fetch_google_query(
             data.append(data_row)
 
     return data
+
+
+def join_data_on_date():
+    pass

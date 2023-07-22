@@ -3,7 +3,7 @@ from typing import List
 
 from api.database.database import engine
 from api.models.data import FieldOption
-from api.core.static_data import FieldType
+from api.core.static_data import FieldType, ChannelType
 
 
 def load_postgresql_table(table_name):
@@ -18,7 +18,10 @@ def load_postgresql_table(table_name):
 
 
 def create_field_list(
-    fields: List[FieldOption], use_alt_value=False, split_value=False
+    fields: List[FieldOption],
+    use_alt_value: bool = False,
+    split_value: bool = False,
+    channel: ChannelType = None,
 ):
     """
     Creates a list of fields, metrics, and dimensions from a list of FieldOptions.
@@ -32,8 +35,10 @@ def create_field_list(
         all_fields (List[str]): List of all fields.
         metrics (List[str]): List of all metrics.
         dimensions (List[str]): List of all dimensions.
+        channel (ChannelType): type of channel (google or facebook)
 
     """
+    fields = [field if field.chhannel == channel else None for field in fields]
     if use_alt_value:
         metrics = [
             field.alt_value if field.alt_value is not None else field.value

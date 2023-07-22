@@ -1,3 +1,10 @@
+import json
+from google.protobuf import json_format
+from fastapi import APIRouter, Request, HTTPException
+from typing import List
+from starlette.responses import RedirectResponse
+
+
 from api.config import Config
 from api.core.auth import get_current_user
 from api.core.static_data import ChannelType
@@ -6,19 +13,8 @@ from api.utilities.google.auth import authorize, oauth2callback
 from api.utilities.google.ga_runner import REFRESH_ERROR, create_client
 from api.database.models import UserDB
 from api.models.user import User
-from api.models.google import GoogleQuery, GoogleQueryResults
 from api.models.connector import AdAccount
-from api.utilities.string import underscore_to_camel_case
-from google.protobuf import json_format
-from fastapi import Cookie
 
-from datetime import datetime
-from fastapi import APIRouter, Request, HTTPException
-from fastapi.encoders import jsonable_encoder
-from typing import List
-
-import json
-from starlette.responses import RedirectResponse
 
 CLIENT_URL = Config.CLIENT_URL
 
@@ -112,99 +108,6 @@ def ad_accounts(token: str):
         return ad_accounts
     except Exception as ex:
         handleGoogleTokenException(ex, current_user)
-
-
-@router.post("/run_query", response_model=GoogleQueryResults)
-def run_query(query: GoogleQuery, token: str):
-
-    current_user: User = get_current_user(token)
-
-    fields = query.dimensions + query.metrics
-    fields = ",".join(fields)
-
-    start_datetime = datetime.fromtimestamp(query.start_date)
-    end_datetime = datetime.fromtimestamp(query.end_date)
-    start_date = start_datetime.strftime("%Y-%m-%d")
-    end_date = end_datetime.strftime("%Y-%m-%d")
-
-    try:
-        client = create_client(current_user.google_access_token)
-        ga_service = client.get_service("GoogleAdsService")
-
-        data_query = f"""
-            SELECT {fields}
-            FROM ad_group_ad
-            WHERE segments.date BETWEEN "{start_date}" AND "{end_date}"
-        """
-
-        search_request = client.get_type("SearchGoogleAdsStreamRequest")
-        search_request.customer_id = query.account_id
-        search_request.query = data_query
-        stream = ga_service.search_stream(search_request)
-    except Exception as ex:
-        handleGoogleTokenException(ex, current_user)
-
-    data = []
-    for batch in stream:
-        for result in batch.results:
-            json_str = json_format.MessageToJson(result._pb)
-            row = json.loads(json_str)
-            data_row = {}
-            for metric in query.metrics:
-                metric_name = metric.replace("metrics.", "")
-                metric_name = underscore_to_camel_case(metric_name)
-                try:
-                    data_row[metric.replace("metrics.", "")] = row["metrics"][
-                        metric_name
-                    ]
-                except BaseException as e:
-                    print(e)
-                    pass
-            for dimension in query.dimensions:
-                dimension_components = dimension.split(".")
-                if dimension_components[0] == "segments":
-                    if dimension_components[1] == "keyword":
-                        try:
-                            data_row["keyword_text"] = row["segments"]["keyword"][
-                                "info"
-                            ]["text"]
-                        except BaseException as e:
-                            print(e)
-
-                    else:
-                        dimension_name = dimension.replace("segments.", "")
-                        dimension_name = underscore_to_camel_case(dimension_name)
-                        try:
-                            data_row[dimension.replace("segments.", "")] = row[
-                                "segments"
-                            ][dimension_name]
-                        except BaseException as e:
-                            print(e)
-                elif dimension_components[0] == "ad_group":
-                    dimension_name = dimension.replace("ad_group.", "")
-                    dimension_name = underscore_to_camel_case(dimension_name)
-                    try:
-                        data_row[dimension.replace("ad_group.", "")] = row["ad_group"][
-                            dimension_name
-                        ]
-                    except BaseException as e:
-                        print(e)
-                elif dimension_components[0] == "campaign":
-                    dimension_name = dimension.replace("campaign.", "")
-                    dimension_name = underscore_to_camel_case(dimension_name)
-                    try:
-                        data_row[dimension.replace("campaign.", "")] = row["campaign"][
-                            dimension_name
-                        ]
-                    except:
-                        pass
-                else:
-                    raise HTTPException(
-                        status_code=400, detail=f"Invalid dimension: {dimension}"
-                    )
-
-            data.append(data_row)
-    return GoogleQueryResults(results=data)
 
 
 def handleGoogleTokenException(ex, current_user: User):

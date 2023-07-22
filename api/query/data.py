@@ -79,80 +79,84 @@ def create_new_table(email: str, results: CurrentResults = Body(...)):
 
 
 @router.post("/add_data_source")
-def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
+def add_data_source(data_source: DataSource) -> CurrentResults:
     # Reads data source
-    account_id = data_source.adAccount.id
-    fields, metrics, dimensions = create_field_list(data_source.fields)
 
-    # Builds query depending on the channel type
-    if data_source.adAccount.channel == ChannelType.google:
-        data_query = build_google_query(
-            fields=fields,
+    for adAccount in data_source.adAccounts:
+        account_id = adAccount.id
+        fields, metrics, dimensions = create_field_list(
+            data_source.fields, channel=adAccount.channel
+        )
+
+        # Builds query depending on the channel type
+        if adAccount.channel == ChannelType.google:
+            data_query = build_google_query(
+                fields=fields,
+                start_date=data_source.start_date,
+                end_date=data_source.end_date,
+            )
+            query = GoogleQuery(
+                account_id=account_id,
+                metrics=metrics,
+                dimensions=dimensions,
+                start_date=data_source.start_date,
+                end_date=data_source.end_date,
+            )
+            data = fetch_google_query(
+                current_user=data_source.user, query=query, data_query=data_query
+            )
+
+        elif adAccount.channel == ChannelType.facebook:
+            query = FacebookQuery(
+                account_id=account_id, metrics=metrics, dimensions=dimensions
+            )
+            data = fetch_facebook_data(current_user=data_source.user, query=query)
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Channel type { data_source.adAccount.channel} not supported.",
+            )
+
+        db_user = get_user_by_email(data_source.user.email)
+        table_name = f"_{db_user.id}.{data_source.name}"
+
+        # Saves data source to database.
+        string_fields = ",".join(fields)
+        data_source_row = DataSourceDB(
+            user_id=db_user.id,
+            db_schema=f"_{db_user.id}",
+            name=data_source.name,
+            table_name=table_name,
+            fields=string_fields,
+            channel=data_source.adAccount.channel,
+            channel_img=data_source.adAccount.img,
+            ad_account_id=data_source.adAccount.id,
             start_date=data_source.start_date,
             end_date=data_source.end_date,
         )
-        query = GoogleQuery(
-            account_id=account_id,
-            metrics=metrics,
-            dimensions=dimensions,
-            start_date=data_source.start_date,
-            end_date=data_source.end_date,
-        )
-        data = fetch_google_query(
-            current_user=data_source.user, query=query, data_query=data_query
-        )
 
-    elif data_source.adAccount.channel == ChannelType.facebook:
-        query = FacebookQuery(
-            account_id=account_id, metrics=metrics, dimensions=dimensions
-        )
-        data = fetch_facebook_data(current_user=data_source.user, query=query)
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Channel type { data_source.adAccount.channel} not supported.",
+        try:
+            session.add(data_source_row)
+            session.commit()
+        except Exception as e:
+            print(e)
+            session.rollback()
+            raise HTTPException(
+                status_code=400,
+                detail=f"Could not save data_source_row to database. {e}",
+            )
+
+        columns, metrics, dimensions = create_field_list(
+            data_source.fields, use_alt_value=True, split_value=True
         )
 
-    db_user = get_user_by_email(data_source.user.email)
-    table_name = f"_{db_user.id}.{data_source.name}"
-
-    # Saves data source to database.
-    string_fields = ",".join(fields)
-    data_source_row = DataSourceDB(
-        user_id=db_user.id,
-        db_schema=f"_{db_user.id}",
-        name=data_source.name,
-        table_name=table_name,
-        fields=string_fields,
-        channel=data_source.adAccount.channel,
-        channel_img=data_source.adAccount.img,
-        ad_account_id=data_source.adAccount.id,
-        start_date=data_source.start_date,
-        end_date=data_source.end_date,
-    )
-
-    try:
-        session.add(data_source_row)
-        session.commit()
-    except Exception as e:
-        print(e)
-        session.rollback()
-        raise HTTPException(
-            status_code=400,
-            detail=f"Could not save data_source_row to database. {e}",
+        results = CurrentResults(
+            name=data_source.name,
+            columns=columns,
+            results=data,
         )
 
-    columns, metrics, dimensions = create_field_list(
-        data_source.fields, use_alt_value=True, split_value=True
-    )
-
-    results = CurrentResults(
-        name=data_source.name,
-        columns=columns,
-        results=data,
-    )
-
-    return results
+        return results
 
 
 @router.get("/data_sources", response_model=List[DataSourceInDB], status_code=200)
