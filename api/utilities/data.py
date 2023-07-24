@@ -75,9 +75,13 @@ def tuples_to_recharts_dict(tuples_list, as_json=False):
     return dicts_list
 
 
-def convert_metric(metric):
+def convert_metric(metric, name: str):
 
-    if type(metric) == float:
-        metric = metric / 1000000
+    name_list = ["averageCpc", "averageCpe", "averageCpm", "costPerConversion", "averageCpv", "costMicros"]
+
+
+    if str(name) in name_list:
+        metric = metric / 1000000.0
         metric = round(metric, 2)
     return metric
+
