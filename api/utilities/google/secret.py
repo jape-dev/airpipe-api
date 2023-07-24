@@ -9,21 +9,13 @@ from pathlib import Path
 CLIENT_ID = Config.GOOGLE_CLIENT_ID
 PROJECT_ID = Config.GOOGLE_PROJECT_ID
 PROJECT_NUMBER = Config.GOOGLE_PROJECT_NUMBER
-
-
-
 GOOGLE_APPLICATION_CREDENTIALS_PATH = Config.GOOGLE_APPLICATION_CREDENTIALS_PATH
 
-p = Path(__file__).with_name(GOOGLE_APPLICATION_CREDENTIALS_PATH)
 
 
-
-filename = str(p.absolute())
-
-
-
-# filename = GOOGLE_APPLICATION_CREDENTIALS_PATH
-
+# p = Path(__file__).with_name(GOOGLE_APPLICATION_CREDENTIALS_PATH)
+# filename = str(p.absolute())
+filename = GOOGLE_APPLICATION_CREDENTIALS_PATH
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = filename
 
 

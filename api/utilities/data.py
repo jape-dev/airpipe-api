@@ -73,3 +73,11 @@ def tuples_to_recharts_dict(tuples_list, as_json=False):
 
     # Return the list of JSON strings
     return dicts_list
+
+
+def convert_metric(metric):
+
+    if type(metric) == float:
+        metric = metric / 1000000
+        metric = round(metric, 2)
+    return metric

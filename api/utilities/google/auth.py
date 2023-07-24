@@ -13,9 +13,9 @@ SCOPE_GOOGLE_ADS = "https://www.googleapis.com/auth/adwords"
 SCOPE_GOOGLE_ANALYTICS = "https://www.googleapis.com/auth/analytics.readonly"
 REDIRECT_URI = f"{DOMAIN_URL}/connector/google/oauth2_callback"
 
-p = Path(__file__).with_name(CLIENT_SECRETS_PATH)
-filename = p.absolute()
-# filename = CLIENT_SECRETS_PATH
+# p = Path(__file__).with_name(CLIENT_SECRETS_PATH)
+# filename = p.absolute()
+filename = CLIENT_SECRETS_PATH
 
 
 def authorize(channel_type: ChannelType = ChannelType.google):
