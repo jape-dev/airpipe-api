@@ -1,6 +1,20 @@
+import pandas as pd
 from typing import List
+
+from api.database.database import engine
 from api.models.data import FieldOption
 from api.core.static_data import FieldType
+
+
+def load_postgresql_table(table_name):
+    try:
+        # Read the table into a DataFrame using the engine
+        df = pd.read_sql_table(table_name, con=engine)
+        return df
+
+    finally:
+        # Close the engine
+        engine.dispose()
 
 
 def create_field_list(

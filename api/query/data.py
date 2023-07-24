@@ -12,7 +12,6 @@ from api.models.data import DataSourceInDB
 from api.models.google import GoogleQuery
 from api.models.google_analytics import GoogleAnalyticsQuery
 from api.models.facebook import FacebookQuery
-from api.utilities.data import create_table_name
 
 
 from fastapi import APIRouter, HTTPException, Body
@@ -38,18 +37,19 @@ def run_query(query: str):
     connection = engine.connect()
     try:
         results = connection.execute(query)
+        columns = list(results.keys())
     except sqlalchemy.exc.ProgrammingError as e:
         error_msg = str(e)
         raise HTTPException(status_code=400, detail=error_msg)
 
-    query_results = QueryResults(results=results.all())
+    query_results = QueryResults(columns=columns, results=results.all())
 
     return query_results
 
 
 @router.get("/table_results", response_model=CurrentResults, status_code=200)
 def table_results(table_name: str):
-    query = f'SELECT * FROM "{table_name}"'
+    query = f"SELECT * FROM {table_name}"
     connection = engine.connect()
     try:
         results = connection.execute(query)
@@ -65,10 +65,17 @@ def table_results(table_name: str):
 
 
 @router.post("/create_new_table")
-def create_new_table(results: CurrentResults = Body(...)):
+def create_new_table(email: str, results: CurrentResults = Body(...)):
+    db_user = get_user_by_email(email)
     df = pd.DataFrame(results.results, columns=results.columns)
     df = df.apply(pd.to_numeric, errors="ignore")
-    df.to_sql(results.name, engine, if_exists="replace", index=False)
+    schema = f"_{db_user.id}"
+    connection = engine.connect()
+    if not engine.dialect.has_schema(connection, schema):
+        # Create the schema
+        engine.execute(f'CREATE SCHEMA "{schema}"')
+
+    df.to_sql(results.name, engine, schema=schema, if_exists="replace", index=False)
 
     return {"message": "success"}
 
@@ -81,7 +88,6 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
 
     # Builds query depending on the channel type
     if data_source.adAccount.channel == ChannelType.google:
-
         data_query = build_google_query(
             fields=fields,
             start_date=data_source.start_date,
@@ -117,13 +123,13 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
         )
 
     db_user = get_user_by_email(data_source.user.email)
-
-    table_name = create_table_name(data_source)
+    table_name = f"_{db_user.id}.{data_source.name}"
 
     # Saves data source to database.
     string_fields = ",".join(fields)
     data_source_row = DataSourceDB(
         user_id=db_user.id,
+        db_schema=f"_{db_user.id}",
         name=data_source.name,
         table_name=table_name,
         fields=string_fields,
@@ -150,7 +156,7 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
     )
 
     results = CurrentResults(
-        name=table_name,
+        name=data_source.name,
         columns=columns,
         results=data,
     )
@@ -166,6 +172,7 @@ def data_sources(email: str):
     data_sources_db = [
         DataSourceInDB(
             id=data_source.id,
+            db_schema=data_source.db_schema,
             name=data_source.name,
             table_name=data_source.table_name,
             user_id=data_source.user_id,

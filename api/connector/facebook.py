@@ -30,7 +30,7 @@ def login(request: Request):
 
     redirect_uri = f"{DOMAIN_URL}/connector/facebook/login/"
     redirect_uri = redirect_uri.replace("www.", "")
-    auth_url = f"https://graph.facebook.com/v15.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={FB_CLIENT_SECRET}"
+    auth_url = f"https://graph.facebook.com/v17.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={FB_CLIENT_SECRET}"
 
     # Save the access token to the user's database.
     response = requests.get(auth_url)
@@ -72,7 +72,7 @@ def ad_accounts(token: str):
     current_user: User = get_current_user(token)
     adaccounts = []
 
-    url = f"https://graph.facebook.com/v15.0/me?fields=adaccounts&access_token={current_user.facebook_access_token}"
+    url = f"https://graph.facebook.com/v17.0/me?fields=adaccounts&access_token={current_user.facebook_access_token}"
     response = requests.get(url)
     json = response.json()
     accounts = json["adaccounts"]["data"]
@@ -80,7 +80,7 @@ def ad_accounts(token: str):
     for account in accounts:
         id = account["id"]
         account_id = account["account_id"]
-        url = f"https://graph.facebook.com/v15.0/{id}?fields=name&access_token={current_user.facebook_access_token}"
+        url = f"https://graph.facebook.com/v17.0/{id}?fields=name&access_token={current_user.facebook_access_token}"
         response = requests.get(url)
         json = response.json()
         name = json["name"]
@@ -111,7 +111,7 @@ def run_query(query: FacebookQuery, token: str):
     start_date = start_datetime.strftime("%Y-%m-%d")
     end_date = end_datetime.strftime("%Y-%m-%d")
 
-    url = f"https://graph.facebook.com/v15.0/{query.account_id}/insights?level=ad&fields={fields}&time_range={{'since':'{start_date}','until':'{end_date}'}}&time_increment=1&access_token={current_user.facebook_access_token}"
+    url = f"https://graph.facebook.com/v17.0/{query.account_id}/insights?level=ad&fields={fields}&time_range={{'since':'{start_date}','until':'{end_date}'}}&time_increment=1&access_token={current_user.facebook_access_token}"
 
     response = requests.get(url)
     if response.status_code != 200:

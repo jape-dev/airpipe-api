@@ -37,6 +37,7 @@ class CurrentResults(BaseModel):
 
 
 class QueryResults(BaseModel):
+    columns: List[str]
     results: List
 
     class Config:
@@ -69,6 +70,7 @@ class DataSource(BaseModel):
 class DataSourceInDB(BaseModel):
     id: int
     user_id: str
+    db_schema: str
     name: str
     table_name: str
     fields: str

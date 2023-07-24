@@ -12,3 +12,10 @@ class FieldType(str, Enum):
 
     metric = "metric"
     dimension = "dimension"
+
+
+# based on the channel types and the field names.
+class ForeignKeys(str, Enum):
+
+    date = "[google.date == facebook.date]"
+    name = "[google.name == facebook.campaign_name]"
