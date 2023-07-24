@@ -3,12 +3,14 @@ from api.database.database import engine, session
 from api.database.crud import get_user_by_email
 from api.core.static_data import ChannelType, FieldType
 from api.core.google import build_google_query, fetch_google_query
+from api.core.google_analytics import fetch_google_analytics_query
 from api.core.facebook import fetch_facebook_data
 from api.core.data import create_field_list
 from api.database.models import DataSourceDB
 from api.database.crud import get_data_sources_by_user_id
 from api.models.data import DataSourceInDB
 from api.models.google import GoogleQuery
+from api.models.google_analytics import GoogleAnalyticsQuery
 from api.models.facebook import FacebookQuery
 
 
@@ -107,6 +109,13 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
             account_id=account_id, metrics=metrics, dimensions=dimensions
         )
         data = fetch_facebook_data(current_user=data_source.user, query=query)
+    elif data_source.adAccount.channel == ChannelType.google_analytics:
+        query = GoogleAnalyticsQuery(property_id=account_id,
+                                     metrics=metrics,
+                                     dimensions=dimensions,
+                                     start_date=data_source.start_date,
+                                     end_date=data_source.end_date)
+        data = fetch_google_analytics_query(current_user=data_source.user, query=query)
     else:
         raise HTTPException(
             status_code=400,

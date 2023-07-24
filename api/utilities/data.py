@@ -80,6 +80,22 @@ def tuples_to_recharts_dict(tuples_list, as_json=False):
     return dicts_list
 
 
+def convert_metric(metric, name: str):
+    name_list = [
+        "averageCpc",
+        "averageCpe",
+        "averageCpm",
+        "costPerConversion",
+        "averageCpv",
+        "costMicros",
+    ]
+
+    if str(name) in name_list:
+        metric = metric / 1000000.0
+        metric = round(metric, 2)
+    return metric
+
+
 def get_table_schema(schema: str, table_name: str):
     """
     Get the table schema
