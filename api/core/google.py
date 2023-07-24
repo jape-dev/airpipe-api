@@ -50,8 +50,6 @@ def build_google_query(fields: List[str], start_date: str, end_date: str) -> str
         WHERE segments.date BETWEEN "{start_date}" AND "{end_date}"
     """
 
-    print("Data query", data_query)
-
     return data_query
 
 
@@ -78,9 +76,7 @@ def fetch_google_query(
                 metric_name = metric.replace("metrics.", "")
                 metric_name = underscore_to_camel_case(metric_name)
                 try:
-                    data_row[metric.replace("metrics.", "")] = row["metrics"][
-                        metric_name
-                    ]
+                    data_row[metric] = row["metrics"][metric_name]
                 except BaseException as e:
                     print(e)
                     pass
@@ -89,9 +85,9 @@ def fetch_google_query(
                 if dimension_components[0] == "segments":
                     if dimension_components[1] == "keyword":
                         try:
-                            data_row["keyword_text"] = row["segments"]["keyword"][
-                                "info"
-                            ]["text"]
+                            data_row[dimension] = row["segments"]["keyword"]["info"][
+                                "text"
+                            ]
                         except BaseException as e:
                             print(e)
 
@@ -99,18 +95,15 @@ def fetch_google_query(
                         dimension_name = dimension.replace("segments.", "")
                         dimension_name = underscore_to_camel_case(dimension_name)
                         try:
-                            data_row[dimension.replace("segments.", "")] = row[
-                                "segments"
-                            ][dimension_name]
+                            data_row[dimension] = row["segments"][dimension_name]
                         except BaseException as e:
                             print(e)
                 elif dimension_components[0] == "ad_group":
                     dimension_name = dimension.replace("ad_group.", "")
                     dimension_name = underscore_to_camel_case(dimension_name)
                     try:
-                        data_row[dimension.replace("ad_group.", "")] = row["ad_group"][
-                            dimension_name
-                        ]
+
+                        data_row[dimension] = row["adGroup"][dimension_name]
                     except BaseException as e:
                         print(e)
                 elif dimension_components[0] == "ad_group_ad":
@@ -118,18 +111,14 @@ def fetch_google_query(
                     dimension_name = underscore_to_camel_case(dimension_name)
 
                     try:
-                        data_row[dimension.replace("ad_group_ad.ad.", "")] = row[
-                            "ad_group_ad"
-                        ]["ad"][dimension_name]
-                    except BaseException as e:
+                        data_row[dimension] = row["adGroupAd"]["ad"][dimension_name]
+                    except Exception as e:
                         print(e)
                 elif dimension_components[0] == "campaign":
                     dimension_name = dimension.replace("campaign.", "")
                     dimension_name = underscore_to_camel_case(dimension_name)
                     try:
-                        data_row[dimension.replace("campaign.", "")] = row["campaign"][
-                            dimension_name
-                        ]
+                        data_row[dimension] = row["campaign"][dimension_name]
                     except:
                         pass
                 else:
