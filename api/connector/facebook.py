@@ -3,7 +3,6 @@ from api.config import Config
 from api.models.connector import AdAccount
 from api.core.static_data import ChannelType
 from api.models.user import User
-from api.models.facebook import FacebookQuery, FacebookQueryResults
 from api.core.auth import get_current_user
 from api.database.database import session
 from api.database.models import UserDB

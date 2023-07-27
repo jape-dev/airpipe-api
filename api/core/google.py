@@ -4,7 +4,7 @@ from api.database.models import UserDB
 from api.utilities.google.ga_runner import REFRESH_ERROR, create_client
 from api.utilities.string import underscore_to_camel_case
 from api.database.database import session
-
+from api.utilities.data import convert_metric
 
 from fastapi import HTTPException
 from google.protobuf import json_format
@@ -76,7 +76,9 @@ def fetch_google_query(
                 metric_name = metric.replace("metrics.", "")
                 metric_name = underscore_to_camel_case(metric_name)
                 try:
-                    data_row[metric] = row["metrics"][metric_name]
+                    data_row[metric] = convert_metric(
+                        row["metrics"][metric_name], metric_name
+                    )
                 except BaseException as e:
                     print(e)
                     pass
@@ -102,7 +104,6 @@ def fetch_google_query(
                     dimension_name = dimension.replace("ad_group.", "")
                     dimension_name = underscore_to_camel_case(dimension_name)
                     try:
-
                         data_row[dimension] = row["adGroup"][dimension_name]
                     except BaseException as e:
                         print(e)

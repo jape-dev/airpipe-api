@@ -10,6 +10,7 @@ class UserDB(Base):
     hashed_password = Column(String())
     facebook_access_token = Column(String(), nullable=True)
     google_access_token = Column(String(), nullable=True)
+    google_analytics_access_token = Column(String(), nullable=True)
 
 
 class DataSourceDB(Base):

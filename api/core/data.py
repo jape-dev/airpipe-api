@@ -9,6 +9,8 @@ from api.models.data import FieldOption, DataSource
 from api.models.google import GoogleQuery
 from api.models.facebook import FacebookQuery
 from api.core.static_data import FieldType, ChannelType
+from api.core.google_analytics import fetch_google_analytics_data
+from api.models.google_analytics import GoogleAnalyticsQuery
 
 
 def load_postgresql_table(table_name):
@@ -103,7 +105,20 @@ def fetch_data(data_source: DataSource):
             data = fetch_google_query(
                 current_user=data_source.user, query=query, data_query=data_query
             )
+        elif adAccount.channel == ChannelType.google_analytics:
+            print("dataSource", data_source)
+            print("dataSource metrics", metrics)
 
+            query = GoogleAnalyticsQuery(
+                property_id=account_id,
+                metrics=metrics,
+                dimensions=dimensions,
+                start_date=data_source.start_date,
+                end_date=data_source.end_date,
+            )
+            data = fetch_google_analytics_data(
+                current_user=data_source.user, query=query
+            )
         elif adAccount.channel == ChannelType.facebook:
             query = FacebookQuery(
                 account_id=account_id, metrics=metrics, dimensions=dimensions

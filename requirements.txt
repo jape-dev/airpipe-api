@@ -38,4 +38,6 @@ google_crc32c
 protobuf==4.22.1
 alembic==1.7.7
 jinja2==3.1.2
+google-analytics-admin==0.18.0
+google-analytics-data==0.17.0
 langchain==0.0.235

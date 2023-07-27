@@ -11,7 +11,7 @@ from api.core.data import create_field_list, fetch_data
 from api.models.data import DataSourceInDB
 from api.database.models import DataSourceDB
 from api.database.crud import get_data_sources_by_user_id
-from api.utilities.data import merge_objects, insert_alt_values
+from api.utilities.data import merge_objects, insert_alt_values, get_channel_img
 
 
 router = APIRouter()
@@ -69,7 +69,6 @@ def create_new_table(email: str, results: CurrentResults = Body(...)):
     if not engine.dialect.has_schema(connection, schema):
         # Create the schema
         engine.execute(f'CREATE SCHEMA "{schema}"')
-
     df.to_sql(results.name, engine, schema=schema, if_exists="replace", index=False)
 
     return {"message": "success"}
@@ -90,6 +89,7 @@ def add_data_source(data_source: DataSource) -> CurrentResults:
     columns, metrics, dimensions = create_field_list(
         data_source.fields, use_alt_value=True, split_value=True
     )
+    channel_img = get_channel_img(data_source.fields)
 
     # Saves data source to database.
     string_fields = ",".join(columns)
@@ -100,7 +100,7 @@ def add_data_source(data_source: DataSource) -> CurrentResults:
         table_name=table_name,
         fields=string_fields,
         channel=ChannelType.google,
-        channel_img="google-ads-icon",
+        channel_img=channel_img,
         ad_account_id=data_source.adAccounts[0].id,
         start_date=data_source.start_date,
         end_date=data_source.end_date,

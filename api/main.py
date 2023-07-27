@@ -1,6 +1,6 @@
 from api.config import Config
 from api.connector import connector_router
-from api.core.static_data import FieldType
+from api.core.static_data import FieldType, ChannelType
 from api.query import query_router
 from api.user import user_router
 from api.models.data import TabData, Schema, TableColumns, FieldOption
@@ -42,7 +42,7 @@ def custom_openapi() -> Dict[str, Any]:
     # FastAPI routes here, which we still want to present in the
     # generated OpenAPI schema; this is useful
     # for the front-end to generate client-side models
-    flat_models = [TableColumns, TabData, Schema, FieldType, FieldOption]
+    flat_models = [TableColumns, TabData, Schema, FieldType, FieldOption, ChannelType]
     model_name_map = get_model_name_map(flat_models)  # type: ignore
     definitions = get_model_definitions(
         flat_models=flat_models, model_name_map=model_name_map  # type: ignore

@@ -67,6 +67,22 @@ def tuples_to_recharts_dict(tuples_list, as_json=False):
     return dicts_list
 
 
+def convert_metric(metric, name: str):
+    name_list = [
+        "averageCpc",
+        "averageCpe",
+        "averageCpm",
+        "costPerConversion",
+        "averageCpv",
+        "costMicros",
+    ]
+
+    if str(name) in name_list:
+        metric = metric / 1000000.0
+        metric = round(metric, 2)
+    return metric
+
+
 def get_table_schema(schema: str, table_name: str):
     """
     Get the table schema
@@ -159,3 +175,15 @@ def insert_alt_values(data: List[object], fields: List[FieldOption]):
                 item[field_lookup[key]] = item.pop(key)
 
     return data
+
+
+def get_channel_img(fields: List[FieldOption]):
+    # Get the unique field.img from fields
+    field_img = [field.img for field in fields]
+    # Get unique values from field_img
+    unique_field_img = list(set(field_img))
+
+    if len(unique_field_img) > 1:
+        return "table-icon"
+    else:
+        return unique_field_img[0]

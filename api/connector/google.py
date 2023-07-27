@@ -25,7 +25,9 @@ router = APIRouter(prefix="/google")
 def auth(request: Request) -> RedirectResponse:
     token = request.query_params["token"]
     google_token = request.query_params["googleToken"]
-    auth_info = authorize()
+    channel = request.query_params["channel"]
+    channel_type = ChannelType[channel]
+    auth_info = authorize(channel_type)
     passthrough_val = auth_info["passthrough_val"]
     url = auth_info["authorization_url"]
     response = RedirectResponse(url=url)
@@ -36,6 +38,8 @@ def auth(request: Request) -> RedirectResponse:
     response.set_cookie(
         "passthrough_val", passthrough_val, httponly=True, samesite="none", secure=True
     )
+    response.set_cookie("channel", channel, httponly=True, samesite="none", secure=True)
+
     return response
 
 
@@ -44,12 +48,20 @@ def oauth2_callback(request: Request) -> RedirectResponse:
     google_token = request.cookies.get("google_token")
     token = request.cookies.get("token")
     passthrough_val = request.cookies.get("passthrough_val")
+    channel = request.cookies.get("channel")
     state = request.query_params["state"]
     code = request.query_params["code"]
-    oauth2callback(passthrough_val, state, code, google_token)
+    channel_type = ChannelType[channel]
+
+    oauth2callback(passthrough_val, state, code, google_token, channel_type)
     user: User = get_current_user(token)
     user = session.query(UserDB).filter(UserDB.email == user.email).first()
-    user.google_access_token = google_token
+
+    if channel_type == ChannelType.google_analytics:
+        user.google_analytics_access_token = google_token
+    else:
+        user.google_access_token = google_token
+
     try:
         session.add(user)
         session.commit()
