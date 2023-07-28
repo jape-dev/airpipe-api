@@ -22,17 +22,17 @@ services:
     ports:
       - '5432:5432'
 
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   environment:
-  #       PGADMIN_DEFAULT_EMAIL: jamespatten1996@gmail.com
-  #       PGADMIN_DEFAULT_PASSWORD: devpassword
-  #   volumes:
-  #       - pgadmin:/var/lib/pgadmin/data
-  #   ports:
-  #       - "8001:80"
-  #   logging:
-  #       driver: none
+  pgadmin:
+    image: dpage/pgadmin4:6
+    environment:
+        PGADMIN_DEFAULT_EMAIL: jamespatten1996@gmail.com
+        PGADMIN_DEFAULT_PASSWORD: devpassword
+    volumes:
+        - pgadmin:/var/lib/pgadmin/data
+    ports:
+        - "8001:80"
+    logging:
+        driver: none
 
 volumes:
   postgres:
