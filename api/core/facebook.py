@@ -28,10 +28,8 @@ def fetch_facebook_data(current_user: User, query: FacebookQuery) -> List[object
 
     url = f"https://graph.facebook.com/v17.0/{query.account_id}/insights?level=ad&fields={fields}&time_range={{'since':'{start_date}','until':'{end_date}'}}&time_increment=1&access_token={current_user.facebook_access_token}"
 
-    print(url)
     response = requests.get(url)
     if response.status_code != 200:
-        print(response.text)
         raise HTTPException(status_code=400, detail="Facebook query failed")
     json = response.json()
     data = json["data"]

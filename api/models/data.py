@@ -3,7 +3,7 @@ from typing import List, Dict, Optional
 
 from api.models.connector import AdAccount
 from api.models.user import User
-from api.core.static_data import FieldType
+from api.core.static_data import ChannelType, FieldType
 
 
 class TableColumns(BaseModel):
@@ -55,14 +55,16 @@ class FieldOption(BaseModel):
     value: str
     label: str
     type: FieldType
+    channel: ChannelType
     alt_value: Optional[str] = None
+    img: Optional[str]
 
 
 class DataSource(BaseModel):
     name: str
     user: User
     fields: List[FieldOption]
-    adAccount: AdAccount
+    adAccounts: List[AdAccount]
     start_date: str
     end_date: str
 

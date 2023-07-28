@@ -6,7 +6,6 @@ from api.utilities.google.auth import authorize, oauth2callback
 from api.utilities.google.ga_runner import REFRESH_ERROR, create_client
 from api.database.models import UserDB
 from api.models.user import User
-from api.models.google import GoogleQuery, GoogleQueryResults
 from api.models.connector import AdAccount
 from api.utilities.string import underscore_to_camel_case
 from google.protobuf import json_format
@@ -29,13 +28,15 @@ GOOGLE_APPLICATION_CREDENTIALS_PATH = Config.GOOGLE_APPLICATION_CREDENTIALS_PATH
 
 p = Path(r"api/utilities/google/airpipe-378522-ed48c2ad4a0d.json")
 filename = str(p.absolute())
+
+# filename = GOOGLE_APPLICATION_CREDENTIALS_PATH
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = filename
 
 router = APIRouter(prefix="/google-analytics")
 
+
 @router.get("/ad_accounts", response_model=List[AdAccount])
 def ad_accounts(token: str):
-
     current_user: User = get_current_user(token)
 
     client = AnalyticsAdminServiceClient()
@@ -44,13 +45,15 @@ def ad_accounts(token: str):
 
     for account in results:
         id = account.name.replace("accounts/", "")
-        properties = client.list_properties(ListPropertiesRequest(filter=f"parent:accounts/{id}", show_deleted=False))
+        properties = client.list_properties(
+            ListPropertiesRequest(filter=f"parent:accounts/{id}", show_deleted=False)
+        )
         for property_ in properties:
             property_id = property_.name.replace("properties/", "")
             name = property_.display_name.replace("display_name:", "")
             ad_accounts.append(
                 AdAccount(
-                    id=property_id, 
+                    id=property_id,
                     account_id=id,
                     channel=ChannelType.google_analytics,
                     name=name,
@@ -59,6 +62,7 @@ def ad_accounts(token: str):
             )
 
     return ad_accounts
+
 
 def handleGoogleTokenException(ex, current_user: User):
     error = str(ex)

@@ -1,5 +1,5 @@
 from api.models.data import DataSource
-from typing import Optional
+from typing import Optional, List
 import random, string
 import json
 from sqlalchemy import MetaData
@@ -7,6 +7,7 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import sessionmaker
 
 from api.database.database import session, engine
+from api.models.data import FieldOption
 
 
 def get_keys(list_of_dicts):
@@ -16,20 +17,6 @@ def get_keys(list_of_dicts):
         return keys_list
     else:
         return []
-
-
-def create_table_name(data_source: DataSource, id: Optional[int] = None) -> str:
-    if id is None:
-        id = "".join(
-            random.SystemRandom().choice(string.ascii_lowercase + string.digits)
-            for _ in range(4)
-        )
-
-    data_source_name = data_source.name.replace(" ", "_")
-    data_source_name = data_source_name.replace("-", "_")
-
-    table_name = data_source.adAccount.channel + data_source_name + id
-    return table_name
 
 
 def tuples_to_dicts(tuples_list, as_json=False):
@@ -126,3 +113,77 @@ def get_table_schema(schema: str, table_name: str):
     else:
         print("table could not be found")
         return None
+
+
+def merge_objects(object_lists):
+    """
+    Merge multiple lists of objects into a single list based on their date.
+
+    Parameters:
+    - object_lists (list of lists of dictionaries): A list of lists containing objects in the form of dictionaries. Each dictionary represents an object with a "date" key and additional key-value pairs.
+
+    Returns:
+    - merged_list (list of dictionaries): A list of dictionaries representing the merged objects. Each dictionary contains a "date" key and the merged key-value pairs from the input objects.
+
+    Algorithm:
+    1. Create an empty dictionary called date_dict to store objects based on their date.
+    2. Iterate over each list in object_lists.
+    3. For each object in the current list, get its date and retrieve the existing object from date_dict based on the date.
+    4. Merge the key-value pairs of the current object into the existing object, excluding the "date" key.
+    5. Update the object in date_dict with the merged key-value pairs.
+    6. Convert date_dict back to a list of dictionaries called merged_list.
+    7. Return the merged_list.
+
+    Example Usage:
+    object_lists = [
+        [{"date": "2022-01-01", "name": "John"}, {"date": "2022-01-01", "age": 30}],
+        [{"date": "2022-01-02", "name": "Jane"}, {"date": "2022-01-02", "city": "New York"}]
+    ]
+    merged_list = merge_objects(object_lists)
+    print(merged_list)
+    # Output: [{"date": "2022-01-01", "name": "John", "age": 30}, {"date": "2022-01-02", "name": "Jane", "city": "New York"}]
+
+    """
+    merged_list = []
+
+    # Create a dictionary to store objects based on their date
+    date_dict = {}
+
+    # Merge objects from all input lists into date_dict
+    for obj_list in object_lists:
+        for obj in obj_list:
+            date = obj["date"]
+            existing_obj = date_dict.get(date, {})
+            for key, value in obj.items():
+                if key != "date":
+                    existing_obj[key] = value
+            date_dict[date] = existing_obj
+
+    # Convert date_dict back to a list of objects
+    for date, obj in date_dict.items():
+        merged_list.append({"date": date, **obj})
+
+    return merged_list
+
+
+def insert_alt_values(data: List[object], fields: List[FieldOption]):
+    field_lookup = {field.value: field.alt_value for field in fields}
+
+    for item in data:
+        for key in list(item.keys()):
+            if key in field_lookup:
+                item[field_lookup[key]] = item.pop(key)
+
+    return data
+
+
+def get_channel_img(fields: List[FieldOption]):
+    # Get the unique field.img from fields
+    field_img = [field.img for field in fields]
+    # Get unique values from field_img
+    unique_field_img = list(set(field_img))
+
+    if len(unique_field_img) > 1:
+        return "table-icon"
+    else:
+        return unique_field_img[0]

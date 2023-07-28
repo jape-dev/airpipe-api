@@ -1,23 +1,18 @@
-from api.models.data import TableColumns, CurrentResults, QueryResults, DataSource
-from api.database.database import engine, session
-from api.database.crud import get_user_by_email
-from api.core.static_data import ChannelType, FieldType
-from api.core.google import build_google_query, fetch_google_query
-from api.core.google_analytics import fetch_google_analytics_query
-from api.core.facebook import fetch_facebook_data
-from api.core.data import create_field_list
-from api.database.models import DataSourceDB
-from api.database.crud import get_data_sources_by_user_id
-from api.models.data import DataSourceInDB
-from api.models.google import GoogleQuery
-from api.models.google_analytics import GoogleAnalyticsQuery
-from api.models.facebook import FacebookQuery
-
-
 from fastapi import APIRouter, HTTPException, Body
 import pandas as pd
 import sqlalchemy
 from typing import List
+
+from api.models.data import TableColumns, CurrentResults, QueryResults, DataSource
+from api.database.database import engine, session
+from api.database.crud import get_user_by_email
+from api.core.static_data import ChannelType
+from api.core.data import create_field_list, fetch_data
+from api.models.data import DataSourceInDB
+from api.database.models import DataSourceDB
+from api.database.crud import get_data_sources_by_user_id
+from api.utilities.data import merge_objects, insert_alt_values, get_channel_img
+
 
 router = APIRouter()
 
@@ -74,68 +69,39 @@ def create_new_table(email: str, results: CurrentResults = Body(...)):
     if not engine.dialect.has_schema(connection, schema):
         # Create the schema
         engine.execute(f'CREATE SCHEMA "{schema}"')
-
     df.to_sql(results.name, engine, schema=schema, if_exists="replace", index=False)
 
     return {"message": "success"}
 
 
 @router.post("/add_data_source")
-def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
+def add_data_source(data_source: DataSource) -> CurrentResults:
     # Reads data source
-    account_id = data_source.adAccount.id
-    fields, metrics, dimensions = create_field_list(data_source.fields)
 
-    # Builds query depending on the channel type
-    if data_source.adAccount.channel == ChannelType.google:
-        data_query = build_google_query(
-            fields=fields,
-            start_date=data_source.start_date,
-            end_date=data_source.end_date,
-        )
-        query = GoogleQuery(
-            account_id=account_id,
-            metrics=metrics,
-            dimensions=dimensions,
-            start_date=data_source.start_date,
-            end_date=data_source.end_date,
-        )
-        data = fetch_google_query(
-            current_user=data_source.user, query=query, data_query=data_query
-        )
-
-    elif data_source.adAccount.channel == ChannelType.facebook:
-        query = FacebookQuery(
-            account_id=account_id, metrics=metrics, dimensions=dimensions
-        )
-        data = fetch_facebook_data(current_user=data_source.user, query=query)
-    elif data_source.adAccount.channel == ChannelType.google_analytics:
-        query = GoogleAnalyticsQuery(property_id=account_id,
-                                     metrics=metrics,
-                                     dimensions=dimensions,
-                                     start_date=data_source.start_date,
-                                     end_date=data_source.end_date)
-        data = fetch_google_analytics_query(current_user=data_source.user, query=query)
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Channel type { data_source.adAccount.channel} not supported.",
-        )
+    data_list = fetch_data(data_source)
+    data_list = [insert_alt_values(data, data_source.fields) for data in data_list]
+    data = merge_objects(data_list)
 
     db_user = get_user_by_email(data_source.user.email)
-    table_name = f"_{db_user.id}.{data_source.name}"
+    name = data_source.name.replace(" ", "_")
+
+    table_name = f"_{db_user.id}.{name}"
+    columns, metrics, dimensions = create_field_list(
+        data_source.fields, use_alt_value=True, split_value=True
+    )
+    channel_img = get_channel_img(data_source.fields)
 
     # Saves data source to database.
-    string_fields = ",".join(fields)
+    string_fields = ",".join(columns)
     data_source_row = DataSourceDB(
         user_id=db_user.id,
         db_schema=f"_{db_user.id}",
-        name=data_source.name,
+        name=name,
         table_name=table_name,
         fields=string_fields,
-        channel=data_source.adAccount.channel,
-        channel_img=data_source.adAccount.img,
-        ad_account_id=data_source.adAccount.id,
+        channel=ChannelType.google,
+        channel_img=channel_img,
+        ad_account_id=data_source.adAccounts[0].id,
         start_date=data_source.start_date,
         end_date=data_source.end_date,
     )
@@ -151,12 +117,8 @@ def add_data_source(data_source: DataSource = Body(...)) -> CurrentResults:
             detail=f"Could not save data_source_row to database. {e}",
         )
 
-    columns, metrics, dimensions = create_field_list(
-        data_source.fields, use_alt_value=True, split_value=True
-    )
-
     results = CurrentResults(
-        name=data_source.name,
+        name=name,
         columns=columns,
         results=data,
     )

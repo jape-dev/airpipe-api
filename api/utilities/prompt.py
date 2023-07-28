@@ -112,7 +112,6 @@ def get_table_info(tables: List[DataSourceInDB]) -> str:
     table_info = ""
     for table in tables:
         table_name = table.table_name
-        print(table.fields)
         columns = [
             item.split(".")[1] if "." in item else item
             for item in table.fields.split(",")
@@ -392,8 +391,6 @@ def master_ambiguity_prompt_maker(question: str, data_sources: List[DataSourceIn
         + question
         + """"\nA: Let’s think step by step."""
     )
-
-    print(prompt)
 
     return prompt
 

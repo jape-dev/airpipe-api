@@ -15,12 +15,12 @@ REDIRECT_URI = f"{DOMAIN_URL}/connector/google/oauth2_callback"
 
 # p = Path(__file__).with_name(CLIENT_SECRETS_PATH)
 # filename = p.absolute()
+# print(filename)
 filename = CLIENT_SECRETS_PATH
 
 
 def authorize(channel_type: ChannelType = ChannelType.google):
-
-    if channel_type == ChannelType.google: 
+    if channel_type == ChannelType.google:
         flow = Flow.from_client_secrets_file(filename, scopes=[SCOPE_GOOGLE_ADS])
         print("scope set to google ads")
     elif channel_type == ChannelType.google_analytics:
@@ -28,7 +28,6 @@ def authorize(channel_type: ChannelType = ChannelType.google):
         print("scope set to google analytics")
     else:
         raise ValueError("Channel must be google or google analytics")
-    
 
     flow.redirect_uri = REDIRECT_URI
 
@@ -46,11 +45,12 @@ def authorize(channel_type: ChannelType = ChannelType.google):
     return {"authorization_url": authorization_url, "passthrough_val": passthrough_val}
 
 
-def oauth2callback(passthrough_val, state, code, token, channel_type: ChannelType=ChannelType.google):
-
+def oauth2callback(
+    passthrough_val, state, code, token, channel_type: ChannelType = ChannelType.google
+):
     if passthrough_val != state:
         raise ValueError("State does not match")
-    if channel_type == ChannelType.google: 
+    if channel_type == ChannelType.google:
         flow = Flow.from_client_secrets_file(filename, scopes=[SCOPE_GOOGLE_ADS])
         print("scope set to google ads")
     elif channel_type == ChannelType.google_analytics:
@@ -58,8 +58,7 @@ def oauth2callback(passthrough_val, state, code, token, channel_type: ChannelTyp
         print("scope set to google analytics")
     else:
         raise ValueError("Channel must be google or google analytics")
-    
-    
+
     flow.redirect_uri = REDIRECT_URI
 
     flow.fetch_token(code=code)
