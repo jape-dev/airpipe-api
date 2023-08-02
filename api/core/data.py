@@ -106,9 +106,6 @@ def fetch_data(data_source: DataSource):
                 current_user=data_source.user, query=query, data_query=data_query
             )
         elif adAccount.channel == ChannelType.google_analytics:
-            print("dataSource", data_source)
-            print("dataSource metrics", metrics)
-
             query = GoogleAnalyticsQuery(
                 property_id=account_id,
                 metrics=metrics,

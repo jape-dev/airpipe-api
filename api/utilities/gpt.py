@@ -35,7 +35,7 @@ def din_completion(prompt, model="gpt-3.5-turbo"):
     openai.api_key = OPEN_API_KEY
 
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model=model,
         messages=[{"role": "user", "content": prompt}],
         n=1,
         stream=False,

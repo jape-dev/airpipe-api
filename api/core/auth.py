@@ -74,7 +74,7 @@ def get_user(username: str):
     except BaseException as e:
         print(e)
         session.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
     finally:
         session.close()
     if user:
