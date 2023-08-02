@@ -21,9 +21,6 @@ from api.utilities.prompt import (
     easy_prompt_maker,
     medium_prompt_maker,
     hard_prompt_maker,
-    column_ambiguity_prompt_maker,
-    join_type_ambiguity_prompt_maker,
-    unknown_term_ambiguity_prompt_maker,
     master_ambiguity_prompt_maker,
     update_question_prompt_maker,
 )
@@ -58,14 +55,14 @@ def get_din_sql(question: str, data_sources: List[DataSourceInDB]):
         SQL = din_completion(sql_prompt)
     elif '"NON-NESTED"' in predicted_class:
         sql_prompt = medium_prompt_maker(question, data_sources, schema_links[1:])
-        SQL = din_completion(sql_prompt)
+        SQL = din_completion(sql_prompt, model="gpt-4")
         SQL = SQL.split("SQL: ")[1]
     else:
         sub_questions = classification.split('questions = ["')[1].split('"]')[0]
         sql_prompt = hard_prompt_maker(
             question, data_sources, schema_links[1:], sub_questions
         )
-        SQL = din_completion(sql_prompt)
+        SQL = din_completion(sql_prompt, model="gpt-4")
         SQL = SQL.split("SQL: ")[1]
 
     return SQL
@@ -109,11 +106,11 @@ def debug_agent(question: str, sql: str, data_sources: List[DataSourceInDB]) -> 
             3a. consider the error message
             3b. update the SQL query
             3c. try re-running
-            3d. if the query returns an empty result [], try changing the JOIN to use a LEFT JOIN
-        4. Repeat step 3 until you have a valid result. Finish and exit with the updated SQL query. The answer should be the updated SQL query. Not the result of the query.
+            3d. if the query returns a null or empty result: [(None,)] or [], try adding a WHERE clause for each column used in the query to remove NULL values.
+        4. Repeat step 3 until you have a valid result. Finish and exit with the updated SQL query. The answer should be syntactically correct SQL query only and no other text. Not the result of the query.
 
-        You are writing SQL for the {sql_dialect} dialect.
-        Convert all dates the format YYYY-MM-DD. The current day is {current_date} if the user references today's date.
+        You are writing SQL for the {sql_dialect} dialect. Make sure that any tables in the query have the schema pointer at the start.
+        Convert all dates the format YYYY-MM-DD. The current day is {current_date} if the user references today's date only.
         The user's original question: {question}
             The SQL: {sql}
         Begin!
@@ -138,86 +135,6 @@ def update_question(question: str, statement: str, answer: str):
     print("updated question:", updated_question)
 
     return updated_question
-
-
-def remove_column_ambiguities(
-    input: str, data_sources: List[DataSourceInDB]
-) -> Union[AmbiguousColumns, None]:
-    prompt = column_ambiguity_prompt_maker(input, data_sources)
-    ambiguities = din_completion(prompt)
-
-    try:
-        ambiguities = ambiguities.split("Ambiguities: ")[1]
-    except BaseException:
-        print("Slicing error for the ambiguity module")
-        ambiguities = "[]"
-        return None
-
-    if ambiguities == "None":
-        return None
-    else:
-        term = re.findall(r'"([^"]*)"', ambiguities)
-        columns = re.findall(r"\[(.*?)\]", ambiguities)
-        ambigious_columns = AmbiguousColumns(
-            question=input,
-            statement=ambiguities,
-            term=term,
-            columns=columns,
-        )
-
-    return ambigious_columns
-
-
-def remove_unknown_term_ambiguities(
-    input: str, data_sources: List[DataSourceInDB]
-) -> Union[BaseAmbiguities, None]:
-    prompt = unknown_term_ambiguity_prompt_maker(input, data_sources)
-    ambiguities = din_completion(prompt)
-
-    try:
-        ambiguities = ambiguities.split("Ambiguities: ")[1]
-    except BaseException:
-        print("Slicing error for the ambiguity module")
-        ambiguities = "[]"
-        return None
-
-    if ambiguities == "None":
-        return None
-    else:
-        term = re.findall(r'"([^"]*)"', ambiguities)
-        ambigious_base = BaseAmbiguities(
-            question=input,
-            statement=ambiguities,
-            term=term,
-        )
-
-    return ambigious_base
-
-
-def remove_join_type_ambiguities(
-    input: str, data_sources: List[DataSourceInDB]
-) -> Union[BaseAmbiguities, None]:
-    prompt = join_type_ambiguity_prompt_maker(input, data_sources)
-    ambiguities = din_completion(prompt)
-
-    try:
-        ambiguities = ambiguities.split("Ambiguities: ")[1]
-    except BaseException:
-        print("Slicing error for the ambiguity module")
-        ambiguities = "[]"
-        return None
-
-    if ambiguities == "None":
-        return None
-    else:
-        term = re.findall(r'"([^"]*)"', ambiguities)
-        ambigious_base = BaseAmbiguities(
-            question=input,
-            statement=ambiguities,
-            term=term,
-        )
-
-    return ambigious_base
 
 
 def remove_all_ambiguities(

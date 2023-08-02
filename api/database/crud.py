@@ -15,14 +15,28 @@ def insert_new_user(customer: User):
 
 
 def get_user_by_email(email: str) -> UserDB:
-    user = session.query(UserDB).filter(UserDB.email == email).first()
-
-    return user
+    try:
+        user = session.query(UserDB).filter(UserDB.email == email).first()
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+    if user:
+        return user
 
 
 def get_data_sources_by_user_id(user_id: int) -> List[DataSourceDB]:
-    data_sources = (
-        session.query(DataSourceDB).filter(DataSourceDB.user_id == user_id).all()
-    )
-
-    return data_sources
+    try:
+        data_sources = (
+            session.query(DataSourceDB).filter(DataSourceDB.user_id == user_id).all()
+        )
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+    if data_sources:
+        return data_sources
