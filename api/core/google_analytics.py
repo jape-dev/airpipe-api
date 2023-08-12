@@ -36,7 +36,7 @@ def fetch_google_analytics_data(current_user: User, query: GoogleAnalyticsQuery)
                 date = str(row.dimension_values[i].value)
                 date = datetime.strptime(date, "%Y%m%d")
                 dimension_value = date.strftime("%Y-%m-%d")
-                data_row[dimension] = dimension_value
+            data_row[dimension] = dimension_value
 
         for i, metric in enumerate(query.metrics):
             metric_value = row.metric_values[i].value

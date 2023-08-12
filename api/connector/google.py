@@ -53,12 +53,14 @@ def oauth2_callback(request: Request) -> RedirectResponse:
     code = request.query_params["code"]
     channel_type = ChannelType[channel]
 
-    oauth2callback(passthrough_val, state, code, google_token, channel_type)
+    access_token = oauth2callback(
+        passthrough_val, state, code, google_token, channel_type
+    )
     user: User = get_current_user(token)
     user = session.query(UserDB).filter(UserDB.email == user.email).first()
 
     if channel_type == ChannelType.google_analytics:
-        user.google_analytics_access_token = google_token
+        user.google_analytics_access_token = access_token
     else:
         user.google_access_token = google_token
 
@@ -74,6 +76,7 @@ def oauth2_callback(request: Request) -> RedirectResponse:
         )
     finally:
         session.close()
+
     response = RedirectResponse(url=CLIENT_URL)
     response.delete_cookie("token")
     response.delete_cookie("google_token")

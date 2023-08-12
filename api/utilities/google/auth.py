@@ -64,6 +64,9 @@ def oauth2callback(
     flow.fetch_token(code=code)
 
     refresh_token = flow.credentials.refresh_token
+    access_token = flow.credentials.token
     # return refresh_token
     secret = Secret(token)
     secret.create_secret_version(refresh_token)
+
+    return access_token

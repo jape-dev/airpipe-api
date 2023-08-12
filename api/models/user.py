@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional, Union
 
+from api.core.static_data import OnboardingStage
+
 
 class Token(BaseModel):
     access_token: str
@@ -14,6 +16,7 @@ class TokenData(BaseModel):
 class User(BaseModel):
     email: str
     hashed_password: str
+    onboarding_stage: OnboardingStage = OnboardingStage.connect
     facebook_access_token: Optional[str] = None
     google_access_token: Optional[str] = None
     google_analytics_access_token: Optional[str] = None

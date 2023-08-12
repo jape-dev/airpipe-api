@@ -10,3 +10,10 @@ class ChannelType(str, Enum):
 class FieldType(str, Enum):
     metric = "metric"
     dimension = "dimension"
+
+
+class OnboardingStage(str, Enum):
+    connect = "connect"
+    add_data = "add_data"
+    ask = "ask"
+    complete = "complete"

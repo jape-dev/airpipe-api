@@ -30,7 +30,12 @@ def get_user_by_email(email: str) -> UserDB:
 def get_data_sources_by_user_id(user_id: int) -> List[DataSourceDB]:
     try:
         data_sources = (
-            session.query(DataSourceDB).filter(DataSourceDB.user_id == user_id).all()
+            session.query(DataSourceDB)
+            .filter(
+                (DataSourceDB.user_id == user_id)
+                | (DataSourceDB.name == "tutorial_data")
+            )
+            .all()
         )
     except BaseException as e:
         print(e)
