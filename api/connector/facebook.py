@@ -94,3 +94,13 @@ def ad_accounts(token: str):
         adaccounts.append(adaccount)
 
     return adaccounts
+
+
+@router.get("/delete")
+def delete():
+    return {"success": 200}
+
+
+@router.get("/deauthorize")
+def deauthorize():
+    {"success": 200}

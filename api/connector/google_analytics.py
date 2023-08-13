@@ -8,12 +8,13 @@ from api.config import Config
 from api.core.auth import get_current_user
 from api.core.static_data import ChannelType
 from api.database.database import session
-from api.utilities.google.ga_runner import REFRESH_ERROR
 from api.database.models import UserDB
 from api.models.user import User
 from api.models.connector import AdAccount
 
 import requests
+
+REFRESH_ERROR = "Request had invalid authentication credentials"
 
 
 CLIENT_URL = Config.CLIENT_URL
