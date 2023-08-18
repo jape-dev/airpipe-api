@@ -72,8 +72,10 @@ def ad_accounts(token: str):
     adaccounts = []
 
     url = f"https://graph.facebook.com/v17.0/me?fields=adaccounts&access_token={current_user.facebook_access_token}"
+    print(url)
     response = requests.get(url)
     json = response.json()
+    print(json)
     accounts = json["adaccounts"]["data"]
 
     for account in accounts:
