@@ -4,6 +4,7 @@ from sqlalchemy import String, Column, Integer, Boolean
 
 class UserDB(Base):
     __tablename__ = "users"
+    __table_args__ = {"schema": "public"}
 
     id = Column(Integer(), primary_key=True)
     email = Column(String(), unique=True)
@@ -16,6 +17,7 @@ class UserDB(Base):
 
 class DataSourceDB(Base):
     __tablename__ = "data_sources"
+    __table_args__ = {"schema": "public"}
 
     id = Column(Integer(), primary_key=True)
     user_id = Column(Integer())
@@ -32,6 +34,7 @@ class DataSourceDB(Base):
 
 class ConversationsDB(Base):
     __tablename__ = "conversations"
+    __table_args__ = {"schema": "public"}
 
     id = Column(Integer(), primary_key=True)
     conversation_id = Column(Integer())
