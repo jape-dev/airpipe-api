@@ -28,7 +28,9 @@ def save(conversation: Conversation):
 
     if len(conversations) > 0:
         try:
-            session.connection(execution_options={None: "public"})
+            session.connection(
+                execution_options={"schema_translation_map": {None: "public"}}
+            )
             session.bulk_save_objects(conversations)
             session.commit()
         except Exception as e:

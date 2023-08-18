@@ -70,7 +70,9 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 def get_user(username: str):
     # Change db to get all users from database
     try:
-        session.connection(execution_options={None: "public"})
+        session.connection(
+            execution_options={"schema_translation_map": {None: "public"}}
+        )
         user = session.query(UserDB).filter(UserDB.email == username).first()
     except BaseException as e:
         print(e)

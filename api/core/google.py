@@ -17,7 +17,9 @@ def handleGoogleTokenException(ex, current_user: User):
     if REFRESH_ERROR in error:
 
         try:
-            session.connection(execution_options={None: "public"})
+            session.connection(
+                execution_options={"schema_translation_map": {None: "public"}}
+            )
             user = (
                 session.query(UserDB).filter(UserDB.email == current_user.email).first()
             )
