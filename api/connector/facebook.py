@@ -49,7 +49,7 @@ def login(request: Request):
 
     try:
         session.connection(
-            execution_options={"schema_translation_map": {None: "public"}}
+            execution_options={"schema_translation_map": {"schema": "public"}}
         )
         user = session.query(UserDB).filter(UserDB.email == user.email).first()
         user.facebook_access_token = access_token

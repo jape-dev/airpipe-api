@@ -108,7 +108,7 @@ def add_data_source(data_source: DataSource) -> CurrentResults:
 
     try:
         session.connection(
-            execution_options={"schema_translation_map": {None: "public"}}
+            execution_options={"schema_translation_map": {"schema": "public"}}
         )
         session.add(data_source_row)
         session.commit()

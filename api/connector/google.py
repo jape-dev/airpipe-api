@@ -60,7 +60,7 @@ def oauth2_callback(request: Request) -> RedirectResponse:
 
     try:
         session.connection(
-            execution_options={"schema_translation_map": {None: "public"}}
+            execution_options={"schema_translation_map": {"schema": "public"}}
         )
         user = session.query(UserDB).filter(UserDB.email == user.email).first()
     except Exception as e:
