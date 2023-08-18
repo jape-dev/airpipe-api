@@ -47,9 +47,9 @@ def login(request: Request):
     # Commit access_token to the database.
     user: User = get_current_user(token)
 
-    user = session.query(UserDB).filter(UserDB.email == user.email).first()
-    user.facebook_access_token = access_token
     try:
+        user = session.query(UserDB).filter(UserDB.email == user.email).first()
+        user.facebook_access_token = access_token
         session.add(user)
         session.commit()
     except Exception as e:

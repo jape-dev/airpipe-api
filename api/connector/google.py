@@ -57,7 +57,15 @@ def oauth2_callback(request: Request) -> RedirectResponse:
         passthrough_val, state, code, google_token, channel_type
     )
     user: User = get_current_user(token)
-    user = session.query(UserDB).filter(UserDB.email == user.email).first()
+
+    try:
+        user = session.query(UserDB).filter(UserDB.email == user.email).first()
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not save google access token to database. {e}",
+        )
 
     if channel_type == ChannelType.google_analytics:
         user.google_analytics_access_token = access_token
@@ -69,7 +77,7 @@ def oauth2_callback(request: Request) -> RedirectResponse:
         session.commit()
     except Exception as e:
         print(e)
-        session.rollback()
+
         raise HTTPException(
             status_code=400,
             detail=f"Could not save google access token to database. {e}",
@@ -128,9 +136,12 @@ def ad_accounts(token: str):
 def handleGoogleTokenException(ex, current_user: User):
     error = str(ex)
     if REFRESH_ERROR in error:
-        user = session.query(UserDB).filter(UserDB.email == current_user.email).first()
-        user.google_access_token = None
+
         try:
+            user = (
+                session.query(UserDB).filter(UserDB.email == current_user.email).first()
+            )
+            user.google_access_token = None
             session.add(user)
             session.commit()
         except Exception as e:

@@ -76,9 +76,11 @@ def ad_accounts(token: str):
 def handleGoogleTokenException(ex, current_user: User):
     error = str(ex)
     if REFRESH_ERROR in error:
-        user = session.query(UserDB).filter(UserDB.email == current_user.email).first()
-        user.google_analytics_access_token = None
         try:
+            user = (
+                session.query(UserDB).filter(UserDB.email == current_user.email).first()
+            )
+            user.google_analytics_access_token = None
             session.add(user)
             session.commit()
         except Exception as e:
