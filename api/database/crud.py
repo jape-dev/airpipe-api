@@ -16,6 +16,7 @@ def insert_new_user(customer: User):
 
 def get_user_by_email(email: str) -> UserDB:
     try:
+        session.connection(execution_options={None: "public"})
         user = session.query(UserDB).filter(UserDB.email == email).first()
     except BaseException as e:
         print(e)

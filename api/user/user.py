@@ -18,6 +18,7 @@ def create_customer(user: User):
         onboarding_stage=user.onboarding_stage,
     )
     try:
+        session.connection(execution_options={None: "public"})
         exsiting_user = session.query(UserDB).filter(UserDB.email == user.email).first()
     except BaseException as e:
         print(e)

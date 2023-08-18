@@ -1,12 +1,9 @@
-from api.models.data import DataSource
-from typing import Optional, List
-import random, string
+from typing import List
 import json
 from sqlalchemy import MetaData
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import sessionmaker
 
-from api.database.database import session, engine
+from api.database.database import engine
 from api.models.data import FieldOption
 
 

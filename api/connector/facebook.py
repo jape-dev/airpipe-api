@@ -48,6 +48,7 @@ def login(request: Request):
     user: User = get_current_user(token)
 
     try:
+        session.connection(execution_options={None: "public"})
         user = session.query(UserDB).filter(UserDB.email == user.email).first()
         user.facebook_access_token = access_token
         session.add(user)

@@ -59,6 +59,7 @@ def oauth2_callback(request: Request) -> RedirectResponse:
     user: User = get_current_user(token)
 
     try:
+        session.connection(execution_options={None: "public"})
         user = session.query(UserDB).filter(UserDB.email == user.email).first()
     except Exception as e:
         session.rollback()

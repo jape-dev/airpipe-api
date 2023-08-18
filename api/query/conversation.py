@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from typing import List, Union
 from fastapi import HTTPException
 import random
 
@@ -29,6 +28,7 @@ def save(conversation: Conversation):
 
     if len(conversations) > 0:
         try:
+            session.connection(execution_options={None: "public"})
             session.bulk_save_objects(conversations)
             session.commit()
         except Exception as e:
