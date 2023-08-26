@@ -2,7 +2,6 @@ import datetime
 from sqlalchemy import String, Column, Integer, Boolean, DateTime
 
 from api.database.database import Base
-from api.utilities.datetime import tzware_datetime, AwareDateTime
 
 
 class UserDB(Base):
