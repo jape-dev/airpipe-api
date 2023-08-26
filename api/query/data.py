@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException, Body
-import pandas as pd
+from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from typing import List
 
@@ -7,11 +6,18 @@ from api.models.data import TableColumns, CurrentResults, QueryResults, DataSour
 from api.database.database import engine, session
 from api.database.crud import get_user_by_email
 from api.core.static_data import ChannelType
-from api.core.data import create_field_list, fetch_data
+from api.core.data import create_field_list, fetch_data, add_table_to_db
 from api.models.data import DataSourceInDB
 from api.database.models import DataSourceDB
 from api.database.crud import get_data_sources_by_user_id
-from api.utilities.data import merge_objects, insert_alt_values, get_channel_img
+from api.utilities.data import (
+    merge_objects,
+    insert_alt_values,
+    get_channel_img,
+    object_list_to_df,
+    pad_object_list,
+)
+from api.utilities.responses import SuccessResponse
 
 
 router = APIRouter()
@@ -59,33 +65,25 @@ def table_results(table_name: str):
     return current_results
 
 
-@router.post("/create_new_table")
-def create_new_table(email: str, results: CurrentResults = Body(...)):
-    db_user = get_user_by_email(email)
-    df = pd.DataFrame(results.results, columns=results.columns)
-    df = df.apply(pd.to_numeric, errors="ignore")
-    schema = f"_{db_user.id}"
-    connection = engine.connect()
-    if not engine.dialect.has_schema(connection, schema):
-        # Create the schema
-        engine.execute(f'CREATE SCHEMA "{schema}"')
-    df.to_sql(results.name, engine, schema=schema, if_exists="replace", index=False)
-
-    return {"message": "success"}
-
-
-@router.post("/add_data_source")
-def add_data_source(data_source: DataSource) -> CurrentResults:
+@router.post("/add_data_source", response_model=SuccessResponse, status_code=200)
+def add_data_source(data_source: DataSource) -> SuccessResponse:
     # Reads data source
 
     data_list = fetch_data(data_source)
     data_list = [insert_alt_values(data, data_source.fields) for data in data_list]
     data = merge_objects(data_list)
+    data = pad_object_list(data)
+    df = object_list_to_df(data)
 
     db_user = get_user_by_email(data_source.user.email)
     name = data_source.name.replace(" ", "_")
 
     table_name = f"_{db_user.id}.{name}"
+    db_schema = f"_{db_user.id}"
+
+    # Saves table to the dataabase
+    add_table_to_db(db_schema, name, df)
+
     columns, metrics, dimensions = create_field_list(
         data_source.fields, use_alt_value=True, split_value=True
     )
@@ -95,7 +93,7 @@ def add_data_source(data_source: DataSource) -> CurrentResults:
     string_fields = ",".join(columns)
     data_source_row = DataSourceDB(
         user_id=db_user.id,
-        db_schema=f"_{db_user.id}",
+        db_schema=db_schema,
         name=name,
         table_name=table_name,
         fields=string_fields,
@@ -117,13 +115,7 @@ def add_data_source(data_source: DataSource) -> CurrentResults:
             detail=f"Could not save data_source_row to database. {e}",
         )
 
-    results = CurrentResults(
-        name=name,
-        columns=columns,
-        results=data,
-    )
-
-    return results
+    return SuccessResponse(detail="Data written to db and data source record added.")
 
 
 @router.get("/data_sources", response_model=List[DataSourceInDB], status_code=200)

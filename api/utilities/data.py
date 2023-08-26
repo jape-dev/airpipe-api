@@ -1,3 +1,5 @@
+from collections import defaultdict
+import pandas as pd
 from typing import List
 import json
 from sqlalchemy import MetaData
@@ -141,7 +143,6 @@ def merge_objects(object_lists):
     # Output: [{"date": "2022-01-01", "name": "John", "age": 30}, {"date": "2022-01-02", "name": "Jane", "city": "New York"}]
 
     """
-    merged_list = []
 
     # Create a dictionary to store objects based on their date
     date_dict = {}
@@ -150,20 +151,95 @@ def merge_objects(object_lists):
     for obj_list in object_lists:
         for obj in obj_list:
             date = obj["date"]
-            existing_obj = date_dict.get(date, {})
+            # Use a defaultdict as I'm going to add
+            existing_obj = date_dict.get(date, defaultdict(list))
             for key, value in obj.items():
                 if key != "date":
-                    existing_obj[key] = value
+                    if key not in existing_obj:
+                        existing_obj[key] = []
+                    existing_obj[key].append(value)
             date_dict[date] = existing_obj
 
-    # Convert date_dict back to a list of objects
-    for date, obj in date_dict.items():
-        merged_list.append({"date": date, **obj})
+    return date_dict
 
-    return merged_list
+
+def pad_object_list(data: dict):
+    """
+    Pad the lists in a dictionary of dictionaries with None values to make them the same length.
+
+    Parameters:
+        data (dict): A dictionary of dictionaries where the values are lists.
+
+    Returns:
+        dict: The modified dictionary with padded lists.
+    """
+    # Find the maximum length of lists in the nested dictionaries
+    max_length = max(
+        max(len(lst) for lst in inner_dict.values()) for inner_dict in data.values()
+    )
+
+    # Pad the lists with None values to make them the same length
+    for inner_dict in data.values():
+        max_length = max(len(lst) for lst in inner_dict.values())
+        for key in inner_dict:
+            inner_dict[key] += [None] * (max_length - len(inner_dict[key]))
+
+    return data
+
+
+def object_list_to_df(data: dict):
+    """
+    Generate a DataFrame from a dictionary of object lists.
+
+    Parameters:
+        data (dict): A dictionary containing object lists as values.
+
+    Returns:
+        df (pandas.DataFrame): The generated DataFrame.
+    """
+    print(data)
+
+    # Create an empty DataFrame
+    df_data = []
+
+    # Loop through the date and values dictionary
+    for date, values in data.items():
+        # Find the maximum number of values in any key for the current date
+        max_values = max(len(val_list) for val_list in values.values())
+
+        # Iterate over the range of maximum values
+        for i in range(max_values):
+            row = {"date": date}  # Initialize a row with the current date
+
+            # Iterate through each key and its corresponding value list
+            for key, val_list in values.items():
+                if i < len(val_list):
+                    row[key] = val_list[i]  # If there's a value at index 'i', use it
+                else:
+                    row[key] = date  # If not, use the current date as padding
+
+            df_data.append(row)  # Append the row to the DataFrame data list
+
+    # Create a DataFrame from the data list
+    df = pd.DataFrame(df_data)
+
+    # Convert the DataFrame numerica values to numeric
+    df = df.apply(pd.to_numeric, errors="ignore")
+
+    return df
 
 
 def insert_alt_values(data: List[object], fields: List[FieldOption]):
+    """
+    Replaces specific keys in a list of dictionaries with their corresponding values from a given list of FieldOptions.
+
+    Args:
+        data (List[object]): A list of dictionaries representing the data to be modified.
+        fields (List[FieldOption]): A list of FieldOptions containing the mapping of keys to their corresponding alt_values.
+
+    Returns:
+        List[object]: The modified list of dictionaries with the specified keys replaced by their corresponding alt_values.
+    """
     field_lookup = {field.value: field.alt_value for field in fields}
 
     for item in data:

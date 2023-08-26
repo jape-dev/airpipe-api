@@ -130,3 +130,22 @@ def fetch_data(data_source: DataSource):
         data_list.append(data)
 
     return data_list
+
+
+def add_table_to_db(schema: str, table_name: str, df: pd.DataFrame):
+    connection = engine.connect()
+    if not engine.dialect.has_schema(connection, schema):
+        # Create the schema
+        engine.execute(f'CREATE SCHEMA "{schema}"')
+
+    df.to_sql(
+        table_name,
+        engine,
+        schema=schema,
+        if_exists="replace",
+        index=False,
+        chunksize=100,
+    )
+    connection.close()
+
+    return {"message": "success"}
