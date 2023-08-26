@@ -1,5 +1,8 @@
+import datetime
+from sqlalchemy import String, Column, Integer, Boolean, DateTime
+
 from api.database.database import Base
-from sqlalchemy import String, Column, Integer, Boolean
+from api.utilities.datetime import tzware_datetime, AwareDateTime
 
 
 class UserDB(Base):
@@ -13,6 +16,7 @@ class UserDB(Base):
     facebook_access_token = Column(String(), nullable=True)
     google_access_token = Column(String(), nullable=True)
     google_analytics_access_token = Column(String(), nullable=True)
+    created_at = Column(DateTime(), default=datetime.datetime.now())
 
 
 class DataSourceDB(Base):
@@ -30,6 +34,7 @@ class DataSourceDB(Base):
     ad_account_id = Column(String())
     start_date = Column(String())
     end_date = Column(String())
+    created_at = Column(DateTime(), default=datetime.datetime.now())
 
 
 class ConversationsDB(Base):
@@ -41,3 +46,4 @@ class ConversationsDB(Base):
     user_id = Column(Integer())
     message = Column(String())
     is_user_message = Column(Boolean())
+    created_at = Column(DateTime(), default=datetime.datetime.now())
