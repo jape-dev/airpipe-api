@@ -13,10 +13,11 @@ router = APIRouter(prefix="/conversation")
 
 
 @router.post("/save", status_code=200)
-def save(conversation: Conversation):
+def save(conversation: Conversation, conversation_id: int = None):
     user = get_user_by_email(conversation.messages[0].current_user.email)
     conversations = []
-    conversation_id = random.randint(0, 1000000000000)
+    if conversation is None:
+        conversation_id = random.randint(0, 1000000000000)
     for message in conversation.messages:
         message_db = ConversationsDB(
             user_id=user.id,
@@ -34,7 +35,7 @@ def save(conversation: Conversation):
             print(e)
             session.rollback()
             raise HTTPException(
-                status_code=400, detail=f"Could not save access token to database. {e}"
+                status_code=400, detail=f"Could not save conversation to database. {e}"
             )
         finally:
             session.close()
