@@ -3,10 +3,15 @@ from api.database.crud import insert_new_user
 from api.database.models import UserDB
 from api.models.user import User
 from api.core.auth import get_password_hash
+from api.email.email import add_contact_to_loops
+from api.models.loops import Contact
+from api.core.static_data import Environment, get_enum_member_by_value
+from api.config import Config
 
 from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
+Config.ENVIRONMENT
 
 
 @router.post("/create_customer", response_model=User)
@@ -29,6 +34,10 @@ def create_customer(user: User):
         raise HTTPException(status_code=400, detail="User already exists")
     else:
         insert_new_user(new_user)
+        env = get_enum_member_by_value(Environment, Config.ENVIRONMENT)
+        loops_contact = Contact(email=user.email, environment=env)
+        add_contact_to_loops(loops_contact)
+
         return user
 
 
