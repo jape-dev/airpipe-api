@@ -3,7 +3,6 @@ from datetime import datetime
 from api.models.user import User
 from api.models.google_analytics import GoogleAnalyticsQuery
 
-
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import (
     DateRange,

@@ -50,7 +50,7 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
 def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Your AirPipe token has expired. For security purposes, please login to AirPipe again: https://airpipe.onrender.com/login",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
@@ -59,7 +59,8 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
-    except JWTError:
+    except JWTError as e:
+        print(e)
         raise credentials_exception
     user = get_user(username=token_data.username)
     if user is None:

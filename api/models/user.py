@@ -18,8 +18,8 @@ class User(BaseModel):
     hashed_password: str
     onboarding_stage: OnboardingStage = OnboardingStage.connect
     facebook_access_token: Optional[str] = None
-    google_access_token: Optional[str] = None
-    google_analytics_access_token: Optional[str] = None
+    google_refresh_token: Optional[str] = None
+    google_analytics_refresh_token: Optional[str] = None
 
 
 class UserInDB(User):

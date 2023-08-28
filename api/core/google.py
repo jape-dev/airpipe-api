@@ -1,15 +1,20 @@
+from api.config import Config
 from api.models.user import User
 from api.models.google import GoogleQuery
 from api.database.models import UserDB
-from api.utilities.google.ga_runner import REFRESH_ERROR, create_client
 from api.utilities.string import underscore_to_camel_case
 from api.database.database import session
 from api.utilities.data import convert_metric
 
 from fastapi import HTTPException
-from google.protobuf import json_format
-import json
-from typing import List, Optional
+import requests
+from typing import List
+
+REFRESH_ERROR = "Invalid refresh token"
+
+GOOGLE_CLIENT_ID = Config.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = Config.GOOGLE_CLIENT_SECRET
+GOOGLE_ADS_DEVELOPER_TOKEN = Config.GOOGLE_ADS_DEVELOPER_TOKEN
 
 
 def handleGoogleTokenException(ex, current_user: User):
@@ -20,7 +25,7 @@ def handleGoogleTokenException(ex, current_user: User):
             user = (
                 session.query(UserDB).filter(UserDB.email == current_user.email).first()
             )
-            user.google_access_token = None
+            user.google_refresh_token = None
             session.add(user)
             session.commit()
         except Exception as e:
@@ -59,21 +64,21 @@ def build_google_query(fields: List[str], start_date: str, end_date: str) -> str
 def fetch_google_query(
     current_user: User, query: GoogleQuery, data_query: str
 ) -> List[object]:
-    try:
-        client = create_client(current_user.google_access_token)
-        ga_service = client.get_service("GoogleAdsService")
-        search_request = client.get_type("SearchGoogleAdsStreamRequest")
-        search_request.customer_id = query.account_id
-        search_request.query = data_query
-        stream = ga_service.search_stream(search_request)
-    except Exception as ex:
-        handleGoogleTokenException(ex, current_user)
+
+    access_token = get_access_token(current_user.google_refresh_token)
+    url = f"https://googleads.googleapis.com/v14/customers/{query.account_id}/googleAds:searchStream"
+    body = {"query": data_query}
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "developer-token": GOOGLE_ADS_DEVELOPER_TOKEN,
+    }
+    response = requests.post(url, headers=headers, data=body)
+    stream = response.json()
 
     data = []
     for batch in stream:
-        for result in batch.results:
-            json_str = json_format.MessageToJson(result._pb)
-            row = json.loads(json_str)
+        results = batch["results"]
+        for row in results:
             data_row = {}
             for metric in query.metrics:
                 metric_name = metric.replace("metrics.", "")
@@ -135,5 +140,18 @@ def fetch_google_query(
     return data
 
 
-def join_data_on_date():
-    pass
+def get_access_token(refresh_token: str):
+    url = "https://oauth2.googleapis.com/token"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    data = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "client_secret": GOOGLE_CLIENT_SECRET,
+        "refresh_token": refresh_token,
+        "grant_type": "refresh_token",
+    }
+    response = requests.post(url, headers=headers, data=data)
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=400, detail="Could not get access token")
+    else:
+        return response.json()["access_token"]

@@ -3,7 +3,6 @@ import hashlib
 import os
 from api.config import Config
 from pathlib import Path
-from api.utilities.google.secret import Secret
 from api.core.static_data import ChannelType
 
 
@@ -15,7 +14,6 @@ REDIRECT_URI = f"{DOMAIN_URL}/connector/google/oauth2_callback"
 
 # p = Path(__file__).with_name(CLIENT_SECRETS_PATH)
 # filename = p.absolute()
-# print(filename)
 filename = CLIENT_SECRETS_PATH
 
 
@@ -60,13 +58,8 @@ def oauth2callback(
         raise ValueError("Channel must be google or google analytics")
 
     flow.redirect_uri = REDIRECT_URI
-
     flow.fetch_token(code=code)
 
     refresh_token = flow.credentials.refresh_token
-    access_token = flow.credentials.token
-    # return refresh_token
-    secret = Secret(token)
-    secret.create_secret_version(refresh_token)
 
-    return access_token
+    return refresh_token

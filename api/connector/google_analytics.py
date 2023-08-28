@@ -6,6 +6,7 @@ from pathlib import Path
 
 from api.config import Config
 from api.core.auth import get_current_user
+from api.core.google import get_access_token
 from api.core.static_data import ChannelType
 from api.database.database import session
 from api.database.models import UserDB
@@ -32,8 +33,9 @@ router = APIRouter(prefix="/google-analytics")
 @router.get("/ad_accounts", response_model=List[AdAccount])
 def ad_accounts(token: str):
     current_user: User = get_current_user(token)
+    access_token = get_access_token(current_user.google_analytics_refresh_token)
 
-    headers = {"Authorization": f"Bearer {current_user.google_analytics_access_token}"}
+    headers = {"Authorization": f"Bearer {access_token}"}
     url = "https://analyticsadmin.googleapis.com/v1alpha/accounts"
 
     response = requests.get(url, headers=headers)
@@ -63,12 +65,12 @@ def ad_accounts(token: str):
             else:
                 print(response.status_code)
                 print(response.json())
-                handleGoogleTokenException(response.text, current_user)
+                # handleGoogleTokenException(response.text, current_user)
 
     else:
         print(response.status_code)
         print(response.json())
-        handleGoogleTokenException(response.text, current_user)
+        # handleGoogleTokenException(response.text, current_user)
 
     return ad_accounts
 
@@ -80,7 +82,7 @@ def handleGoogleTokenException(ex, current_user: User):
             user = (
                 session.query(UserDB).filter(UserDB.email == current_user.email).first()
             )
-            user.google_analytics_access_token = None
+            user.google_analytics_refresh_token = None
             session.add(user)
             session.commit()
         except Exception as e:
