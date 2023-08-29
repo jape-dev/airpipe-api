@@ -53,5 +53,6 @@ def update_onboarding_stage(user: User):
         session.close()
     if exsiting_user:
         exsiting_user.onboarding_stage = user.onboarding_stage
+        session.add(exsiting_user)
         session.commit()
         return user
