@@ -49,8 +49,8 @@ def run_query(query: str):
 
 
 @router.get("/table_results", response_model=CurrentResults, status_code=200)
-def table_results(table_name: str):
-    query = f"SELECT * FROM {table_name}"
+def table_results(schema: str, name: str):
+    query = f'SELECT * FROM {schema}."{name}"'
     connection = engine.connect()
     try:
         results = connection.execute(query)
@@ -59,7 +59,7 @@ def table_results(table_name: str):
         raise HTTPException(status_code=400, detail=error_msg)
 
     current_results = CurrentResults(
-        name=table_name, results=results.all(), columns=list(results.keys())
+        name=f'{schema}."{name}"', results=results.all(), columns=list(results.keys())
     )
 
     return current_results
