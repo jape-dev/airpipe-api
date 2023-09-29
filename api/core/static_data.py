@@ -29,3 +29,10 @@ class OnboardingStage(str, Enum):
 class Environment(str, Enum):
     production = "production"
     development = "development"
+
+
+class LookerFieldType(str, Enum):
+    text = "TEXT"
+    number = "NUMBER"
+    date = "YEAR_MONTH_DAY"
+    boolean = "BOOLEAN"

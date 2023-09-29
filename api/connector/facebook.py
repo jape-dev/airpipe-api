@@ -7,7 +7,6 @@ from api.core.auth import get_current_user
 from api.database.database import session
 from api.database.models import UserDB
 
-from datetime import datetime
 from fastapi import APIRouter, Request, HTTPException
 import requests
 from starlette.responses import RedirectResponse
