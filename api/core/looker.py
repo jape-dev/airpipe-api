@@ -1,4 +1,6 @@
-from api.core.static_data import LookerFieldType
+from api.core.static_data import LookerFieldType, FieldType
+from api.utilities.data import all_channel_fields
+from api.models.looker import LookerField
 
 postgres_to_looker_mapping = {
     "bigint": LookerFieldType.number,
@@ -76,3 +78,44 @@ def map_postgres_type_to_looker_type(schema: dict):
             mapping[field] = postgres_to_looker_mapping[type]
 
     return mapping
+
+
+def get_looker_fields(schema: dict):
+    """
+    Generates the list of Looker fields based on the given schema.
+
+    Args:
+        schema (dict): A dictionary representing the schema.
+
+    Returns:
+        list: A list of LookerField objects.
+    """
+    channel_fields = all_channel_fields()
+
+    looker_fields = []
+    for field, type in schema.items():
+        if field == "date":
+            looker_field = LookerField(
+                id=field,
+                name="Date",
+                looker_field_type=LookerFieldType.date,
+                field_type=FieldType.dimension,
+            )
+            looker_fields.append(looker_field)
+
+        else:
+            matching_field = [
+                channel_field
+                for channel_field in channel_fields
+                if channel_field["alt_value"] == field
+            ][0]
+            print(matching_field)
+            looker_field = LookerField(
+                id=field,
+                name=matching_field["label"],
+                looker_field_type=type,
+                field_type=matching_field["type"],
+            )
+            looker_fields.append(looker_field)
+
+    return looker_fields

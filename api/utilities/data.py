@@ -7,6 +7,17 @@ from sqlalchemy.inspection import inspect
 
 from api.database.database import engine
 from api.models.data import FieldOption
+from api.core.static_data import (
+    google_metrics,
+    google_date,
+    google_dimensions,
+    google_analytics_metrics,
+    google_analytics_dimensions,
+    google_analytics_date,
+    facebook_metrics,
+    facebook_dimensions,
+    facebook_date,
+)
 
 
 def get_keys(list_of_dicts):
@@ -260,3 +271,25 @@ def get_channel_img(fields: List[FieldOption]):
         return "table-icon"
     else:
         return unique_field_img[0]
+
+
+def all_channel_fields() -> List[FieldOption]:
+    """
+    Merge channel options.
+
+    Returns:
+        all_channels (list): A list containing all channel options merged together.
+    """
+    all_channels = (
+        google_metrics
+        + google_date
+        + google_dimensions
+        + google_analytics_metrics
+        + google_analytics_dimensions
+        + google_analytics_date
+        + facebook_metrics
+        + facebook_dimensions
+        + facebook_date
+    )
+
+    return all_channels
