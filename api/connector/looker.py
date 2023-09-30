@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+import sqlalchemy
 from sqlalchemy.sql import text
 from typing import List
 from api.models.looker import LookerField
@@ -11,8 +12,8 @@ from api.database.database import engine
 router = APIRouter(prefix="/looker")
 
 
-@router.get("/get_table_schema", response_model=List[LookerField])
-def get_table_schema(schema: str, name: str) -> List[LookerField]:
+@router.get("/table_schema", response_model=List[LookerField])
+def table_schema(schema: str, name: str) -> List[LookerField]:
     connection = engine.connect()
 
     query = text(
@@ -24,12 +25,15 @@ def get_table_schema(schema: str, name: str) -> List[LookerField]:
         """
     )
 
-    result = connection.execute(
-        query,
-        name=name,
-        schema=schema,
-    )
-
+    try:
+        result = connection.execute(
+            query,
+            name=name,
+            schema=schema,
+        )
+    except sqlalchemy.exc.ProgrammingError as e:
+        error_msg = str(e)
+        raise HTTPException(status_code=400, detail=error_msg)
     connection.close()
 
     schema = {}
@@ -39,7 +43,28 @@ def get_table_schema(schema: str, name: str) -> List[LookerField]:
         schema[field_name] = data_type
 
     looker_schema = map_postgres_type_to_looker_type(schema)
-
     looker_fields = get_looker_fields(looker_schema)
 
     return looker_fields
+
+
+@router.get("/table_data", response_model=List[LookerField])
+def table_data(schema: str, name: str, columns: List[str]) -> List[LookerField]:
+    connection = engine.connect()
+
+    columns = ", ".join(columns)
+    query = f'SELECT {columns} FROM {schema}."{name}"'
+    connection = engine.connect()
+    try:
+        results = connection.execute(query)
+    except sqlalchemy.exc.ProgrammingError as e:
+        error_msg = str(e)
+        raise HTTPException(status_code=400, detail=error_msg)
+    connection.close()
+
+    data = []
+    for row in results.all():
+        values = {"values": [row[key] for key in row]}
+        data.append(values)
+
+    return data
