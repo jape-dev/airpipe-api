@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from sqlalchemy.sql import text
 from typing import List
-from api.models.looker import LookerField
+from api.models.looker import LookerField, LookerDataRequest
 
 
 from api.core.looker import get_looker_fields, map_postgres_type_to_looker_type
@@ -48,12 +48,12 @@ def table_schema(schema: str, name: str) -> List[LookerField]:
     return looker_fields
 
 
-@router.get("/table_data", response_model=List[LookerField])
-def table_data(schema: str, name: str, columns: List[str]) -> List[LookerField]:
+@router.post("/table_data", response_model=List[dict])
+def table_data(request: LookerDataRequest) -> List[dict]:
     connection = engine.connect()
 
-    columns = ", ".join(columns)
-    query = f'SELECT {columns} FROM {schema}."{name}"'
+    columns = ", ".join(request.fields)
+    query = f'SELECT {columns} FROM {request.db_schema}."{request.name}"'
     connection = engine.connect()
     try:
         results = connection.execute(query)
