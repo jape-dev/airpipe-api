@@ -96,7 +96,7 @@ def get_looker_fields(schema: dict):
     for field, type in schema.items():
         if field == "date":
             looker_field = LookerField(
-                id=field,
+                id="datee",
                 name="Date",
                 looker_field_type=LookerFieldType.date,
                 field_type=FieldType.dimension,
