@@ -54,6 +54,7 @@ def table_data(request: LookerDataRequest):
 
     columns = ", ".join(request.fields)
     query = f'SELECT {columns} FROM {request.db_schema}."{request.name}"'
+    print("query", query)
     connection = engine.connect()
     try:
         results = connection.execute(query)
