@@ -48,8 +48,8 @@ def table_schema(schema: str, name: str) -> List[LookerField]:
     return looker_fields
 
 
-@router.post("/table_data", response_model=List[dict])
-def table_data(request: LookerDataRequest) -> List[dict]:
+@router.post("/table_data")
+def table_data(request: LookerDataRequest):
     connection = engine.connect()
 
     columns = ", ".join(request.fields)
