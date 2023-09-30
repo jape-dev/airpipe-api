@@ -65,6 +65,7 @@ def table_data(request: LookerDataRequest):
 
     data = []
     for row in results.all():
+        print(row)
         values = {"values": [row[key] for key in row]}
         data.append(values)
 
