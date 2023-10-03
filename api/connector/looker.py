@@ -51,10 +51,8 @@ def table_schema(schema: str, name: str) -> List[LookerField]:
 @router.post("/table_data")
 def table_data(request: LookerDataRequest):
     connection = engine.connect()
-
     columns = ", ".join(request.fields)
     query = f'SELECT {columns} FROM {request.db_schema}."{request.name}"'
-    print("query", query)
     connection = engine.connect()
     try:
         results = connection.execute(query)
@@ -64,9 +62,14 @@ def table_data(request: LookerDataRequest):
     connection.close()
 
     data = []
-    for row in results.all():
-        print(row)
-        values = {"values": list(row)}
+    for row in results.mappings().all():
+        row_dict = dict(row)
+
+        if "date" in row_dict:
+            date = row_dict["date"]
+            row_dict["date"] = date.replace("-", "")
+
+        values = {"values": list(row_dict.values())}
         data.append(values)
 
     return data
