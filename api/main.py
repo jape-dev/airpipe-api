@@ -1,4 +1,5 @@
 from api.config import Config
+from api.admin import admin_router
 from api.connector import connector_router
 from api.core.static_data import FieldType, ChannelType, OnboardingStage
 from api.query import query_router
@@ -87,6 +88,7 @@ app.add_middleware(
 )
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
+app.include_router(admin_router.router)
 app.include_router(connector_router.router)
 app.include_router(query_router.router)
 app.include_router(user_router.router)

@@ -21,5 +21,9 @@ class User(BaseModel):
     google_analytics_refresh_token: Optional[str] = None
 
 
+class UserWithId(User):
+    id: int
+
+
 class UserInDB(User):
     hashed_password: str
