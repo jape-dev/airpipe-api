@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 import os
 from pathlib import Path
+import requests
 
 
 from api.config import Config
@@ -13,7 +14,6 @@ from api.database.models import UserDB
 from api.models.user import User
 from api.models.connector import AdAccount
 
-import requests
 
 REFRESH_ERROR = "Request had invalid authentication credentials"
 

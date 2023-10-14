@@ -10,6 +10,7 @@ DOMAIN_URL = Config.DOMAIN_URL
 CLIENT_SECRETS_PATH = Config.CLIENT_SECRETS_PATH
 SCOPE_GOOGLE_ADS = "https://www.googleapis.com/auth/adwords"
 SCOPE_GOOGLE_ANALYTICS = "https://www.googleapis.com/auth/analytics.readonly"
+SCOPE_GOOGLE_SHEETS = "https://www.googleapis.com/auth/spreadsheets"
 REDIRECT_URI = f"{DOMAIN_URL}/connector/google/oauth2_callback"
 
 # p = Path(__file__).with_name(CLIENT_SECRETS_PATH)
@@ -24,6 +25,9 @@ def authorize(channel_type: ChannelType = ChannelType.google):
     elif channel_type == ChannelType.google_analytics:
         flow = Flow.from_client_secrets_file(filename, scopes=[SCOPE_GOOGLE_ANALYTICS])
         print("scope set to google analytics")
+    elif channel_type == ChannelType.sheets:
+        flow = Flow.from_client_secrets_file(filename, scopes=[SCOPE_GOOGLE_SHEETS])
+        print("scope set to google sheets")
     else:
         raise ValueError("Channel must be google or google analytics")
 
@@ -54,8 +58,11 @@ def oauth2callback(
     elif channel_type == ChannelType.google_analytics:
         flow = Flow.from_client_secrets_file(filename, scopes=[SCOPE_GOOGLE_ANALYTICS])
         print("scope set to google analytics")
+    elif channel_type == ChannelType.sheets:
+        flow = Flow.from_client_secrets_file(filename, scopes=[SCOPE_GOOGLE_SHEETS])
+        print("scope set to google sheets")
     else:
-        raise ValueError("Channel must be google or google analytics")
+        raise ValueError("Channel must be google, google_analytics or sheets")
 
     flow.redirect_uri = REDIRECT_URI
     flow.fetch_token(code=code)

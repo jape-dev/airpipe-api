@@ -15,6 +15,7 @@ class UserDB(Base):
     facebook_access_token = Column(String(), nullable=True)
     google_refresh_token = Column(String(), nullable=True)
     google_analytics_refresh_token = Column(String(), nullable=True)
+    google_sheets_refresh_token = Column(String(), nullable=True)
     created_at = Column(DateTime(), default=datetime.datetime.now())
 
 

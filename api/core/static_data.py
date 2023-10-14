@@ -12,6 +12,7 @@ class ChannelType(str, Enum):
     google = "google"
     facebook = "facebook"
     google_analytics = "google_analytics"
+    sheets = "sheets"
 
 
 class FieldType(str, Enum):
