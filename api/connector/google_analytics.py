@@ -8,10 +8,15 @@ import requests
 from api.config import Config
 from api.core.auth import get_current_user
 from api.core.google import get_access_token
-from api.core.static_data import ChannelType
+from api.core.static_data import (
+    ChannelType,
+    google_analytics_dimensions,
+    google_analytics_metrics,
+)
 from api.database.database import session
 from api.database.models import UserDB
 from api.models.user import User
+from api.models.data import FieldOption
 from api.models.connector import AdAccount
 
 
@@ -73,6 +78,24 @@ def ad_accounts(token: str):
         # handleGoogleTokenException(response.text, current_user)
 
     return ad_accounts
+
+
+@router.get("/fields", response_model=List[FieldOption])
+def fields(
+    default: bool = False, metrics: bool = False, dimensions: bool = False
+) -> List[FieldOption]:
+    fields_options = None
+    if metrics:
+        fields_options = google_analytics_metrics
+    elif dimensions:
+        fields_options = google_analytics_dimensions
+    else:
+        fields_options = google_analytics_metrics + google_analytics_dimensions
+
+    if default:
+        fields_options = [f for f in fields_options if f["default"]]
+
+    return fields_options
 
 
 def handleGoogleTokenException(ex, current_user: User):

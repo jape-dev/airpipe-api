@@ -47,6 +47,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": True,
     },
     {
         "value": "conversions",
@@ -55,6 +56,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": True,
     },
     {
         "value": "cost_per_conversion",
@@ -63,6 +65,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "cpc",
@@ -71,6 +74,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "cpm",
@@ -79,6 +83,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "cpp",
@@ -87,6 +92,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "ctr",
@@ -95,6 +101,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "frequency",
@@ -103,6 +110,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "impressions",
@@ -111,6 +119,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": True,
     },
     {
         "value": "reach",
@@ -119,6 +128,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": True,
     },
     {
         "value": "spend",
@@ -127,6 +137,7 @@ facebook_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": True,
     },
 ]
 
@@ -138,6 +149,7 @@ facebook_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "account_name",
@@ -146,6 +158,7 @@ facebook_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "adset_id",
@@ -154,6 +167,7 @@ facebook_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "adset_name",
@@ -162,6 +176,7 @@ facebook_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": True,
     },
     {
         "value": "campaign_id",
@@ -170,6 +185,7 @@ facebook_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "campaign_name",
@@ -178,6 +194,8 @@ facebook_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": True,
+        "default": False,
     },
     {
         "value": "ad_id",
@@ -186,6 +204,7 @@ facebook_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": False,
     },
     {
         "value": "ad_name",
@@ -194,6 +213,16 @@ facebook_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
+        "default": True,
+    },
+    {
+        "value": "date",
+        "label": "Date",
+        "alt_value": "date",
+        "type": FieldType.dimension,
+        "channel": ChannelType.facebook,
+        "img": "facebook-icon",
+        "default": True,
     },
 ]
 
@@ -216,6 +245,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": False,
     },
     {
         "value": "metrics.average_cpe",
@@ -224,6 +254,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": False,
     },
     {
         "value": "metrics.average_cpm",
@@ -232,6 +263,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": False,
     },
     {
         "value": "metrics.average_cpv",
@@ -240,6 +272,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": False,
     },
     {
         "value": "metrics.clicks",
@@ -248,6 +281,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": True,
     },
     {
         "value": "metrics.conversions",
@@ -256,6 +290,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": True,
     },
     {
         "value": "metrics.cost_micros",
@@ -264,6 +299,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": True,
     },
     {
         "value": "metrics.cost_per_conversion",
@@ -272,6 +308,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": False,
     },
     {
         "value": "metrics.engagements",
@@ -280,6 +317,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": False,
     },
     {
         "value": "metrics.impressions",
@@ -288,6 +326,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": True,
     },
     {
         "value": "metrics.interactions",
@@ -296,6 +335,7 @@ google_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": False,
     },
 ]
 
@@ -318,6 +358,7 @@ google_dimensions = [
         "channel": ChannelType.google,
         "alt_value": "google_ad_id",
         "img": "google-ads-icon",
+        "default": False,
     },
     {
         "value": "ad_group_ad.ad.name",
@@ -326,6 +367,7 @@ google_dimensions = [
         "channel": ChannelType.google,
         "alt_value": "google_ad_name",
         "img": "google-ads-icon",
+        "default": True,
     },
     {
         "value": "ad_group.name",
@@ -334,6 +376,7 @@ google_dimensions = [
         "channel": ChannelType.google,
         "alt_value": "google_ad_group_name",
         "img": "google-ads-icon",
+        "default": True,
     },
     {
         "value": "ad_group.id",
@@ -342,6 +385,7 @@ google_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": False,
     },
     {
         "value": "campaign.id",
@@ -350,6 +394,7 @@ google_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": False,
     },
     {
         "value": "campaign.name",
@@ -358,6 +403,7 @@ google_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": True,
     },
     {
         "value": "segments.keyword.info.text",
@@ -366,6 +412,16 @@ google_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
+        "default": True,
+    },
+    {
+        "value": "segments.date",
+        "label": "Date",
+        "alt_value": "date",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": True,
     },
 ]
 
@@ -388,6 +444,7 @@ google_analytics_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": True,
     },
     {
         "value": "newUsers",
@@ -396,6 +453,7 @@ google_analytics_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": False,
     },
     {
         "value": "activeUsers",
@@ -404,6 +462,7 @@ google_analytics_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": False,
     },
     {
         "value": "sessions",
@@ -412,6 +471,7 @@ google_analytics_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": True,
     },
     {
         "value": "transactions",
@@ -420,6 +480,7 @@ google_analytics_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": False,
     },
     {
         "value": "checkouts",
@@ -428,6 +489,7 @@ google_analytics_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": False,
     },
     {
         "value": "conversions",
@@ -436,6 +498,7 @@ google_analytics_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": True,
     },
 ]
 
@@ -449,6 +512,7 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": False,
     },
     {
         "value": "city",
@@ -457,6 +521,7 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": False,
     },
     {
         "value": "continent",
@@ -465,6 +530,7 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": False,
     },
     {
         "value": "country",
@@ -473,6 +539,7 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": False,
     },
     {
         "value": "eventName",
@@ -481,6 +548,7 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": True,
     },
     {
         "value": "deviceCategory",
@@ -489,6 +557,7 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": False,
     },
     {
         "value": "medium",
@@ -497,6 +566,7 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": True,
     },
     {
         "value": "source",
@@ -505,5 +575,15 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
+        "default": True,
+    },
+    {
+        "value": "date",
+        "label": "Date",
+        "alt_value": "date",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google_analytics,
+        "img": "google-analytics-icon",
+        "default": True,
     },
 ]

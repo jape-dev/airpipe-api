@@ -58,6 +58,7 @@ class FieldOption(BaseModel):
     channel: ChannelType
     alt_value: Optional[str] = None
     img: Optional[str]
+    default: Optional[bool] = None
 
 
 class DataSource(BaseModel):

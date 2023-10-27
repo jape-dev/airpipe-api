@@ -2,10 +2,16 @@ from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from typing import List
 
-from api.models.data import TableColumns, CurrentResults, QueryResults, DataSource
+from api.models.data import (
+    TableColumns,
+    CurrentResults,
+    QueryResults,
+    DataSource,
+    FieldOption,
+)
 from api.database.database import engine, session
 from api.database.crud import get_user_by_email
-from api.core.static_data import ChannelType
+from api.core.static_data import ChannelType, get_enum_member_by_value
 from api.core.data import create_field_list, fetch_data, add_table_to_db
 from api.models.data import DataSourceInDB
 from api.database.models import DataSourceDB
@@ -89,6 +95,10 @@ def add_data_source(data_source: DataSource) -> SuccessResponse:
     )
     channel_img = get_channel_img(data_source.fields)
 
+    channel_type = get_enum_member_by_value(
+        ChannelType, data_source.adAccounts[0].channel
+    )
+
     # Saves data source to database.
     string_fields = ",".join(columns)
     data_source_row = DataSourceDB(
@@ -97,7 +107,7 @@ def add_data_source(data_source: DataSource) -> SuccessResponse:
         name=name,
         table_name=table_name,
         fields=string_fields,
-        channel=ChannelType.google,
+        channel=channel_type,
         channel_img=channel_img,
         ad_account_id=data_source.adAccounts[0].id,
         start_date=data_source.start_date,
@@ -141,3 +151,9 @@ def data_sources(email: str):
     ]
 
     return data_sources_db
+
+
+@router.get("/field_options", response_model=List[FieldOption])
+def field_options(channel: ChannelType) -> List[FieldOption]:
+    channel_type = get_enum_member_by_value(ChannelType, channel)
+    return create_field_list(channel=channel_type)

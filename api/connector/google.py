@@ -6,13 +6,14 @@ from starlette.responses import RedirectResponse
 
 from api.config import Config
 from api.core.auth import get_current_user
-from api.core.static_data import ChannelType
+from api.core.static_data import ChannelType, google_metrics, google_dimensions
 from api.core.google import get_access_token
 from api.database.database import session
 from api.utilities.google.auth import authorize, oauth2callback
 from api.database.models import UserDB
 from api.models.user import User
 from api.models.connector import AdAccount
+from api.models.data import FieldOption
 
 
 CLIENT_URL = Config.CLIENT_URL
@@ -84,8 +85,8 @@ def oauth2_callback(request: Request) -> RedirectResponse:
         )
     finally:
         session.close()
-
-    response = RedirectResponse(url=CLIENT_URL)
+    redirect_client_url = f"{CLIENT_URL}/add-data-source/"
+    response = RedirectResponse(url=redirect_client_url)
     response.delete_cookie("token")
     response.delete_cookie("google_token")
     response.delete_cookie("passthrough_val")
@@ -134,3 +135,21 @@ def ad_accounts(token: str):
                     )
                 )
     return ad_accounts
+
+
+@router.get("/fields", response_model=List[FieldOption])
+def fields(
+    default: bool = False, metrics: bool = False, dimensions: bool = False
+) -> List[FieldOption]:
+    fields_options = None
+    if metrics:
+        fields_options = google_metrics
+    elif dimensions:
+        fields_options = google_dimensions
+    else:
+        fields_options = google_metrics + google_dimensions
+
+    if default:
+        fields_options = [f for f in fields_options if f["default"]]
+
+    return fields_options

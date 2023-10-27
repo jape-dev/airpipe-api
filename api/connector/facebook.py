@@ -1,11 +1,12 @@
 from api.config import Config
 
 from api.models.connector import AdAccount
-from api.core.static_data import ChannelType
+from api.core.static_data import ChannelType, facebook_metrics, facebook_dimensions
 from api.models.user import User
 from api.core.auth import get_current_user
 from api.database.database import session
 from api.database.models import UserDB
+from api.models.data import FieldOption
 
 from fastapi import APIRouter, Request, HTTPException
 import requests
@@ -60,7 +61,7 @@ def login(request: Request):
     finally:
         session.close()
 
-    redirect_client_url = f"{CLIENT_URL}/add-data/"
+    redirect_client_url = f"{CLIENT_URL}/add-data-source/"
 
     return RedirectResponse(url=redirect_client_url)
 
@@ -71,10 +72,8 @@ def ad_accounts(token: str):
     adaccounts = []
 
     url = f"https://graph.facebook.com/v17.0/me?fields=adaccounts&access_token={current_user.facebook_access_token}"
-    print(url)
     response = requests.get(url)
     json = response.json()
-    print(json)
     accounts = json["adaccounts"]["data"]
 
     for account in accounts:
@@ -95,6 +94,24 @@ def ad_accounts(token: str):
         adaccounts.append(adaccount)
 
     return adaccounts
+
+
+@router.get("/fields", response_model=List[FieldOption])
+def fields(
+    default: bool = False, metrics: bool = False, dimensions: bool = False
+) -> List[FieldOption]:
+    fields_options = None
+    if metrics:
+        fields_options = facebook_metrics
+    elif dimensions:
+        fields_options = facebook_dimensions
+    else:
+        fields_options = facebook_metrics + facebook_dimensions
+
+    if default:
+        fields_options = [f for f in fields_options if f["default"]]
+
+    return fields_options
 
 
 @router.get("/delete")

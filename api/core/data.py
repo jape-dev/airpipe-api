@@ -37,12 +37,13 @@ def create_field_list(
         fields (List[FieldOption]): List of FieldOptions.
         use_alt_value (bool, optional): If True, uses the alt_value of the FieldOption. Defaults to False.
         split_value (bool, optional): If True, splits the value of the FieldOption by "." and uses the last element. Defaults to False.
+        channel (ChannelType): type of channel (google or facebook)
 
     Returns:
         all_fields (List[str]): List of all fields.
         metrics (List[str]): List of all metrics.
         dimensions (List[str]): List of all dimensions.
-        channel (ChannelType): type of channel (google or facebook)
+
 
     """
     if channel:
