@@ -39,6 +39,13 @@ class LookerFieldType(str, Enum):
     boolean = "BOOLEAN"
 
 
+class JoinType(str, Enum):
+    inner = "INNER JOIN"
+    left = "LEFT JOIN"
+    right = "RIGHT JOIN"
+    full = "FULL OUTER JOIN"
+
+
 facebook_metrics = [
     {
         "value": "clicks",
@@ -218,23 +225,12 @@ facebook_dimensions = [
     {
         "value": "date",
         "label": "Date",
-        "alt_value": "date",
+        "alt_value": "facebook_date",
         "type": FieldType.dimension,
         "channel": ChannelType.facebook,
         "img": "facebook-icon",
         "default": True,
     },
-]
-
-facebook_date = [
-    {
-        "value": "date",
-        "label": "Date",
-        "alt_value": "date",
-        "type": FieldType.dimension,
-        "channel": ChannelType.facebook,
-        "img": "facebook-icon",
-    }
 ]
 
 google_metrics = [
@@ -339,17 +335,6 @@ google_metrics = [
     },
 ]
 
-google_date = [
-    {
-        "value": "segments.date",
-        "label": "Date",
-        "alt_value": "date",
-        "type": FieldType.dimension,
-        "channel": ChannelType.google,
-        "img": "google-ads-icon",
-    }
-]
-
 google_dimensions = [
     {
         "value": "ad_group_ad.ad.id",
@@ -417,23 +402,12 @@ google_dimensions = [
     {
         "value": "segments.date",
         "label": "Date",
-        "alt_value": "date",
+        "alt_value": "google_date",
         "type": FieldType.dimension,
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": True,
     },
-]
-
-google_analytics_date = [
-    {
-        "value": "date",
-        "label": "Date",
-        "alt_value": "date",
-        "type": FieldType.dimension,
-        "channel": ChannelType.google_analytics,
-        "img": "google-analytics-icon",
-    }
 ]
 
 google_analytics_metrics = [
@@ -566,7 +540,7 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
-        "default": True,
+        "default": False,
     },
     {
         "value": "source",
@@ -575,12 +549,12 @@ google_analytics_dimensions = [
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",
-        "default": True,
+        "default": False,
     },
     {
         "value": "date",
         "label": "Date",
-        "alt_value": "date",
+        "alt_value": "google_analytics_date",
         "type": FieldType.dimension,
         "channel": ChannelType.google_analytics,
         "img": "google-analytics-icon",

@@ -47,3 +47,33 @@ class ConversationsDB(Base):
     message = Column(String())
     is_user_message = Column(Boolean())
     created_at = Column(DateTime(), default=datetime.datetime.now())
+
+
+class ViewDB(Base):
+    __tablename__ = "views"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(Integer(), primary_key=True)
+    user_id = Column(Integer())
+    name = Column(String())
+    db_schema = Column(String())
+    table_name = Column(String())
+    fields = Column(String())
+    start_date = Column(String())
+    end_date = Column(String())
+    created_at = Column(DateTime(), default=datetime.datetime.now())
+
+
+class JoinConditionDB(Base):
+    __tablename__ = "join_conditions"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(Integer(), primary_key=True)
+    condition_id = Column(Integer())
+    view_id = Column(Integer())
+    left_data_source_id = Column(Integer())
+    right_data_source_id = Column(Integer())
+    left_field = Column(String())
+    right_field = Column(String())
+    join_type = Column(String())
+    created_at = Column(DateTime(), default=datetime.datetime.now())

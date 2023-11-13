@@ -9,14 +9,11 @@ from api.database.database import engine
 from api.models.data import FieldOption
 from api.core.static_data import (
     google_metrics,
-    google_date,
     google_dimensions,
     google_analytics_metrics,
     google_analytics_dimensions,
-    google_analytics_date,
     facebook_metrics,
     facebook_dimensions,
-    facebook_date,
 )
 
 
@@ -184,6 +181,8 @@ def pad_object_list(data: dict):
     Returns:
         dict: The modified dictionary with padded lists.
     """
+    print(data)
+
     # Find the maximum length of lists in the nested dictionaries
     max_length = max(
         max(len(lst) for lst in inner_dict.values()) for inner_dict in data.values()
@@ -208,8 +207,6 @@ def object_list_to_df(data: dict):
     Returns:
         df (pandas.DataFrame): The generated DataFrame.
     """
-    print(data)
-
     # Create an empty DataFrame
     df_data = []
 
@@ -282,14 +279,11 @@ def all_channel_fields() -> List[FieldOption]:
     """
     all_channels = (
         google_metrics
-        + google_date
         + google_dimensions
         + google_analytics_metrics
         + google_analytics_dimensions
-        + google_analytics_date
         + facebook_metrics
         + facebook_dimensions
-        + facebook_date
     )
 
     return all_channels

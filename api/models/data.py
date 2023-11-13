@@ -3,7 +3,7 @@ from typing import List, Dict, Optional
 
 from api.models.connector import AdAccount
 from api.models.user import User
-from api.core.static_data import ChannelType, FieldType
+from api.core.static_data import ChannelType, FieldType, JoinType
 
 
 class TableColumns(BaseModel):
@@ -61,6 +61,10 @@ class FieldOption(BaseModel):
     default: Optional[bool] = None
 
 
+class FieldOptionWithDataSourceId(FieldOption):
+    data_source_id: int
+
+
 class DataSource(BaseModel):
     name: str
     user: User
@@ -87,3 +91,33 @@ class DataSourceInDB(BaseModel):
 class DataPrompt(BaseModel):
     prompt: str
     table: str
+
+
+class JoinCondition(BaseModel):
+    left_field: FieldOption
+    right_field: FieldOption
+    join_type: JoinType
+    left_data_source_id: int
+    right_data_source_id: int
+
+
+class View(BaseModel):
+    name: str
+    fields: List[FieldOption]
+    start_date: str
+    end_date: str
+    join_conditions: Optional[List[JoinCondition]]
+
+
+class ViewInDB(BaseModel):
+    id: int
+    user_id: str
+    db_schema: str
+    name: str
+    table_name: str
+    fields: str
+    start_date: str
+    end_date: str
+
+    class Config:
+        orm_mode = True

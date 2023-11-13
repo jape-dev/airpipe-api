@@ -5,12 +5,53 @@ from typing import List
 from api.core.google import build_google_query, fetch_google_query
 from api.core.facebook import fetch_facebook_data
 from api.database.database import engine
-from api.models.data import FieldOption, DataSource
+from api.models.data import (
+    FieldOption,
+    DataSource,
+    JoinCondition,
+    DataSourceInDB,
+    FieldOptionWithDataSourceId,
+)
 from api.models.google import GoogleQuery
 from api.models.facebook import FacebookQuery
-from api.core.static_data import FieldType, ChannelType
+from api.core.static_data import (
+    FieldType,
+    ChannelType,
+    google_metrics,
+    google_dimensions,
+    google_analytics_metrics,
+    google_analytics_dimensions,
+    facebook_metrics,
+    facebook_dimensions,
+)
 from api.core.google_analytics import fetch_google_analytics_data
 from api.models.google_analytics import GoogleAnalyticsQuery
+
+
+all_fields: List[FieldOption] = (
+    google_metrics
+    + google_dimensions
+    + google_analytics_metrics
+    + google_analytics_dimensions
+    + facebook_metrics
+    + facebook_dimensions
+)
+
+all_metrics: List[FieldOption] = (
+    google_metrics + google_analytics_metrics + facebook_metrics
+)
+
+all_dimensions: List[FieldOption] = (
+    google_dimensions + google_analytics_dimensions + facebook_dimensions
+)
+
+google_fields: List[FieldOption] = google_metrics + google_dimensions
+
+facebook_fields: List[FieldOption] = facebook_metrics + facebook_dimensions
+
+google_analytics_fields: List[FieldOption] = (
+    google_analytics_metrics + google_analytics_dimensions
+)
 
 
 def load_postgresql_table(table_name):
@@ -82,6 +123,19 @@ def create_field_list(
 
 
 def fetch_data(data_source: DataSource):
+    """
+    Fetches data from a given data source.
+
+    Args:
+        data_source (DataSource): The data source to fetch data from.
+
+    Returns:
+        list: A list of fetched data.
+
+    Raises:
+        HTTPException: If the channel type is not supported.
+
+    """
     data_list = []
     for adAccount in data_source.adAccounts:
         account_id = adAccount.id
@@ -134,6 +188,17 @@ def fetch_data(data_source: DataSource):
 
 
 def add_table_to_db(schema: str, table_name: str, df: pd.DataFrame):
+    """
+    Adds a table to the database.
+
+    Parameters:
+        schema (str): The name of the schema to add the table to.
+        table_name (str): The name of the table to add.
+        df (pd.DataFrame): The DataFrame containing the data to insert into the table.
+
+    Returns:
+        dict: A dictionary with a single key "message" and value "success" indicating that the table was successfully added to the database.
+    """
     connection = engine.connect()
     if not engine.dialect.has_schema(connection, schema):
         # Create the schema
@@ -150,3 +215,42 @@ def add_table_to_db(schema: str, table_name: str, df: pd.DataFrame):
     connection.close()
 
     return {"message": "success"}
+
+
+def build_blend_query(
+    fields: List[FieldOptionWithDataSourceId],
+    join_conditions: List[JoinCondition],
+    left_data_source: DataSourceInDB,
+    right_data_source: DataSourceInDB,
+):
+    """
+    Builds a SQL query for blending data from two data sources.
+
+    Args:
+        fields (List[FieldOptionWithDataSourceId]): A list of field options with data source IDs.
+        join_conditions (List[JoinCondition]): A list of join conditions.
+        left_data_source (DataSourceInDB): The left data source.
+        right_data_source (DataSourceInDB): The right data source.
+
+    Returns:
+        str: The SQL query for blending the data.
+    """
+    db_schema = left_data_source.db_schema
+    left_table_name = left_data_source.name
+    right_table_name = right_data_source.name
+
+    field_names = []
+    for field in fields:
+        if field.data_source_id == left_data_source.id:
+            field_name = f'"{left_table_name}"."{field.alt_value}"'
+        elif field.data_source_id == right_data_source.id:
+            field_name = f'"{right_table_name}"."{field.alt_value}"'
+        else:
+            raise ValueError("Invalid data source ID")
+        field_names.append(field_name)
+
+    query = f'SELECT DISTINCT {", ".join(field_names)} FROM {db_schema}."{left_table_name}" '
+    for join_condition in join_conditions:
+        query += f'{join_condition.join_type} {db_schema}."{right_table_name}" ON {db_schema}."{left_table_name}"."{join_condition.left_field.alt_value}" = {db_schema}."{right_table_name}"."{join_condition.right_field.alt_value}"'
+
+    return query

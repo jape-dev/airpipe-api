@@ -4,7 +4,15 @@ from api.connector import connector_router
 from api.core.static_data import FieldType, ChannelType, OnboardingStage
 from api.query import query_router
 from api.user import user_router
-from api.models.data import TabData, Schema, TableColumns, FieldOption
+from api.models.data import (
+    TabData,
+    Schema,
+    TableColumns,
+    FieldOption,
+    FieldOptionWithDataSourceId,
+    JoinType,
+    JoinCondition,
+)
 from api.models.conversation import Message
 from api.models.user import User
 
@@ -55,6 +63,9 @@ def custom_openapi() -> Dict[str, Any]:
         Message,
         User,
         OnboardingStage,
+        FieldOptionWithDataSourceId,
+        JoinType,
+        JoinCondition,
     ]
     model_name_map = get_model_name_map(flat_models)  # type: ignore
     definitions = get_model_definitions(

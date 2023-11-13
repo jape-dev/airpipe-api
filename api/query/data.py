@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from typing import List
+import pandas as pd
 
 from api.models.data import (
     TableColumns,
@@ -8,20 +9,25 @@ from api.models.data import (
     QueryResults,
     DataSource,
     FieldOption,
+    FieldOptionWithDataSourceId,
 )
 from api.database.database import engine, session
 from api.database.crud import get_user_by_email
 from api.core.static_data import ChannelType, get_enum_member_by_value
-from api.core.data import create_field_list, fetch_data, add_table_to_db
-from api.models.data import DataSourceInDB
-from api.database.models import DataSourceDB
+from api.core.data import (
+    create_field_list,
+    fetch_data,
+    add_table_to_db,
+    all_fields,
+    build_blend_query,
+)
+from api.models.data import DataSourceInDB, JoinCondition, View, ViewInDB
+from api.models.user import User
+from api.database.models import DataSourceDB, ViewDB, JoinConditionDB
 from api.database.crud import get_data_sources_by_user_id
 from api.utilities.data import (
-    merge_objects,
     insert_alt_values,
     get_channel_img,
-    object_list_to_df,
-    pad_object_list,
 )
 from api.utilities.responses import SuccessResponse
 
@@ -39,6 +45,26 @@ def get_table_columns(table_name: str):
     return table_columns
 
 
+@router.post(
+    "/data_source_field_options", response_model=List[FieldOption], status_code=200
+)
+def data_source_field_options(data_source: DataSourceInDB) -> List[FieldOption]:
+    source_fields = data_source.fields.split(",")
+    selected_fields = [
+        field for field in all_fields if field["alt_value"] in source_fields
+    ]
+
+    return selected_fields
+
+
+@router.post("/field_options", response_model=List[FieldOption], status_code=200)
+def field_options(fields: List[str]) -> List[FieldOption]:
+    return [
+        next(field for field in all_fields if field["alt_value"] == field_name)
+        for field_name in fields
+    ]
+
+
 @router.get("/run_query", response_model=QueryResults, status_code=200)
 def run_query(query: str):
     connection = engine.connect()
@@ -48,6 +74,8 @@ def run_query(query: str):
     except sqlalchemy.exc.ProgrammingError as e:
         error_msg = str(e)
         raise HTTPException(status_code=400, detail=error_msg)
+    finally:
+        connection.close()
 
     query_results = QueryResults(columns=columns, results=results.all())
 
@@ -74,12 +102,12 @@ def table_results(schema: str, name: str):
 @router.post("/add_data_source", response_model=SuccessResponse, status_code=200)
 def add_data_source(data_source: DataSource) -> SuccessResponse:
     # Reads data source
-
     data_list = fetch_data(data_source)
     data_list = [insert_alt_values(data, data_source.fields) for data in data_list]
-    data = merge_objects(data_list)
-    data = pad_object_list(data)
-    df = object_list_to_df(data)
+    df = pd.DataFrame(data_list[0])
+
+    # Convert the DataFrame numerica values to numeric
+    df = df.apply(pd.to_numeric, errors="ignore")
 
     db_user = get_user_by_email(data_source.user.email)
     name = data_source.name.replace(" ", "_")
@@ -157,3 +185,111 @@ def data_sources(email: str):
 def field_options(channel: ChannelType) -> List[FieldOption]:
     channel_type = get_enum_member_by_value(ChannelType, channel)
     return create_field_list(channel=channel_type)
+
+
+@router.post("/create_blend", response_model=QueryResults)
+def create_blend(
+    fields: List[FieldOptionWithDataSourceId],
+    join_conditions: List[JoinCondition],
+    left_data_source: DataSourceInDB,
+    right_data_source: DataSourceInDB,
+):
+    query = build_blend_query(
+        fields=fields,
+        join_conditions=join_conditions,
+        left_data_source=left_data_source,
+        right_data_source=right_data_source,
+    )
+
+    connection = engine.connect()
+    try:
+        results = connection.execute(query)
+        columns = list(results.keys())
+    except sqlalchemy.exc.ProgrammingError as e:
+        error_msg = str(e)
+        raise HTTPException(status_code=400, detail=error_msg)
+    finally:
+        connection.close()
+
+    query_results = QueryResults(columns=columns, results=results.all())
+
+    return query_results
+
+
+@router.post("/save_view", response_model=ViewInDB)
+def save_view(view: View, user: User) -> ViewInDB:
+    db_user = get_user_by_email(user.email)
+    name = view.name.replace(" ", "-").lower()
+
+    table_name = f"_{db_user.id}.{name}"
+    db_schema = f"_{db_user.id}"
+
+    columns, metrics, dimensions = create_field_list(
+        view.fields, use_alt_value=True, split_value=True
+    )
+
+    view_db = ViewDB(
+        user_id=db_user.id,
+        name=name,
+        db_schema=db_schema,
+        table_name=table_name,
+        fields=",".join(columns),
+        start_date=view.start_date,
+        end_date=view.end_date,
+    )
+
+    try:
+        session.add(view_db)
+        session.flush()  # Flush the changes to the database to get the id
+        session.commit()
+        view_in_db = ViewInDB.from_orm(view_db)
+    except Exception as e:
+        print(e)
+        session.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not save view to database. {e}",
+        )
+    finally:
+        session.close()
+
+    if view.join_conditions:
+        for condtion_id, condition in enumerate(view.join_conditions):
+            join_condition = JoinConditionDB(
+                condition_id=condtion_id,
+                view_id=view_db.id,
+                left_field=condition.left_field.alt_value,
+                right_field=condition.right_field.alt_value,
+                join_type=condition.join_type.value,
+                left_data_source_id=condition.left_data_source_id,
+                right_data_source_id=condition.right_data_source_id,
+            )
+            try:
+                session.add(join_condition)
+                session.commit()
+            except Exception as e:
+                print(e)
+                session.rollback()
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Could not save join condition to database. {e}",
+                )
+
+    session.close()
+
+    return view_in_db
+
+
+@router.post("/save_table", response_model=SuccessResponse)
+def save_table(results: CurrentResults, schema: str) -> SuccessResponse:
+    df = pd.DataFrame(results.results, columns=results.columns)
+    try:
+        add_table_to_db(schema, results.name, df)
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not save table to database. {e}",
+        )
+
+    return SuccessResponse(success=True)
