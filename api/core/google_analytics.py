@@ -21,7 +21,12 @@ def fetch_google_analytics_data(current_user: User, query: GoogleAnalyticsQuery)
         property=f"properties/{query.property_id}",
         dimensions=dimensions,
         metrics=metrics,
-        date_ranges=[DateRange(start_date=query.start_date, end_date=query.end_date)],
+        date_ranges=[
+            DateRange(
+                start_date=query.start_date.strftime("%Y-%m-%d"),
+                end_date=query.end_date.strftime("%Y-%m-%d"),
+            )
+        ],
     )
 
     response = client.run_report(request)

@@ -6,6 +6,7 @@ from api.utilities.string import underscore_to_camel_case
 from api.database.database import session
 from api.utilities.data import convert_metric
 
+from datetime import datetime
 from fastapi import HTTPException
 import requests
 from typing import List
@@ -20,7 +21,6 @@ GOOGLE_ADS_DEVELOPER_TOKEN = Config.GOOGLE_ADS_DEVELOPER_TOKEN
 def handleGoogleTokenException(ex, current_user: User):
     error = str(ex)
     if REFRESH_ERROR in error:
-
         try:
             user = (
                 session.query(UserDB).filter(UserDB.email == current_user.email).first()
@@ -49,13 +49,15 @@ def handleGoogleTokenException(ex, current_user: User):
         )
 
 
-def build_google_query(fields: List[str], start_date: str, end_date: str) -> str:
+def build_google_query(
+    fields: List[str], start_date: datetime, end_date: datetime
+) -> str:
     fields = ",".join(fields)
 
     data_query = f"""
         SELECT {fields}
         FROM ad_group_ad
-        WHERE segments.date BETWEEN "{start_date}" AND "{end_date}"
+        WHERE segments.date BETWEEN "{start_date.strftime("%Y-%m-%d")}" AND "{end_date.strftime("%Y-%m-%d")}"
     """
 
     return data_query
@@ -64,7 +66,6 @@ def build_google_query(fields: List[str], start_date: str, end_date: str) -> str
 def fetch_google_query(
     current_user: User, query: GoogleQuery, data_query: str
 ) -> List[object]:
-
     access_token = get_access_token(current_user.google_refresh_token)
     url = f"https://googleads.googleapis.com/v14/customers/{query.account_id}/googleAds:searchStream"
     body = {"query": data_query}
@@ -77,7 +78,13 @@ def fetch_google_query(
 
     data = []
     for batch in stream:
-        results = batch["results"]
+        try:
+            results = batch["results"]
+        except KeyError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Could not get data. {response.text}",
+            )
         for row in results:
             data_row = {}
             for metric in query.metrics:

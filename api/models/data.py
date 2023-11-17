@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 
@@ -70,8 +71,8 @@ class DataSource(BaseModel):
     user: User
     fields: List[FieldOption]
     adAccounts: List[AdAccount]
-    start_date: str
-    end_date: str
+    start_date: datetime
+    end_date: datetime
 
 
 class DataSourceInDB(BaseModel):
@@ -84,8 +85,8 @@ class DataSourceInDB(BaseModel):
     channel: str
     channel_img: str
     ad_account_id: str
-    start_date: str
-    end_date: str
+    start_date: datetime
+    end_date: datetime
 
 
 class DataPrompt(BaseModel):
@@ -104,8 +105,8 @@ class JoinCondition(BaseModel):
 class View(BaseModel):
     name: str
     fields: List[FieldOption]
-    start_date: str
-    end_date: str
+    start_date: datetime
+    end_date: datetime
     join_conditions: Optional[List[JoinCondition]]
 
 
@@ -116,8 +117,8 @@ class ViewInDB(BaseModel):
     name: str
     table_name: str
     fields: str
-    start_date: str
-    end_date: str
+    start_date: datetime
+    end_date: datetime
 
     class Config:
         orm_mode = True

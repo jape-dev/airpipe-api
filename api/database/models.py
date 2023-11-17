@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import String, Column, Integer, Boolean, DateTime
+from sqlalchemy import String, Column, Integer, Boolean, DateTime, Date
 
 from api.database.database import Base
 
@@ -32,8 +32,8 @@ class DataSourceDB(Base):
     channel = Column(String())
     channel_img = Column(String())
     ad_account_id = Column(String())
-    start_date = Column(String())
-    end_date = Column(String())
+    start_date = Column(DateTime())
+    end_date = Column(DateTime())
     created_at = Column(DateTime(), default=datetime.datetime.now())
 
 
@@ -59,8 +59,8 @@ class ViewDB(Base):
     db_schema = Column(String())
     table_name = Column(String())
     fields = Column(String())
-    start_date = Column(String())
-    end_date = Column(String())
+    start_date = Column(DateTime())
+    end_date = Column(DateTime())
     created_at = Column(DateTime(), default=datetime.datetime.now())
 
 

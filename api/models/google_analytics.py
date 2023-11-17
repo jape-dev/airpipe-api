@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import datetime
 
 
 class GoogleAnalyticsQueryResults(BaseModel):
@@ -13,5 +14,5 @@ class GoogleAnalyticsQuery(BaseModel):
     property_id: str
     metrics: List[str]
     dimensions: List[str]
-    start_date: str
-    end_date: str
+    start_date: datetime
+    end_date: datetime

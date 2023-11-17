@@ -116,7 +116,13 @@ def ad_accounts(token: str):
         stream = response.json()
 
         for batch in stream:
-            results = batch["results"]
+            try:
+                results = batch["results"]
+            except KeyError:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Could not get ad accounts. {response.text}",
+                )
             for result in results:
                 customer = result["customerClient"]
 

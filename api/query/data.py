@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import sqlalchemy
-from typing import List
+from typing import List, Optional
 import pandas as pd
 
 from api.models.data import (
@@ -24,13 +24,14 @@ from api.core.data import (
 from api.models.data import DataSourceInDB, JoinCondition, View, ViewInDB
 from api.models.user import User
 from api.database.models import DataSourceDB, ViewDB, JoinConditionDB
-from api.database.crud import get_data_sources_by_user_id
+from api.database.crud import get_data_sources_by_user_id, get_views_by_user_id
 from api.utilities.data import (
     insert_alt_values,
     get_channel_img,
 )
 from api.utilities.responses import SuccessResponse
-
+from pydantic import Field
+from datetime import datetime
 
 router = APIRouter()
 
@@ -83,8 +84,16 @@ def run_query(query: str):
 
 
 @router.get("/table_results", response_model=CurrentResults, status_code=200)
-def table_results(schema: str, name: str):
-    query = f'SELECT * FROM {schema}."{name}"'
+def table_results(
+    schema: str,
+    name: str,
+    date_column: Optional[str] = None,
+    start_date: datetime = None,
+    end_date: datetime = None,
+):
+    query = f'SELECT * FROM {schema}."{name}" '
+    if date_column is not None and start_date is not None and end_date is not None:
+        query += f"WHERE {date_column} BETWEEN '{start_date.strftime('%Y-%m-%d')}' AND '{end_date.strftime('%Y-%m-%d')}'"
     connection = engine.connect()
     try:
         results = connection.execute(query)
@@ -159,7 +168,9 @@ def add_data_source(data_source: DataSource) -> SuccessResponse:
 @router.get("/data_sources", response_model=List[DataSourceInDB], status_code=200)
 def data_sources(email: str):
     db_user = get_user_by_email(email)
-    data_sources = get_data_sources_by_user_id(db_user.id)
+    data_sources: List[DataSourceDB] = get_data_sources_by_user_id(db_user.id)
+
+    print(data_sources[0].start_date)
 
     data_sources_db = [
         DataSourceInDB(
@@ -181,6 +192,27 @@ def data_sources(email: str):
     return data_sources_db
 
 
+@router.get("/views", response_model=List[ViewInDB])
+def views(email: str):
+    db_user = get_user_by_email(email)
+    views = get_views_by_user_id(db_user.id)
+    views_db = [
+        ViewInDB(
+            id=view.id,
+            user_id=view.user_id,
+            db_schema=view.db_schema,
+            name=view.name,
+            table_name=view.table_name,
+            fields=view.fields,
+            start_date=view.start_date,
+            end_date=view.end_date,
+        )
+        for view in views
+    ]
+
+    return views_db
+
+
 @router.get("/field_options", response_model=List[FieldOption])
 def field_options(channel: ChannelType) -> List[FieldOption]:
     channel_type = get_enum_member_by_value(ChannelType, channel)
@@ -193,12 +225,18 @@ def create_blend(
     join_conditions: List[JoinCondition],
     left_data_source: DataSourceInDB,
     right_data_source: DataSourceInDB,
+    date_column: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
 ):
     query = build_blend_query(
         fields=fields,
         join_conditions=join_conditions,
         left_data_source=left_data_source,
         right_data_source=right_data_source,
+        date_column=date_column,
+        start_date=start_date,
+        end_date=end_date,
     )
 
     connection = engine.connect()
@@ -283,6 +321,8 @@ def save_view(view: View, user: User) -> ViewInDB:
 @router.post("/save_table", response_model=SuccessResponse)
 def save_table(results: CurrentResults, schema: str) -> SuccessResponse:
     df = pd.DataFrame(results.results, columns=results.columns)
+    # Filter on date range here. Or ideally filter on dates when pulling from SQL.
+
     try:
         add_table_to_db(schema, results.name, df)
     except Exception as e:

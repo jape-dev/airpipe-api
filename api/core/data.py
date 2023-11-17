@@ -1,6 +1,7 @@
+from datetime import datetime
 from fastapi import HTTPException
 import pandas as pd
-from typing import List
+from typing import List, Optional
 
 from api.core.google import build_google_query, fetch_google_query
 from api.core.facebook import fetch_facebook_data
@@ -222,6 +223,9 @@ def build_blend_query(
     join_conditions: List[JoinCondition],
     left_data_source: DataSourceInDB,
     right_data_source: DataSourceInDB,
+    date_column: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
 ):
     """
     Builds a SQL query for blending data from two data sources.
@@ -252,5 +256,7 @@ def build_blend_query(
     query = f'SELECT DISTINCT {", ".join(field_names)} FROM {db_schema}."{left_table_name}" '
     for join_condition in join_conditions:
         query += f'{join_condition.join_type} {db_schema}."{right_table_name}" ON {db_schema}."{left_table_name}"."{join_condition.left_field.alt_value}" = {db_schema}."{right_table_name}"."{join_condition.right_field.alt_value}"'
+    if date_column is not None and start_date is not None and end_date is not None:
+        query += f"WHERE {date_column} BETWEEN '{start_date.strftime('%Y-%m-%d')}' AND '{end_date.strftime('%Y-%m-%d')}'"
 
     return query
