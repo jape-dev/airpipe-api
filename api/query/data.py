@@ -32,12 +32,14 @@ from api.utilities.data import (
 from api.utilities.responses import SuccessResponse
 from pydantic import Field
 from datetime import datetime
+from api.core.auth import get_current_user
 
 router = APIRouter()
 
 
 @router.get("/table_columns", response_model=TableColumns, status_code=200)
-def get_table_columns(table_name: str):
+def get_table_columns(token: str, table_name: str):
+    get_current_user(token)
     connection = engine.connect()
     result = connection.execute(f"SELECT * FROM {table_name} LIMIT 1")
     cols = [col for col in result.keys()]
@@ -67,7 +69,8 @@ def field_options(fields: List[str]) -> List[FieldOption]:
 
 
 @router.get("/run_query", response_model=QueryResults, status_code=200)
-def run_query(query: str):
+def run_query(token: str, query: str):
+    get_current_user(token)
     connection = engine.connect()
     try:
         results = connection.execute(query)
@@ -85,12 +88,14 @@ def run_query(query: str):
 
 @router.get("/table_results", response_model=CurrentResults, status_code=200)
 def table_results(
+    token: str,
     schema: str,
     name: str,
     date_column: Optional[str] = None,
     start_date: datetime = None,
     end_date: datetime = None,
 ):
+    get_current_user(token)
     query = f'SELECT * FROM {schema}."{name}" '
     if date_column is not None and start_date is not None and end_date is not None:
         query += f"WHERE {date_column} BETWEEN '{start_date.strftime('%Y-%m-%d')}' AND '{end_date.strftime('%Y-%m-%d')}'"
@@ -166,8 +171,9 @@ def add_data_source(data_source: DataSource) -> SuccessResponse:
 
 
 @router.get("/data_sources", response_model=List[DataSourceInDB], status_code=200)
-def data_sources(email: str):
-    db_user = get_user_by_email(email)
+def data_sources(token: str):
+    current_user: User = get_current_user(token)
+    db_user = get_user_by_email(current_user.email)
     data_sources: List[DataSourceDB] = get_data_sources_by_user_id(db_user.id)
 
     data_sources_db = [
@@ -191,8 +197,9 @@ def data_sources(email: str):
 
 
 @router.get("/views", response_model=List[ViewInDB])
-def views(email: str):
-    db_user = get_user_by_email(email)
+def views(token: str):
+    current_user: User = get_current_user(token)
+    db_user = get_user_by_email(current_user.email)
     views = get_views_by_user_id(db_user.id)
     views_db = [
         ViewInDB(
@@ -212,13 +219,15 @@ def views(email: str):
 
 
 @router.get("/field_options", response_model=List[FieldOption])
-def field_options(channel: ChannelType) -> List[FieldOption]:
+def field_options(channel: ChannelType, token: str) -> List[FieldOption]:
+    current_user: User = get_current_user(token)
     channel_type = get_enum_member_by_value(ChannelType, channel)
     return create_field_list(channel=channel_type)
 
 
 @router.post("/create_blend", response_model=QueryResults)
 def create_blend(
+    token: str,
     fields: List[FieldOptionWithDataSourceId],
     join_conditions: List[JoinCondition],
     left_data_source: DataSourceInDB,
@@ -227,6 +236,7 @@ def create_blend(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
 ):
+    current_user: User = get_current_user(token)
     query = build_blend_query(
         fields=fields,
         join_conditions=join_conditions,
@@ -253,8 +263,9 @@ def create_blend(
 
 
 @router.post("/save_view", response_model=ViewInDB)
-def save_view(view: View, user: User) -> ViewInDB:
-    db_user = get_user_by_email(user.email)
+def save_view(view: View, token: str) -> ViewInDB:
+    current_user: User = get_current_user(token)
+    db_user = get_user_by_email(current_user.email)
     name = view.name.replace(" ", "-").lower()
 
     table_name = f"_{db_user.id}.{name}"
@@ -317,7 +328,8 @@ def save_view(view: View, user: User) -> ViewInDB:
 
 
 @router.post("/save_table", response_model=SuccessResponse)
-def save_table(results: CurrentResults, schema: str) -> SuccessResponse:
+def save_table(token: str, results: CurrentResults, schema: str) -> SuccessResponse:
+    get_current_user(token)
     df = pd.DataFrame(results.results, columns=results.columns)
     # Filter on date range here. Or ideally filter on dates when pulling from SQL.
 
