@@ -15,3 +15,9 @@ class LookerDataRequest(BaseModel):
     db_schema: str
     name: str
     fields: List[str]
+
+
+class LookerTable(BaseModel):
+    db_schema: str
+    name: str
+    label: str

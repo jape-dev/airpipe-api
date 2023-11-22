@@ -170,8 +170,6 @@ def data_sources(email: str):
     db_user = get_user_by_email(email)
     data_sources: List[DataSourceDB] = get_data_sources_by_user_id(db_user.id)
 
-    print(data_sources[0].start_date)
-
     data_sources_db = [
         DataSourceInDB(
             id=data_source.id,

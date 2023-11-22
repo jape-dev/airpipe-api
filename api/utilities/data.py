@@ -8,6 +8,7 @@ from sqlalchemy.inspection import inspect
 from api.database.database import engine
 from api.models.data import FieldOption
 from api.core.static_data import (
+    ChannelType,
     google_metrics,
     google_dimensions,
     google_analytics_metrics,
@@ -287,3 +288,12 @@ def all_channel_fields() -> List[FieldOption]:
     )
 
     return all_channels
+
+
+def get_channel_name_from_enum(channel: str):
+    if channel == ChannelType.google.value:
+        return "Google Ads"
+    elif channel == ChannelType.facebook.value:
+        return "Facebook Ads"
+    elif channel == ChannelType.google_analytics.value:
+        return "Google Analytics"

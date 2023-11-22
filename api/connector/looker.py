@@ -2,14 +2,41 @@ from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from sqlalchemy.sql import text
 from typing import List
-from api.models.looker import LookerField, LookerDataRequest
-
-
+from api.models.looker import LookerField, LookerDataRequest, LookerTable
 from api.core.looker import get_looker_fields, map_postgres_type_to_looker_type
 from api.database.database import engine
+from api.database.crud import get_user_by_email
+from api.database.crud import get_data_sources_by_user_id, get_views_by_user_id
+from api.database.models import DataSourceDB, ViewDB
+from api.utilities.data import get_channel_name_from_enum
 
 
 router = APIRouter(prefix="/looker")
+
+
+@router.get("/tables", response_model=List[LookerTable])
+def tables(email: str) -> List[LookerTable]:
+    db_user = get_user_by_email(email)
+    data_sources: List[DataSourceDB] = get_data_sources_by_user_id(db_user.id)
+    views: List[ViewDB] = get_views_by_user_id(db_user.id)
+
+    looker_tables = []
+    if data_sources:
+        for data_source in data_sources:
+            channel = get_channel_name_from_enum(data_source.channel)
+            label = f"{channel} - {data_source.ad_account_id}"
+            looker_tables.append(
+                LookerTable(
+                    db_schema=data_source.db_schema, name=data_source.name, label=label
+                )
+            )
+    if views:
+        for view in views:
+            looker_tables.append(
+                LookerTable(db_schema=view.db_schema, name=view.name, label=view.name)
+            )
+
+    return looker_tables
 
 
 @router.get("/table_schema", response_model=List[LookerField])
