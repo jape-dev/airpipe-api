@@ -16,7 +16,7 @@ router = APIRouter(prefix="/looker")
 
 
 @router.get("/tables", response_model=List[LookerTable])
-def tables(email: str, token: str = Header(...)) -> List[LookerTable]:
+def tables(email: str, token: str) -> List[LookerTable]:
     validate_looker_token(token)
     db_user = get_user_by_email(email)
     data_sources: List[DataSourceDB] = get_data_sources_by_user_id(db_user.id)
@@ -42,7 +42,7 @@ def tables(email: str, token: str = Header(...)) -> List[LookerTable]:
 
 
 @router.get("/table_schema", response_model=List[LookerField])
-def table_schema(schema: str, name: str, token: str = Header(...)) -> List[LookerField]:
+def table_schema(schema: str, name: str, token: str) -> List[LookerField]:
     validate_looker_token(token)
     connection = engine.connect()
 
@@ -79,8 +79,8 @@ def table_schema(schema: str, name: str, token: str = Header(...)) -> List[Looke
 
 
 @router.post("/table_data")
-def table_data(request: LookerDataRequest, token: str = Header(...)):
-    validate_looker_token(token)
+def table_data(request: LookerDataRequest):
+    validate_looker_token(request.token)
     connection = engine.connect()
     columns = ", ".join(request.fields)
     query = f'SELECT {columns} FROM {request.db_schema}."{request.name}"'
