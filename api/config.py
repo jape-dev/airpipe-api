@@ -27,3 +27,4 @@ class Config(object):
     OPEN_API_KEY = os.getenv("OPEN_API_KEY")
     LOOPS_API_KEY = os.getenv("LOOPS_API_KEY")
     ENVIRONMENT = os.getenv("ENVIRONMENT")
+    LOOKER_ACCESS_TOKEN = os.getenv("LOOKER_ACCESS_TOKEN")

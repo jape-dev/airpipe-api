@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 import sqlalchemy
 from sqlalchemy.sql import text
 from typing import List
 from api.models.looker import LookerField, LookerDataRequest, LookerTable
+from api.core.auth import validate_looker_token
 from api.core.looker import get_looker_fields, map_postgres_type_to_looker_type
 from api.database.database import engine
 from api.database.crud import get_user_by_email
@@ -15,7 +16,8 @@ router = APIRouter(prefix="/looker")
 
 
 @router.get("/tables", response_model=List[LookerTable])
-def tables(email: str) -> List[LookerTable]:
+def tables(email: str, token: str = Header(...)) -> List[LookerTable]:
+    validate_looker_token(token)
     db_user = get_user_by_email(email)
     data_sources: List[DataSourceDB] = get_data_sources_by_user_id(db_user.id)
     views: List[ViewDB] = get_views_by_user_id(db_user.id)
@@ -40,7 +42,8 @@ def tables(email: str) -> List[LookerTable]:
 
 
 @router.get("/table_schema", response_model=List[LookerField])
-def table_schema(schema: str, name: str) -> List[LookerField]:
+def table_schema(schema: str, name: str, token: str = Header(...)) -> List[LookerField]:
+    validate_looker_token(token)
     connection = engine.connect()
 
     query = text(
@@ -76,7 +79,8 @@ def table_schema(schema: str, name: str) -> List[LookerField]:
 
 
 @router.post("/table_data")
-def table_data(request: LookerDataRequest):
+def table_data(request: LookerDataRequest, token: str = Header(...)):
+    validate_looker_token(token)
     connection = engine.connect()
     columns = ", ".join(request.fields)
     query = f'SELECT {columns} FROM {request.db_schema}."{request.name}"'
