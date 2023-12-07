@@ -23,7 +23,6 @@ DATABASE_URL = Config.DATABASE_URL
 
 router = APIRouter()
 
-
 @router.post("/din_sql", status_code=200)
 def din_sql(question: str, data_sources: List[DataSourceInDB]) -> str:
     sql = get_din_sql(question, data_sources)
