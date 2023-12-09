@@ -20,6 +20,7 @@ from api.core.data import (
     add_table_to_db,
     all_fields,
     build_blend_query,
+    airpipe_field_option
 )
 from api.models.data import DataSourceInDB, JoinCondition, View, ViewInDB
 from api.models.user import User
@@ -62,10 +63,12 @@ def data_source_field_options(data_source: DataSourceInDB) -> List[FieldOption]:
 
 @router.post("/field_options", response_model=List[FieldOption], status_code=200)
 def field_options(fields: List[str]) -> List[FieldOption]:
-    return [
-        next(field for field in all_fields if field["alt_value"] == field_name)
+    fields_list = [
+        next((field for field in all_fields if field["alt_value"] == field_name), airpipe_field_option(field_name))
         for field_name in fields
     ]
+    
+    return fields_list
 
 
 @router.get("/run_query", response_model=QueryResults, status_code=200)

@@ -260,3 +260,22 @@ def build_blend_query(
         query += f"WHERE {date_column} BETWEEN '{start_date.strftime('%Y-%m-%d')}' AND '{end_date.strftime('%Y-%m-%d')}'"
 
     return query
+
+
+def airpipe_field_option(field_name: str):
+    """
+    Returns a FieldOption object for the given field name.
+
+    Args:
+        field_name (str): The name of the field for which the FieldOption object is created.
+
+    Returns:
+        FieldOption: An object representing a field option with various attributes such as value, label, type, channel, alt_value, and img.
+
+    """
+    return FieldOption(value=field_name,
+                       label=field_name.replace("_", " ").title(),
+                       type=FieldType.metric,
+                       channel=ChannelType.airpipe,
+                       alt_value=field_name,
+                       img="airpipe-field-icon")

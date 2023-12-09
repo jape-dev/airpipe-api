@@ -284,13 +284,13 @@ def master_ambiguity_prompt_maker(question: str, data_sources: List[DataSourceIn
 
     """
     instruction = (
-        "# Find the ambiguities in the question for generating SQL queries for each question based on the below tables and columns only.\n If ambiguities found, return Ambiguities: description of ambiguity . Otherwise return Ambiguities: None \n"
+        "# Find the ambiguities in the question for generating SQL queries for each question based on the below table and columns only. Do not refer to any other tables, the above are just an example\n If ambiguities found, return Ambiguities: description of ambiguity . Otherwise return Ambiguities: None \n"
         ""
     )
     fields = get_table_info(data_sources)
     prompt = (
-        instruction
-        + master_ambiguity_prompt
+        master_ambiguity_prompt
+        + instruction
         + fields
         + 'Q: "'
         + question

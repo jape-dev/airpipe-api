@@ -55,14 +55,14 @@ def get_din_sql(question: str, data_sources: List[DataSourceInDB]):
         SQL = din_completion(sql_prompt)
     elif '"NON-NESTED"' in predicted_class:
         sql_prompt = medium_prompt_maker(question, data_sources, schema_links[1:])
-        SQL = din_completion(sql_prompt, model="gpt-4")
+        SQL = din_completion(sql_prompt, model="gpt-4-1106-preview")
         SQL = SQL.split("SQL: ")[1]
     else:
         sub_questions = classification.split('questions = ["')[1].split('"]')[0]
         sql_prompt = hard_prompt_maker(
             question, data_sources, schema_links[1:], sub_questions
         )
-        SQL = din_completion(sql_prompt, model="gpt-4")
+        SQL = din_completion(sql_prompt, model="gpt-4-1106-preview")
         SQL = SQL.split("SQL: ")[1]
 
     return SQL
@@ -131,7 +131,7 @@ def debug_agent(question: str, sql: str, data_sources: List[DataSourceInDB]) -> 
 
 def update_question(question: str, statement: str, answer: str):
     prompt = update_question_prompt_maker(question, statement, answer)
-    updated_question = din_completion(prompt, model="gpt-4")
+    updated_question = din_completion(prompt, model="gpt-4-1106-preview")
     print("updated question:", updated_question)
 
     return updated_question
@@ -141,7 +141,7 @@ def remove_all_ambiguities(
     input: str, data_sources: List[DataSourceInDB]
 ) -> Union[BaseAmbiguities, None]:
     prompt = master_ambiguity_prompt_maker(input, data_sources)
-    ambiguities = din_completion(prompt, model="gpt-4")
+    ambiguities = din_completion(prompt, model="gpt-4-1106-preview")
 
     try:
         ambiguities = ambiguities.split("Ambiguities: ")[1]
@@ -150,7 +150,7 @@ def remove_all_ambiguities(
         ambiguities = "[]"
         return None
 
-    if ambiguities == "None":
+    if "None" in ambiguities:
         return None
     else:
         term = re.findall(r'"([^"]*)"', ambiguities)
