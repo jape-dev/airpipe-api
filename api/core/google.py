@@ -95,7 +95,7 @@ def fetch_google_query(
                         row["metrics"][metric_name], metric_name
                     )
                 except BaseException as e:
-                    print(e)
+                    print("Error in metrics", e)
                     pass
             for dimension in query.dimensions:
                 dimension_components = dimension.split(".")

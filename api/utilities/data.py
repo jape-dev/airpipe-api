@@ -86,7 +86,7 @@ def convert_metric(metric, name: str):
     ]
 
     if str(name) in name_list:
-        metric = metric / 1000000.0
+        metric = float(metric) / 1000000.0
         metric = round(metric, 2)
     return metric
 
