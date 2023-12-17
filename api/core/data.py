@@ -67,7 +67,7 @@ def load_postgresql_table(table_name):
 
 
 def create_field_list(
-    fields: List[FieldOption] = None,
+    fields: List[FieldOption],
     use_alt_value: bool = False,
     split_value: bool = False,
     channel: ChannelType = None,
@@ -88,31 +88,27 @@ def create_field_list(
 
 
     """
-    if fields is None:
-        fields = all_fields
-    if channel:
-        fields = [field for field in fields if field["channel"] == channel]
     if use_alt_value:
         metrics = [
-            field["alt_value"] if "alt_value" in field and field["alt_value"] is not None else field["value"]
+            field.alt_value if field.alt_value is not None else field.value
             for field in fields
-            if "type" in field and field["type"] == FieldType.metric
+            if field.type == FieldType.metric
         ]
         dimensions = [
-            field["alt_value"] if "alt_value" in field and field["alt_value"] is not None else field["value"]
+            field.alt_value if field.alt_value is not None else field.value
             for field in fields
-            if "type" in field and field["type"] == FieldType.dimension
+            if field.type == FieldType.dimension
         ]
     else:
         metrics = [
-            field["value"]
+            field.value
             for field in fields
-            if "type" in field and field["type"] == FieldType.metric and "value" in field and field["value"] is not None
+            if field.type == FieldType.metric and field.value is not None
         ]
         dimensions = [
-            field["value"]
+            field.value
             for field in fields
-            if "type" in field and field["type"] == FieldType.dimension and "value" in field and field["value"] is not None
+            if field.type == FieldType.dimension and field.value is not None
         ]
 
 

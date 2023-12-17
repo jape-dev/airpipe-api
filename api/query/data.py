@@ -75,7 +75,7 @@ def field_options(fields: List[str]) -> List[FieldOption]:
 def channel_field_options(channel: ChannelType, token: str) -> List[FieldOption]:
     current_user: User = get_current_user(token)
     channel_type = get_enum_member_by_value(ChannelType, channel)
-    fields, metrics, dimensions = create_field_list(channel=channel_type, use_alt_value=True)
+    fields, metrics, dimensions = create_field_list(all_fields, channel=channel_type, use_alt_value=True)
     field_options = [
         next((field for field in all_fields if field["alt_value"] == field_name), airpipe_field_option(field_name))
         for field_name in fields
