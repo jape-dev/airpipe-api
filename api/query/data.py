@@ -10,6 +10,7 @@ from api.models.data import (
     DataSource,
     FieldOption,
     FieldOptionWithDataSourceId,
+    Table
 )
 from api.database.database import engine, session
 from api.database.crud import get_user_by_email
@@ -29,6 +30,7 @@ from api.database.crud import get_data_sources_by_user_id, get_views_by_user_id
 from api.utilities.data import (
     insert_alt_values,
     get_channel_img,
+    get_channel_name_from_enum
 )
 from api.utilities.responses import SuccessResponse
 from pydantic import Field
@@ -234,6 +236,50 @@ def views(token: str):
     return views_db
 
 
+@router.get("/tables", response_model=List[Table])
+def tables(token: str) -> List[Table]:
+    current_user: User = get_current_user(token)
+    db_user = get_user_by_email(current_user.email)
+    data_sources: List[DataSourceDB] = get_data_sources_by_user_id(db_user.id)
+    views: List[ViewDB] = get_views_by_user_id(db_user.id)
+    tables = []
+
+    if data_sources:
+        for data_source in data_sources:
+            channel = get_channel_name_from_enum(data_source.channel)
+            label = f"{channel} - {data_source.ad_account_id}"
+            tables.append(
+                Table(
+                    id=data_source.id,
+                    user_id=data_source.user_id,
+                    db_schema=data_source.db_schema,
+                    name=data_source.name,
+                    table_name=data_source.table_name,
+                    label=label,
+                    channel=data_source.channel, 
+                    channel_img=data_source.channel_img,
+                    ad_account_id=data_source.ad_account_id,
+                    fields=data_source.fields,
+                    start_date=data_source.start_date,
+                    end_date=data_source.end_date
+                    )
+                )
+    if views:
+        for view in views:
+            tables.append(
+                Table(id=view.id,
+                      user_id=view.user_id,
+                      db_schema=view.db_schema,
+                      name=view.name,
+                      table_name=view.table_name,
+                      label=view.name,
+                      fields=view.fields,
+                      start_date=view.start_date,
+                      end_date=view.end_date
+                      )
+                )
+
+    return tables
 
 
 @router.post("/create_blend", response_model=QueryResults)

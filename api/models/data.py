@@ -122,3 +122,19 @@ class ViewInDB(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Table(BaseModel):
+    id: int
+    user_id: str
+    db_schema: str
+    name: str
+    table_name: str
+    label: str
+    fields: str
+    start_date: datetime
+    end_date: datetime
+    channel: Optional[ChannelType]
+    channel_img: Optional[str]
+    ad_account_id: Optional[str]
+

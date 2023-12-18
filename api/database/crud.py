@@ -32,8 +32,7 @@ def get_data_sources_by_user_id(user_id: int) -> List[DataSourceDB]:
         data_sources = (
             session.query(DataSourceDB)
             .filter(
-                (DataSourceDB.user_id == user_id)
-                | (DataSourceDB.name == "tutorial_data")
+                DataSourceDB.user_id == user_id
             )
             .all()
         )
