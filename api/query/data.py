@@ -57,7 +57,7 @@ def get_table_columns(token: str, table_name: str):
 def data_source_field_options(data_source: DataSourceInDB) -> List[FieldOption]:
     source_fields = data_source.fields.split(",")
     selected_fields = [
-        field for field in all_fields if field["alt_value"] in source_fields
+        field for field in all_fields if field.alt_value in source_fields
     ]
 
     return selected_fields
@@ -67,7 +67,7 @@ def data_source_field_options(data_source: DataSourceInDB) -> List[FieldOption]:
 def field_options(fields: List[str]) -> List[FieldOption]:
 
     fields_list = [
-        next((field for field in all_fields if field["alt_value"] == field_name), airpipe_field_option(field_name))
+        next((field for field in all_fields if field.alt_value == field_name), airpipe_field_option(field_name))
         for field_name in fields
     ]
     
@@ -79,7 +79,7 @@ def channel_field_options(channel: ChannelType, token: str) -> List[FieldOption]
     channel_type = get_enum_member_by_value(ChannelType, channel)
     fields, metrics, dimensions = create_field_list(all_fields, channel=channel_type, use_alt_value=True)
     field_options = [
-        next((field for field in all_fields if field["alt_value"] == field_name), airpipe_field_option(field_name))
+        next((field for field in all_fields if field.alt_value == field_name), airpipe_field_option(field_name))
         for field_name in fields
     ]
     return field_options

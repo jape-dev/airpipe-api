@@ -30,28 +30,40 @@ from api.models.google_analytics import GoogleAnalyticsQuery
 
 
 all_fields: List[FieldOption] = (
-    google_metrics
-    + google_dimensions
-    + google_analytics_metrics
-    + google_analytics_dimensions
-    + facebook_metrics
-    + facebook_dimensions
+    [FieldOption(**item) for item in google_metrics] +
+    [FieldOption(**item) for item in google_dimensions] +
+    [FieldOption(**item) for item in google_analytics_metrics] +
+    [FieldOption(**item) for item in google_analytics_dimensions] +
+    [FieldOption(**item) for item in facebook_metrics] +
+    [FieldOption(**item) for item in facebook_dimensions]
 )
 
+
 all_metrics: List[FieldOption] = (
-    google_metrics + google_analytics_metrics + facebook_metrics
+    [FieldOption(**item) for item in google_metrics] +
+    [FieldOption(**item) for item in google_analytics_metrics] +
+    [FieldOption(**item) for item in facebook_metrics]
 )
 
 all_dimensions: List[FieldOption] = (
-    google_dimensions + google_analytics_dimensions + facebook_dimensions
+    [FieldOption(**item) for item in google_dimensions] +
+    [FieldOption(**item) for item in google_analytics_dimensions] +
+    [FieldOption(**item) for item in facebook_dimensions]
 )
 
-google_fields: List[FieldOption] = google_metrics + google_dimensions
+google_fields: List[FieldOption] = (
+    [FieldOption(**item) for item in google_metrics] +
+    [FieldOption(**item) for item in google_dimensions]
+)
 
-facebook_fields: List[FieldOption] = facebook_metrics + facebook_dimensions
+facebook_fields: List[FieldOption] = (
+    [FieldOption(**item) for item in facebook_metrics] +
+    [FieldOption(**item) for item in facebook_dimensions]
+)
 
 google_analytics_fields: List[FieldOption] = (
-    google_analytics_metrics + google_analytics_dimensions
+    [FieldOption(**item) for item in google_analytics_metrics] +
+    [FieldOption(**item) for item in google_analytics_dimensions]
 )
 
 

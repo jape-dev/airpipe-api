@@ -107,7 +107,7 @@ def get_looker_fields(schema: dict):
             matching_field = [
                 channel_field
                 for channel_field in channel_fields
-                if channel_field["alt_value"] == field
+                if channel_field.alt_value == field
             ][0]
             looker_field = LookerField(
                 id=field,
