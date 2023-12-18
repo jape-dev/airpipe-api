@@ -118,7 +118,7 @@ def get_user(username: str):
     try:
         user = session.query(UserDB).filter(UserDB.email == username).first()
     except BaseException as e:
-        print(e)
+        print("Error in get_user", e)
         session.rollback()
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
     finally:
