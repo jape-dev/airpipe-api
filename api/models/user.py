@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, Union
 
-from api.core.static_data import OnboardingStage
+from api.core.static_data import OnboardingStage, UserRoleType
 
 
 class Token(BaseModel):
@@ -16,6 +16,7 @@ class TokenData(BaseModel):
 class User(BaseModel):
     email: str
     onboarding_stage: OnboardingStage = OnboardingStage.connect
+    role: Optional[UserRoleType]
     facebook_access_token: Optional[str] = None
     google_refresh_token: Optional[str] = None
     google_analytics_refresh_token: Optional[str] = None

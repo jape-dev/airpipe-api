@@ -7,9 +7,15 @@ from typing import List
 
 def insert_new_user(customer: User):
     session.rollback()
-    session.add(customer)
-    session.commit()
-    session.refresh(customer)
+    try:
+        session.add(customer)
+        session.commit()
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        raise e
+    finally:
+        session.refresh(customer)
 
     return customer
 

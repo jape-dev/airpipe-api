@@ -47,6 +47,17 @@ class JoinType(str, Enum):
     full = "FULL OUTER JOIN"
 
 
+class UserRoleType(str, Enum):
+    agency = "Agency Owner / Founder"
+    b2b = "B2B Marketer"
+    technical = "Technical Marketer"
+    performance = "Performance Marketer"
+    seo = "SEO Marketer"
+    content = "Content Marketer"
+    data = "Data Engineer / Analyst / Scientist"
+    software = "Software Engineer"
+    other = "Other"
+
 facebook_metrics = [
     {
         "value": "clicks",

@@ -12,7 +12,7 @@ class UserDB(Base):
     email = Column(String(), unique=True)
     hashed_password = Column(String())
     onboarding_stage = Column(String())
-    role = Column(String())
+    role = Column(String(), nullable=True)
     facebook_access_token = Column(String(), nullable=True)
     google_refresh_token = Column(String(), nullable=True)
     google_analytics_refresh_token = Column(String(), nullable=True)

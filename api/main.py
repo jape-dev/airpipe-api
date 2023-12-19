@@ -1,7 +1,7 @@
 from api.config import Config
 from api.admin import admin_router
 from api.connector import connector_router
-from api.core.static_data import FieldType, ChannelType, OnboardingStage
+from api.core.static_data import FieldType, ChannelType, OnboardingStage, UserRoleType
 from api.query import query_router
 from api.user import user_router
 from api.models.data import (
@@ -66,6 +66,7 @@ def custom_openapi() -> Dict[str, Any]:
         FieldOptionWithDataSourceId,
         JoinType,
         JoinCondition,
+        UserRoleType
     ]
     model_name_map = get_model_name_map(flat_models)  # type: ignore
     definitions = get_model_definitions(
