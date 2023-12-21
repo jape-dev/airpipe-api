@@ -80,7 +80,9 @@ def fetch_google_query(
     for batch in stream:
         try:
             results = batch["results"]
-        except KeyError:
+        except KeyError as e:
+            print(e)
+            print(batch)
             raise HTTPException(
                 status_code=400,
                 detail=f"Could not get data. {response.text}",
@@ -95,6 +97,7 @@ def fetch_google_query(
                         row["metrics"][metric_name], metric_name
                     )
                 except BaseException as e:
+                    print(row)
                     print("Error in metrics", e)
                     pass
             for dimension in query.dimensions:
