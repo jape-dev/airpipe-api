@@ -30,6 +30,7 @@ def fetch_facebook_data(current_user: User, query: FacebookQuery) -> List[object
 
     response = requests.get(url)
     if response.status_code != 200:
+        print(response.text)
         raise HTTPException(status_code=400, detail="Facebook query failed")
     json = response.json()
     data = json["data"]

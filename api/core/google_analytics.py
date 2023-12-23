@@ -59,6 +59,8 @@ def fetch_google_analytics_data(current_user: User, query: GoogleAnalyticsQuery)
 
                 data.append(data_row)
         else:
+            print(response.text)
+            print(json_response)
             raise HTTPException(
                 status_code=400,
                 detail=f"No values found. {json_response}"
