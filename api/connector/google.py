@@ -120,7 +120,8 @@ def ad_accounts(token: str):
         for batch in stream:
             try:
                 results = batch["results"]
-            except KeyError:
+            except KeyError as e:
+                print(response.text)
                 raise HTTPException(
                     status_code=400,
                     detail=f"Could not get ad accounts. {response.text}",
