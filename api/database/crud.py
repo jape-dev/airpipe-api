@@ -29,6 +29,7 @@ def get_user_by_email(email: str) -> UserDB:
         raise e
     finally:
         session.close()
+        session.remove()
     if user:
         return user
 
@@ -48,6 +49,7 @@ def get_data_sources_by_user_id(user_id: int) -> List[DataSourceDB]:
         raise e
     finally:
         session.close()
+        session.remove()
     if data_sources:
         return data_sources
 
@@ -61,5 +63,6 @@ def get_views_by_user_id(user_id: int) -> List[DataSourceDB]:
         raise e
     finally:
         session.close()
+        session.remove()
     if data_sources:
         return data_sources

@@ -123,6 +123,7 @@ def get_user(username: str):
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
     finally:
         session.close()
+        session.remove()
     if user:
         user_dict = user.__dict__
         return UserInDB(**user_dict)

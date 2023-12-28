@@ -1,6 +1,6 @@
-from sqlalchemy.orm import declarative_base
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker,scoped_session
 from api.models.user import User
 from api.config import Config
 
@@ -14,5 +14,6 @@ engine = create_engine(
     pool_use_lifo=True,
 )
 Base = declarative_base()
-SessionLocal = sessionmaker(bind=engine)
-session = SessionLocal()
+SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+
+session = scoped_session(SessionLocal)

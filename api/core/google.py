@@ -37,6 +37,7 @@ def handleGoogleTokenException(ex, current_user: User):
             )
         finally:
             session.close()
+            session.remove()
 
         raise HTTPException(
             status_code=401,

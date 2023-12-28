@@ -31,6 +31,7 @@ def create_customer(user: UserInDB):
         raise HTTPException(status_code=500, detail="Internal Server Error")
     finally:
         session.close()
+        session.remove()
     if exsiting_user:
         raise HTTPException(status_code=400, detail="User already exists")
     else:
@@ -52,6 +53,7 @@ def update_onboarding_stage(user: User):
         raise HTTPException(status_code=500, detail="Internal Server Error")
     finally:
         session.close()
+        session.remove()
     if exsiting_user:
         exsiting_user.onboarding_stage = user.onboarding_stage
         session.add(exsiting_user)

@@ -85,6 +85,8 @@ def oauth2_callback(request: Request) -> RedirectResponse:
         )
     finally:
         session.close()
+        session.remove()
+
     redirect_client_url = f"{CLIENT_URL}/add-data-source/"
     response = RedirectResponse(url=redirect_client_url)
     response.delete_cookie("token")

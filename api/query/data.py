@@ -356,6 +356,7 @@ def save_view(view: View, token: str) -> ViewInDB:
         )
     finally:
         session.close()
+        session.remove()
 
     if view.join_conditions:
         for condtion_id, condition in enumerate(view.join_conditions):
@@ -380,6 +381,7 @@ def save_view(view: View, token: str) -> ViewInDB:
                 )
 
     session.close()
+    session.remove()
 
     return view_in_db
 

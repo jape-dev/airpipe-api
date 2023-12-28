@@ -60,6 +60,7 @@ def login(request: Request):
         )
     finally:
         session.close()
+        session.remove()
 
     redirect_client_url = f"{CLIENT_URL}/add-data-source/"
 

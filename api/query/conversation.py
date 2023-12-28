@@ -39,5 +39,6 @@ def save(conversation: Conversation, conversation_id: int = None):
             )
         finally:
             session.close()
+            session.remove()
     else:
         return conversations
