@@ -83,6 +83,7 @@ def fetch_google_query(
             results = batch["results"]
         except KeyError as e:
             print(e)
+            print(response.text)
             print(batch)
             raise HTTPException(
                 status_code=400,
