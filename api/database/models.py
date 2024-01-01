@@ -78,3 +78,20 @@ class JoinConditionDB(Base):
     right_field = Column(String())
     join_type = Column(String())
     created_at = Column(DateTime(), default=datetime.datetime.now())
+
+
+class ChartDB(Base):
+    __tablename__ = "charts"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(Integer(), primary_key=True)
+    user_id = Column(Integer())
+    chart_id = Column(String(), unique=True)
+    chart_type = Column(String())
+    selected_dimension = Column(String())
+    selected_metric = Column(String())
+    primary_color = Column(String())
+    secondary_color = Column(String())
+    slice_colors = Column(String())
+    title=Column(String())
+    caption=Column(String())

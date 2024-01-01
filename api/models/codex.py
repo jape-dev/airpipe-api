@@ -25,3 +25,8 @@ class BaseAmbiguities(BaseModel):
 
 class AmbiguousColumns(BaseAmbiguities):
     columns: List
+
+
+class CaptionData(BaseModel):
+    data: List
+    chart_type: str

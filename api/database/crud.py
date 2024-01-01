@@ -1,5 +1,5 @@
 from api.database.database import session
-from api.database.models import UserDB, DataSourceDB, ViewDB
+from api.database.models import UserDB, DataSourceDB, ViewDB, ChartDB
 from api.models.user import User
 
 from typing import List
@@ -66,3 +66,17 @@ def get_views_by_user_id(user_id: int) -> List[DataSourceDB]:
         session.remove()
     if data_sources:
         return data_sources
+
+
+def get_chart_by_chart_id(chart_id) -> ChartDB:
+    try:
+        chart = session.query(ChartDB).filter(ChartDB.chart_id == chart_id).first()
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+        session.remove()
+    if chart:
+        return chart

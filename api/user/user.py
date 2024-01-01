@@ -1,8 +1,8 @@
 from api.database.database import session
 from api.database.crud import insert_new_user
 from api.database.models import UserDB
-from api.models.user import User, UserInDB
-from api.core.auth import get_password_hash
+from api.models.user import User, UserInDB, UserWithId
+from api.core.auth import get_password_hash, get_user_with_id, get_current_user
 from api.email.email import add_contact_to_loops
 from api.models.loops import Contact
 from api.core.static_data import Environment, get_enum_member_by_value
@@ -59,3 +59,12 @@ def update_onboarding_stage(user: User):
         session.add(exsiting_user)
         session.commit()
         return user
+    
+@router.get('/user', response_model=UserWithId)
+def user(token: str) -> UserWithId:
+    user = get_current_user(token)
+
+    user_with_id = get_user_with_id(user.email)
+    return user_with_id
+
+

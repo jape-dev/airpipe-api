@@ -1,7 +1,7 @@
 from api.config import Config
 from api.database.database import session
 from api.database.models import UserDB
-from api.models.user import TokenData, UserInDB
+from api.models.user import TokenData, UserInDB, UserWithId
 
 from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status
@@ -127,6 +127,33 @@ def get_user(username: str):
     if user:
         user_dict = user.__dict__
         return UserInDB(**user_dict)
+    
+def get_user_with_id(username: str):
+    """
+    Retrieves a user with the given username from the database.
+
+    Args:
+        username (str): The username of the user.
+
+    Returns:
+        UserWithId: An instance of the UserWithId class representing the retrieved user.
+
+    Raises:
+        HTTPException: If there is an error retrieving the user from the database.
+    """
+    # Change db to get all users from database
+    try:
+        user = session.query(UserDB).filter(UserDB.email == username).first()
+    except BaseException as e:
+        print("Error in get_user", e)
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
+    finally:
+        session.close()
+        session.remove()
+    if user:
+        user_dict = user.__dict__
+        return UserWithId(**user_dict)
 
 
 def validate_looker_token(token: str):

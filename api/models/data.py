@@ -138,3 +138,15 @@ class Table(BaseModel):
     channel_img: Optional[str]
     ad_account_id: Optional[str]
 
+class ChartData(BaseModel):
+    chart_id: str
+    data: CurrentResults
+    chart_type: str
+    selected_dimension: FieldOption
+    selected_metric: FieldOption
+    primary_color: str
+    secondary_color: str
+    slice_colors: List[str]
+    field_options: List[FieldOption]
+    title:str
+    caption:str

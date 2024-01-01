@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 from typing import List, Union
+from api.models.codex import CaptionData
+from api.utilities.gpt import chat_completion
 
 
 from api.config import Config
@@ -58,3 +60,19 @@ def check_ambiguous_columns(
         return ambiguities
     else:
         return input
+    
+
+@router.post("/chart_insights", status_code=200)
+def chart_insights(data: CaptionData) -> str:
+    prompt = f"""You are a marketing data analyst. You have been given a table with the below data which is being visualised by a {data.chart_type} chart. 
+
+    {data.data}
+    
+    Please provide three insights on the chart. Gives the insights as a numbered list.
+
+    Make sure that there is only one sentence per insight. Reference numbers from the table data.
+    """
+
+    print(prompt)
+    caption = chat_completion(prompt)
+    return caption

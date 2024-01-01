@@ -10,10 +10,11 @@ from api.models.data import (
     DataSource,
     FieldOption,
     FieldOptionWithDataSourceId,
-    Table
+    Table,
+    ChartData
 )
 from api.database.database import engine, session
-from api.database.crud import get_user_by_email
+from api.database.crud import get_user_by_email, get_chart_by_chart_id
 from api.core.static_data import ChannelType, get_enum_member_by_value
 from api.core.data import (
     create_field_list,
@@ -23,9 +24,10 @@ from api.core.data import (
     build_blend_query,
     airpipe_field_option
 )
+from api.core.auth import get_user_with_id
 from api.models.data import DataSourceInDB, JoinCondition, View, ViewInDB
 from api.models.user import User
-from api.database.models import DataSourceDB, ViewDB, JoinConditionDB
+from api.database.models import DataSourceDB, ViewDB, JoinConditionDB, ChartDB
 from api.database.crud import get_data_sources_by_user_id, get_views_by_user_id
 from api.utilities.data import (
     insert_alt_values,
@@ -391,7 +393,6 @@ def save_table(token: str, results: CurrentResults, schema: str) -> SuccessRespo
     get_current_user(token)
     df = pd.DataFrame(results.results, columns=results.columns)
     # Filter on date range here. Or ideally filter on dates when pulling from SQL.
-
     try:
         add_table_to_db(schema, results.name, df)
     except Exception as e:
@@ -400,5 +401,101 @@ def save_table(token: str, results: CurrentResults, schema: str) -> SuccessRespo
             status_code=400,
             detail=f"Could not save table to database. {e}",
         )
+
+    return SuccessResponse(success=True)
+
+
+@router.get("/chart_data", response_model=ChartData)
+def chart_data(chart_id: str) -> ChartData:
+    chart = get_chart_by_chart_id(chart_id)
+    query = f'SELECT * FROM _{chart.user_id}."{chart_id}" '
+    connection = engine.connect()
+    try:
+        results = connection.execute(query)
+    except sqlalchemy.exc.ProgrammingError as e:
+        error_msg = str(e)
+        print(error_msg)
+        raise HTTPException(status_code=400, detail=error_msg)
+
+    current_results = CurrentResults(
+        name=f'_{chart.user_id}."{chart_id}"', results=results.all(), columns=list(results.keys())
+    )    
+    field_options = [
+        next((field for field in all_fields if field.alt_value == field_name), airpipe_field_option(field_name))
+        for field_name in current_results.columns
+    ]
+
+    # filter field_options where the option.alt_value = chart.selected_dimension
+    selected_dimension = next((field for field in field_options if field.alt_value == chart.selected_dimension), field_options[0])
+    selected_metric = next((field for field in field_options if field.alt_value == chart.selected_metric), field_options[0])
+
+    # Add a double linebreak after each full stop '.' in caption
+    caption = chart.caption.replace(".", ".\n\n")
+
+    chart_data = ChartData(
+
+        chart_id=chart.chart_id,
+        data=current_results,
+        chart_type=chart.chart_type,
+        selected_dimension=selected_dimension,
+        selected_metric=selected_metric,
+        primary_color=chart.primary_color,
+        secondary_color=chart.secondary_color,
+        slice_colors=chart.slice_colors.split(","),
+        field_options=field_options,
+        title=chart.title,
+        caption=caption,
+    )
+    return chart_data
+
+
+
+
+@router.post("/save_chart", response_model=SuccessResponse)
+def save_chart(token: str, chart: ChartData) -> SuccessResponse:
+    user = get_current_user(token)
+    user_with_id = get_user_with_id(user.email)
+
+
+    # Check if the chart already exists
+    existing_chart = session.query(ChartDB).filter_by(chart_id=chart.chart_id, user_id=user_with_id.id).first()
+
+    if existing_chart:
+        # Update existing chart
+        existing_chart.chart_type = chart.chart_type
+        existing_chart.selected_dimension = chart.selected_dimension.alt_value
+        existing_chart.selected_metric = chart.selected_metric.alt_value
+        existing_chart.primary_color = chart.primary_color
+        existing_chart.secondary_color = chart.secondary_color
+        existing_chart.slice_colors = chart.slice_colors
+        existing_chart.title = chart.title
+        existing_chart.caption = chart.caption
+    else:
+        # Create new chart
+        new_chart = ChartDB(
+            chart_id=chart.chart_id,
+            user_id=user_with_id.id,
+            chart_type=chart.chart_type,
+            selected_dimension=chart.selected_dimension.alt_value,
+            selected_metric=chart.selected_metric.alt_value,
+            primary_color=chart.primary_color,
+            secondary_color=chart.secondary_color,
+            slice_colors=chart.slice_colors,
+            title=chart.title,
+            caption=chart.caption,
+        )
+        session.add(new_chart)
+
+    try:
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not save chart to database. {e}"
+        )
+    finally:
+        session.close()
+        session.remove()
 
     return SuccessResponse(success=True)
