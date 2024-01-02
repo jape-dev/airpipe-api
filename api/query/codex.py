@@ -68,7 +68,7 @@ def chart_insights(data: CaptionData) -> str:
 
     {data.data}
     
-    Please provide three insights on the chart. Gives the insights as a numbered list.
+    Please provide three insights on the chart. Gives the insights as a numbered list. I.e. 1) First insight. 2) Second insight. 3) Third insight.
 
     Make sure that there is only one sentence per insight. Reference numbers from the table data.
     """
