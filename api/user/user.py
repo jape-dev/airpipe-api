@@ -3,10 +3,12 @@ from api.database.crud import insert_new_user
 from api.database.models import UserDB
 from api.models.user import User, UserInDB, UserWithId
 from api.core.auth import get_password_hash, get_user_with_id, get_current_user
+from api.core.static_data import ChannelType
 from api.email.email import add_contact_to_loops
 from api.models.loops import Contact
 from api.core.static_data import Environment, get_enum_member_by_value
 from api.config import Config
+
 
 from fastapi import APIRouter, HTTPException
 
@@ -59,6 +61,37 @@ def update_onboarding_stage(user: User):
         session.add(exsiting_user)
         session.commit()
         return user
+    
+@router.post('/clear_access_token', response_model=User)
+def clear_access_token(token: str, channel: ChannelType):
+    user = get_current_user(token)
+    db_uder = session.query(UserDB).filter(UserDB.email == user.email).first()
+
+    if channel == ChannelType.google_analytics:
+        db_uder.google_analytics_refresh_token = None
+    elif channel == ChannelType.sheets:
+        db_uder.google_sheets_refresh_token = None
+    elif channel == ChannelType.youtube:
+        db_uder.youtube_refresh_token = None
+    else:
+        db_uder.google_refresh_token = None
+
+    # update existing user in database
+    try: 
+        session.add(db_uder)
+        session.commit()
+    except Exception as e:
+        print(e)
+        session.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not update access token. {e}",
+        )
+    finally:
+        session.close()
+        session.remove()
+
+    return user
     
 @router.get('/user', response_model=UserWithId)
 def user(token: str) -> UserWithId:
