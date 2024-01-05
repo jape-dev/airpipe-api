@@ -66,10 +66,9 @@ def data_source_field_options(data_source: DataSourceInDB) -> List[FieldOption]:
 
 
 @router.post("/field_options", response_model=List[FieldOption], status_code=200)
-def field_options(fields: List[str]) -> List[FieldOption]:
-
+def field_options(fields: List[str], data: List[object]) -> List[FieldOption]:
     fields_list = [
-        next((field for field in all_fields if field.alt_value == field_name), airpipe_field_option(field_name))
+        next((field for field in all_fields if field.alt_value == field_name), airpipe_field_option(field_name, data[0][field_name]))
         for field_name in fields
     ]
     
@@ -421,7 +420,7 @@ def chart_data(chart_id: str) -> ChartData:
         name=f'_{chart.user_id}."{chart_id}"', results=results.all(), columns=list(results.keys())
     )    
     field_options = [
-        next((field for field in all_fields if field.alt_value == field_name), airpipe_field_option(field_name))
+        next((field for field in all_fields if field.alt_value == field_name), airpipe_field_option(field_name, current_results.results[0][field_name]))
         for field_name in current_results.columns
     ]
 

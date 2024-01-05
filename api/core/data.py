@@ -273,7 +273,7 @@ def build_blend_query(
     return query
 
 
-def airpipe_field_option(field_name: str):
+def airpipe_field_option(field_name: str, value = None):
     """
     Returns a FieldOption object for the given field name.
 
@@ -284,9 +284,19 @@ def airpipe_field_option(field_name: str):
         FieldOption: An object representing a field option with various attributes such as value, label, type, channel, alt_value, and img.
 
     """
+    # if value is type of a number, then type if FieldType.metric, otherwise it's FieldType.dimension
+    if value:
+        if isinstance(value, int) or isinstance(value, float):
+            field_type = FieldType.metric
+        else:
+            field_type = FieldType.dimension
+    else:
+        field_type = FieldType.metric
+
+
     return FieldOption(value=field_name,
                        label=field_name.replace("_", " ").title(),
-                       type=FieldType.metric,
+                       type=field_type,
                        channel=ChannelType.airpipe,
                        alt_value=field_name,
                        img="airpipe-field-icon")
