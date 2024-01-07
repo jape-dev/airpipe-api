@@ -21,6 +21,8 @@ class User(BaseModel):
     google_refresh_token: Optional[str] = None
     google_analytics_refresh_token: Optional[str] = None
     google_sheets_refresh_token: Optional[str] = None
+    youtube_refresh_token: Optional[str] = None
+    instagram_access_token: Optional[str] = None
 
 
 class UserWithId(User):

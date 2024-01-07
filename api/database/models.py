@@ -17,6 +17,8 @@ class UserDB(Base):
     google_refresh_token = Column(String(), nullable=True)
     google_analytics_refresh_token = Column(String(), nullable=True)
     google_sheets_refresh_token = Column(String(), nullable=True)
+    youtube_refresh_token = Column(String(), nullable=True)
+    instagram_access_token = Column(String(), nullable=True)
     created_at = Column(DateTime(), default=datetime.datetime.now())
 
 
