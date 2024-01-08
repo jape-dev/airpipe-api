@@ -64,7 +64,7 @@ def build_google_query(
     return data_query
 
 
-def fetch_google_query(
+def fetch_google_data(
     current_user: User, query: GoogleQuery, data_query: str
 ) -> List[object]:
     access_token = get_access_token(current_user.google_refresh_token)

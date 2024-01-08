@@ -10,8 +10,8 @@ from api.core.auth import get_current_user
 from api.core.google import get_access_token
 from api.core.static_data import (
     ChannelType,
-    google_analytics_dimensions,
-    google_analytics_metrics,
+    youtube_metrics,
+    youtube_dimensions,
 )
 from api.database.database import session
 from api.database.models import UserDB
@@ -32,50 +32,41 @@ GOOGLE_APPLICATION_CREDENTIALS_PATH = Config.GOOGLE_APPLICATION_CREDENTIALS_PATH
 filename = GOOGLE_APPLICATION_CREDENTIALS_PATH
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = filename
 
-router = APIRouter(prefix="/google-analytics")
+router = APIRouter(prefix="/youtube")
 
 
 @router.get("/ad_accounts", response_model=List[AdAccount])
 def ad_accounts(token: str):
     current_user: User = get_current_user(token)
-    access_token = get_access_token(current_user.google_analytics_refresh_token)
+    access_token = get_access_token(current_user.youtube_refresh_token)
 
     headers = {"Authorization": f"Bearer {access_token}"}
-    url = "https://analyticsadmin.googleapis.com/v1alpha/accounts"
+    url = "https://www.googleapis.com/youtube/v3/channels"
+    params = {
+        'part': 'snippet',
+        'mine': 'true'
+    }
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, params=params)
+
+    print(response.json())
 
     ad_accounts = []
     if response.status_code == 200:
         results = response.json()
-        accounts = results["accounts"]
-        for account in accounts:
-            id = account["name"].replace("accounts/", "")
-            url = f"https://analyticsadmin.googleapis.com/v1alpha/properties?filter=ancestor:accounts/{id}"
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                properties = response.json()
-                for property_ in properties["properties"]:
-                    property_id = property_["name"].replace("properties/", "")
-                    name = property_["displayName"].replace("display_name:", "")
-                    ad_accounts.append(
-                        AdAccount(
-                            id=property_id,
-                            account_id=id,
-                            channel=ChannelType.google_analytics,
-                            name=name,
-                            img="google-analytics-icon",
-                        )
-                    )
-            else:
-                print(response.text)
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Could not get ad accounts. {response.text}",
+        for account in results["items"]:
+            id = account["id"]
+            name = account["snippet"]["title"]
+            ad_accounts.append(
+                AdAccount(
+                    id=id,
+                    account_id=id,
+                    channel=ChannelType.youtube,
+                    name=name,
+                    img="youtube-icon",
                 )
-
+            )
     else:
-        print(response.text)
         raise HTTPException(
             status_code=response.status_code,
             detail=f"Could not get ad accounts. {response.text}",
@@ -90,11 +81,11 @@ def fields(
 ) -> List[FieldOption]:
     fields_options = None
     if metrics:
-        fields_options = google_analytics_metrics
+        fields_options = youtube_metrics
     elif dimensions:
-        fields_options = google_analytics_dimensions
+        fields_options = youtube_dimensions
     else:
-        fields_options = google_analytics_metrics + google_analytics_dimensions
+        fields_options = youtube_metrics + youtube_dimensions
 
     if default:
         fields_options = [f for f in fields_options if f["default"]]

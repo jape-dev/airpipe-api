@@ -14,6 +14,8 @@ class ChannelType(str, Enum):
     google_analytics = "google_analytics"
     sheets = "sheets"
     airpipe = "airpipe"
+    youtube = "youtube"
+    instagram = "instagram"
 
 
 class FieldType(str, Enum):
@@ -572,4 +574,81 @@ google_analytics_dimensions = [
         "img": "google-analytics-icon",
         "default": True,
     },
+]
+
+youtube_metrics = [
+    {
+        "value": "views",
+        "label": "Views",
+        "alt_value": "youtube_views",
+        "type": FieldType.metric,
+        "channel": ChannelType.youtube,
+        "img": "youtube-icon",
+        "default": True,
+    },
+    # },
+    #     {
+    #     "value": "adImpressions",
+    #     "label": "Ad Impressions",
+    #     "alt_value": "youtube_ad_impressions",
+    #     "type": FieldType.metric,
+    #     "channel": ChannelType.youtube,
+    #     "img": "youtube-icon",
+    #     "default": True,
+    # },
+    #     {
+    #     "value": "cpm",
+    #     "label": "CPM",
+    #     "alt_value": "youtube_cpm",
+    #     "type": FieldType.metric,
+    #     "channel": ChannelType.youtube,
+    #     "img": "youtube-icon",
+    #     "default": True,
+    # }
+]
+
+youtube_dimensions = [
+    {
+        "value": "day",
+        "label": "Date",
+        "alt_value": "youtube_date",
+        "type": FieldType.dimension,
+        "channel": ChannelType.youtube,
+        "img": "youtube-icon",
+        "default": True,
+    }
+]
+
+instagram_metrics = [
+    {
+        "value": "impressions",
+        "label": "Impressions",
+        "alt_value": "instagram_impressions",
+        "type": FieldType.metric,
+        "channel": ChannelType.instagram,
+        "img": "instagram-icon",
+        "default": True,
+    }
+    
+]
+
+instagram_dimensions = [
+    {
+        "value": "media_product_type",
+        "label": "Media Product Type",
+        "alt_value": "instagram_media_product_type",
+        "type": FieldType.dimension,
+        "channel": ChannelType.instagram,
+        "img": "instagram-icon",
+        "default": True,
+    },
+    {
+        "value": "date",
+        "label": "Date",
+        "alt_value": "instagram_date",
+        "type": FieldType.dimension,
+        "channel": ChannelType.instagram,
+        "img": "instagram-icon",
+        "default": True,
+    }
 ]

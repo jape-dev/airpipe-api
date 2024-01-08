@@ -3,8 +3,10 @@ from fastapi import HTTPException
 import pandas as pd
 from typing import List, Optional
 
-from api.core.google import build_google_query, fetch_google_query
+from api.core.google import build_google_query, fetch_google_data
 from api.core.facebook import fetch_facebook_data
+from api.core.instagram import fetch_instagram_data
+from api.core.youtube import fetch_youtube_data
 from api.database.database import engine
 from api.models.data import (
     FieldOption,
@@ -15,6 +17,8 @@ from api.models.data import (
 )
 from api.models.google import GoogleQuery
 from api.models.facebook import FacebookQuery
+from api.models.youtube import YoutubeQuery
+from api.models.instagram import InstagramQuery
 from api.core.static_data import (
     FieldType,
     ChannelType,
@@ -24,6 +28,10 @@ from api.core.static_data import (
     google_analytics_dimensions,
     facebook_metrics,
     facebook_dimensions,
+    youtube_metrics,
+    youtube_dimensions,
+    instagram_metrics,
+    instagram_dimensions,
 )
 from api.core.google_analytics import fetch_google_analytics_data
 from api.models.google_analytics import GoogleAnalyticsQuery
@@ -35,25 +43,31 @@ all_fields: List[FieldOption] = (
     [FieldOption(**item) for item in google_analytics_metrics] +
     [FieldOption(**item) for item in google_analytics_dimensions] +
     [FieldOption(**item) for item in facebook_metrics] +
-    [FieldOption(**item) for item in facebook_dimensions]
+    [FieldOption(**item) for item in facebook_dimensions] +
+    [FieldOption(**item) for item in youtube_metrics] +
+    [FieldOption(**item) for item in youtube_dimensions] + 
+    [FieldOption(**item) for item in instagram_metrics] +
+    [FieldOption(**item) for item in instagram_dimensions]
 )
 
 
 all_metrics: List[FieldOption] = (
     [FieldOption(**item) for item in google_metrics] +
     [FieldOption(**item) for item in google_analytics_metrics] +
-    [FieldOption(**item) for item in facebook_metrics]
+    [FieldOption(**item) for item in facebook_metrics] +
+    [FieldOption(**item) for item in youtube_metrics]
 )
 
 all_dimensions: List[FieldOption] = (
     [FieldOption(**item) for item in google_dimensions] +
     [FieldOption(**item) for item in google_analytics_dimensions] +
-    [FieldOption(**item) for item in facebook_dimensions]
+    [FieldOption(**item) for item in facebook_dimensions] +
+    [FieldOption(**item) for item in youtube_dimensions]
 )
 
 google_fields: List[FieldOption] = (
     [FieldOption(**item) for item in google_metrics] +
-    [FieldOption(**item) for item in google_dimensions]
+    [FieldOption(**item) for item in google_dimensions] 
 )
 
 facebook_fields: List[FieldOption] = (
@@ -66,7 +80,9 @@ google_analytics_fields: List[FieldOption] = (
     [FieldOption(**item) for item in google_analytics_dimensions]
 )
 
-
+youtube_fields = [FieldOption(**item) for item in youtube_metrics] + [
+    FieldOption(**item) for item in youtube_dimensions
+]
 def load_postgresql_table(table_name):
     try:
         # Read the table into a DataFrame using the engine
@@ -169,7 +185,7 @@ def fetch_data(data_source: DataSource):
                 start_date=data_source.start_date,
                 end_date=data_source.end_date,
             )
-            data = fetch_google_query(
+            data = fetch_google_data(
                 current_user=data_source.user, query=query, data_query=data_query
             )
         elif adAccount.channel == ChannelType.google_analytics:
@@ -188,6 +204,20 @@ def fetch_data(data_source: DataSource):
                 account_id=account_id, metrics=metrics, dimensions=dimensions
             )
             data = fetch_facebook_data(current_user=data_source.user, query=query)
+        elif adAccount.channel == ChannelType.instagram:
+            query = InstagramQuery(
+                account_id=account_id, metrics=metrics, dimensions=dimensions
+            )
+            data = fetch_instagram_data(current_user=data_source.user, query=query)
+        elif adAccount.channel == ChannelType.youtube:
+            query = YoutubeQuery(
+                account_id=account_id,
+                metrics=metrics,
+                dimensions=dimensions,
+                start_date=data_source.start_date,
+                end_date=data_source.end_date,
+            )
+            data = fetch_youtube_data(current_user=data_source.user, query=query)
         else:
             raise HTTPException(
                 status_code=400,

@@ -122,8 +122,11 @@ def table_results(
     try:
         results = connection.execute(query)
     except sqlalchemy.exc.ProgrammingError as e:
+        print(e)
         error_msg = str(e)
         raise HTTPException(status_code=400, detail=error_msg)
+    finally:
+        connection.close()
 
     current_results = CurrentResults(
         name=f'{schema}."{name}"', results=results.all(), columns=list(results.keys())

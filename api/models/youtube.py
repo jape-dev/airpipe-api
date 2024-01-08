@@ -3,7 +3,7 @@ from typing import List
 from datetime import datetime
 
 
-class GoogleQuery(BaseModel):
+class YoutubeQuery(BaseModel):
     account_id: str
     metrics: List[str]
     dimensions: List[str]

@@ -70,6 +70,8 @@ def oauth2_callback(request: Request) -> RedirectResponse:
         user.google_analytics_refresh_token = token
     elif channel_type == ChannelType.sheets:
         user.google_sheets_refresh_token = token
+    elif channel_type == ChannelType.youtube:
+        user.youtube_refresh_token = token
     else:
         user.google_refresh_token = token
 
