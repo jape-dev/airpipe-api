@@ -23,14 +23,13 @@ router = APIRouter(prefix="/instagram")
 
 @router.get("/login")
 def login(request: Request):
-    app_id = 1190161828611459
+    app_id = 3796703967222950
     code = request.query_params["code"]
     token = request.query_params["state"]
 
     redirect_uri = f"{DOMAIN_URL}/connector/instagram/login/"
     redirect_uri = redirect_uri.replace("www.", "")
     auth_url = f"https://graph.facebook.com/v17.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={FB_CLIENT_SECRET}"
-    print(auth_url)
 
     # Save the access token to the user's database.
     response = requests.get(auth_url)
