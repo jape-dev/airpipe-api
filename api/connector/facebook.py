@@ -26,6 +26,7 @@ def login(request: Request):
     app_id = 3796703967222950
     code = request.query_params["code"]
     token = request.query_params["state"]
+    channel = request.query_params["channel"]
 
     redirect_uri = f"{DOMAIN_URL}/connector/facebook/login/"
     redirect_uri = redirect_uri.replace("www.", "")
@@ -49,7 +50,10 @@ def login(request: Request):
 
     try:
         user = session.query(UserDB).filter(UserDB.email == user.email).first()
-        user.facebook_access_token = access_token
+        if channel == "facebook":
+            user.facebook_refresh_token = token
+        else:
+            user.instagram_access_token = token
         session.add(user)
         session.commit()
     except Exception as e:
