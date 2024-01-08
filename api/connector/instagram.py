@@ -30,6 +30,7 @@ def login(request: Request):
     redirect_uri = f"{DOMAIN_URL}/connector/instagram/login/"
     redirect_uri = redirect_uri.replace("www.", "")
     auth_url = f"https://graph.facebook.com/v17.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={FB_CLIENT_SECRET}"
+    print(auth_url)
 
     # Save the access token to the user's database.
     response = requests.get(auth_url)
@@ -41,7 +42,7 @@ def login(request: Request):
         print(json)
         raise HTTPException(
             status_code=400,
-            detail=f"Could not get access token from Facebook. Error {e}. Response: {json}",
+            detail=f"Could not get access token from Instagram. Error {e}. Response: {json}",
         )
 
     # Commit access_token to the database.
