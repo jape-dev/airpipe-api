@@ -182,7 +182,6 @@ def pad_object_list(data: dict):
     Returns:
         dict: The modified dictionary with padded lists.
     """
-    print(data)
 
     # Find the maximum length of lists in the nested dictionaries
     max_length = max(

@@ -1,7 +1,7 @@
 from api.config import Config
 
 from api.models.connector import AdAccount
-from api.core.static_data import ChannelType, instagram_metrics, instagram_dimensions
+from api.core.static_data import ChannelType, instagram_account_metrics, instagram_account_dimensions, instagram_media_dimensions, instagram_media_metrics
 from api.models.user import User
 from api.core.auth import get_current_user
 from api.database.database import session
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/instagram")
 
 @router.get("/login")
 def login(request: Request):
-    app_id = 3796703967222950
+    app_id = 1190161828611459
     code = request.query_params["code"]
     token = request.query_params["state"]
 
@@ -90,7 +90,6 @@ def ad_accounts(token: str):
         response = requests.get(url)
         if response.status_code == 200:
             json = response.json()
-            print("json 2", json)
             id = json["instagram_business_account"]["id"]
             instagram_account_ids.append(id)
 
@@ -99,11 +98,10 @@ def ad_accounts(token: str):
         response = requests.get(url)
         if response.status_code == 200:
             json = response.json()
-            print("json 3", json)
             username = json["username"]
             adaccount: AdAccount = AdAccount(
                 id=id,
-                channel=ChannelType.instagram,
+                channel=ChannelType.instagram_media,
                 account_id=id,
                 name=username,
                 img="instagram-icon",
@@ -115,15 +113,24 @@ def ad_accounts(token: str):
 
 @router.get("/fields", response_model=List[FieldOption])
 def fields(
-    default: bool = False, metrics: bool = False, dimensions: bool = False
+    default: bool = False, metrics: bool = False, dimensions: bool = False, media: bool = False
 ) -> List[FieldOption]:
     fields_options = None
-    if metrics:
-        fields_options = instagram_metrics
-    elif dimensions:
-        fields_options = instagram_dimensions
+
+    if media:
+        if metrics:
+            fields_options = instagram_media_metrics
+        elif dimensions:
+            fields_options = instagram_media_dimensions
+        else:
+            fields_options = instagram_media_metrics + instagram_media_dimensions
     else:
-        fields_options = instagram_metrics + instagram_dimensions
+        if metrics:
+            fields_options = instagram_account_metrics
+        elif dimensions:
+            fields_options = instagram_account_dimensions
+        else:
+            fields_options = instagram_account_metrics + instagram_account_dimensions
 
     if default:
         fields_options = [f for f in fields_options if f["default"]]

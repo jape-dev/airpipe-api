@@ -30,8 +30,10 @@ from api.core.static_data import (
     facebook_dimensions,
     youtube_metrics,
     youtube_dimensions,
-    instagram_metrics,
-    instagram_dimensions,
+    instagram_account_metrics,
+    instagram_account_dimensions,
+    instagram_media_metrics,
+    instagram_media_dimensions,
 )
 from api.core.google_analytics import fetch_google_analytics_data
 from api.models.google_analytics import GoogleAnalyticsQuery
@@ -46,8 +48,10 @@ all_fields: List[FieldOption] = (
     [FieldOption(**item) for item in facebook_dimensions] +
     [FieldOption(**item) for item in youtube_metrics] +
     [FieldOption(**item) for item in youtube_dimensions] + 
-    [FieldOption(**item) for item in instagram_metrics] +
-    [FieldOption(**item) for item in instagram_dimensions]
+    [FieldOption(**item) for item in instagram_account_metrics] +
+    [FieldOption(**item) for item in instagram_account_dimensions] +
+    [FieldOption(**item) for item in instagram_media_metrics] +
+    [FieldOption(**item) for item in instagram_media_dimensions]
 )
 
 
@@ -55,34 +59,21 @@ all_metrics: List[FieldOption] = (
     [FieldOption(**item) for item in google_metrics] +
     [FieldOption(**item) for item in google_analytics_metrics] +
     [FieldOption(**item) for item in facebook_metrics] +
-    [FieldOption(**item) for item in youtube_metrics]
+    [FieldOption(**item) for item in youtube_metrics] + 
+    [FieldOption(**item) for item in instagram_account_metrics] +
+    [FieldOption(**item) for item in instagram_media_metrics]
 )
 
 all_dimensions: List[FieldOption] = (
     [FieldOption(**item) for item in google_dimensions] +
     [FieldOption(**item) for item in google_analytics_dimensions] +
     [FieldOption(**item) for item in facebook_dimensions] +
-    [FieldOption(**item) for item in youtube_dimensions]
+    [FieldOption(**item) for item in youtube_dimensions] + 
+    [FieldOption(**item) for item in instagram_account_dimensions] +
+    [FieldOption(**item) for item in instagram_media_dimensions]
 )
 
-google_fields: List[FieldOption] = (
-    [FieldOption(**item) for item in google_metrics] +
-    [FieldOption(**item) for item in google_dimensions] 
-)
 
-facebook_fields: List[FieldOption] = (
-    [FieldOption(**item) for item in facebook_metrics] +
-    [FieldOption(**item) for item in facebook_dimensions]
-)
-
-google_analytics_fields: List[FieldOption] = (
-    [FieldOption(**item) for item in google_analytics_metrics] +
-    [FieldOption(**item) for item in google_analytics_dimensions]
-)
-
-youtube_fields = [FieldOption(**item) for item in youtube_metrics] + [
-    FieldOption(**item) for item in youtube_dimensions
-]
 def load_postgresql_table(table_name):
     try:
         # Read the table into a DataFrame using the engine
@@ -138,7 +129,6 @@ def create_field_list(
             for field in fields
             if field.type == FieldType.dimension and field.value is not None
         ]
-
 
     filtered_fields = metrics + dimensions
 
@@ -204,9 +194,9 @@ def fetch_data(data_source: DataSource):
                 account_id=account_id, metrics=metrics, dimensions=dimensions
             )
             data = fetch_facebook_data(current_user=data_source.user, query=query)
-        elif adAccount.channel == ChannelType.instagram:
+        elif adAccount.channel == ChannelType.instagram_media or adAccount.channel == ChannelType.instagram_account:
             query = InstagramQuery(
-                account_id=account_id, metrics=metrics, dimensions=dimensions
+                account_id=account_id, metrics=metrics, dimensions=dimensions, channel=adAccount.channel
             )
             data = fetch_instagram_data(current_user=data_source.user, query=query)
         elif adAccount.channel == ChannelType.youtube:

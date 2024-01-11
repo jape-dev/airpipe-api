@@ -49,4 +49,12 @@ def fetch_facebook_data(current_user: User, query: FacebookQuery) -> List[object
             if "date" not in query.dimensions:
                 del datum["date"]
 
+        for key, value in datum.items():
+            # Check if the value is a list
+            if isinstance(value, list):
+                # Extract the video_view from the list
+                video_view = next((item['value'] for item in value if item['action_type'] == 'video_view'), None)
+                if video_view is not None:
+                    datum[key] = video_view
+    
     return data

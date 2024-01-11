@@ -2,9 +2,7 @@ from api.config import Config
 from api.models.user import User
 from api.models.youtube import YoutubeQuery
 from api.database.models import UserDB
-from api.utilities.string import underscore_to_camel_case
 from api.database.database import session
-from api.utilities.data import convert_metric
 from api.core.google import get_access_token
 
 from datetime import datetime
@@ -49,20 +47,6 @@ def handleGoogleTokenException(ex, current_user: User):
             status_code=500,
             detail=f"Internal server error. {error}",
         )
-
-
-def build_youtube_query(
-    fields: List[str], start_date: datetime, end_date: datetime
-) -> str:
-    fields = ",".join(fields)
-
-    data_query = f"""
-        SELECT {fields}
-        FROM ad_group_ad
-        WHERE segments.date BETWEEN "{start_date.strftime("%Y-%m-%d")}" AND "{end_date.strftime("%Y-%m-%d")}"
-    """
-
-    return data_query
 
 
 def fetch_youtube_data(

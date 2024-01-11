@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
+from api.core.static_data import ChannelType
 
 
 class AdAccount(BaseModel):
@@ -15,3 +16,4 @@ class InstagramQuery(BaseModel):
     period: str = "day"
     start_date: Optional[int]
     end_date: Optional[int]
+    channel: ChannelType = ChannelType.instagram_media

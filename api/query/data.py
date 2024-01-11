@@ -74,18 +74,6 @@ def field_options(fields: List[str], data: List[object]) -> List[FieldOption]:
     
     return fields_list
 
-@router.get("/channel_field_options", response_model=List[FieldOption])
-def channel_field_options(channel: ChannelType, token: str) -> List[FieldOption]:
-    # current_user: User = get_current_user(token) TODO: change auth set-up as this is clashing with ad_accounts
-    channel_type = get_enum_member_by_value(ChannelType, channel)
-    fields, metrics, dimensions = create_field_list(all_fields, channel=channel_type, use_alt_value=True)
-    field_options = [
-        next((field for field in all_fields if field.alt_value == field_name), airpipe_field_option(field_name))
-        for field_name in fields
-    ]
-    return field_options
-
-
 
 @router.get("/run_query", response_model=QueryResults, status_code=200)
 def run_query(token: str, query: str):

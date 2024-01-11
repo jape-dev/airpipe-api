@@ -23,7 +23,7 @@ router = APIRouter(prefix="/facebook")
 
 @router.get("/login")
 def login(request: Request):
-    app_id = 3796703967222950
+    app_id = 1190161828611459
     code = request.query_params["code"]
     token = request.query_params["state"]
 
