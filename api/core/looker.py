@@ -1,6 +1,7 @@
 from api.core.static_data import LookerFieldType, FieldType
 from api.utilities.data import all_channel_fields
 from api.models.looker import LookerField
+from api.core.data import all_fields
 
 postgres_to_looker_mapping = {
     "bigint": LookerFieldType.number,
@@ -90,7 +91,6 @@ def get_looker_fields(schema: dict):
     Returns:
         list: A list of LookerField objects.
     """
-    channel_fields = all_channel_fields()
 
     looker_fields = []
     for field, type in schema.items():
@@ -106,7 +106,7 @@ def get_looker_fields(schema: dict):
         else:
             matching_field = [
                 channel_field
-                for channel_field in channel_fields
+                for channel_field in all_fields
                 if channel_field.alt_value == field
             ][0]
             looker_field = LookerField(

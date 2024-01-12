@@ -270,25 +270,6 @@ def get_channel_img(fields: List[FieldOption]):
         return unique_field_img[0]
 
 
-def all_channel_fields() -> List[FieldOption]:
-    """
-    Merge channel options.
-
-    Returns:
-        all_channels (list): A list containing all channel options merged together.
-    """
-    all_channels = (
-        google_metrics
-        + google_dimensions
-        + google_analytics_metrics
-        + google_analytics_dimensions
-        + facebook_metrics
-        + facebook_dimensions
-    )
-
-    return all_channels
-
-
 def get_channel_name_from_enum(channel: str):
     if channel == ChannelType.google.value:
         return "Google Ads"
