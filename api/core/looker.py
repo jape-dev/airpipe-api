@@ -1,5 +1,4 @@
 from api.core.static_data import LookerFieldType, FieldType
-from api.utilities.data import all_channel_fields
 from api.models.looker import LookerField
 from api.core.data import all_fields
 
