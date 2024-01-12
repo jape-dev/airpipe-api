@@ -1301,7 +1301,7 @@ instagram_account_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_account,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "text_message_clicks",
@@ -1389,7 +1389,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "reach",
@@ -1398,7 +1398,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "saved",
@@ -1407,7 +1407,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "video_views",
@@ -1416,7 +1416,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "comments",
@@ -1425,7 +1425,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "ig_reels_avg_watch_time",
@@ -1452,7 +1452,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "plays",
@@ -1470,7 +1470,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "total_interactions",
@@ -1479,7 +1479,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "replies",
@@ -1488,7 +1488,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "follows",
@@ -1497,7 +1497,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     {
         "value": "profile_activity",
@@ -1515,7 +1515,7 @@ instagram_media_metrics = [
         "type": FieldType.metric,
         "channel": ChannelType.instagram_media,
         "img": "instagram-icon",
-        "default": False,
+        "default": True,
     },
     # {
     #     "value": "navigation",
