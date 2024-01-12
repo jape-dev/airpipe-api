@@ -302,6 +302,7 @@ def create_blend(
         columns = list(results.keys())
     except sqlalchemy.exc.ProgrammingError as e:
         error_msg = str(e)
+        print(error_msg)
         raise HTTPException(status_code=400, detail=error_msg)
     finally:
         connection.close()

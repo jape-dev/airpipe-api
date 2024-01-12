@@ -286,7 +286,7 @@ def build_blend_query(
 
     query = f'SELECT DISTINCT {", ".join(field_names)} FROM {db_schema}."{left_table_name}" '
     for join_condition in join_conditions:
-        query += f'{join_condition.join_type} {db_schema}."{right_table_name}" ON {db_schema}."{left_table_name}"."{join_condition.left_field.alt_value}" = {db_schema}."{right_table_name}"."{join_condition.right_field.alt_value}"'
+        query += f'{join_condition.join_type.value} {db_schema}."{right_table_name}" ON {db_schema}."{left_table_name}"."{join_condition.left_field.alt_value}" = {db_schema}."{right_table_name}"."{join_condition.right_field.alt_value}"'
     if date_column is not None and start_date is not None and end_date is not None:
         query += f"WHERE {date_column} BETWEEN '{start_date.strftime('%Y-%m-%d')}' AND '{end_date.strftime('%Y-%m-%d')}'"
 
