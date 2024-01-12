@@ -110,9 +110,9 @@ def get_looker_fields(schema: dict):
             ][0]
             looker_field = LookerField(
                 id=field,
-                name=matching_field["label"],
+                name=matching_field.label,
                 looker_field_type=type,
-                field_type=matching_field["type"],
+                field_type=matching_field.type,
             )
             looker_fields.append(looker_field)
 
