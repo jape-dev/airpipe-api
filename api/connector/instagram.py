@@ -23,7 +23,7 @@ router = APIRouter(prefix="/instagram")
 
 @router.get("/login")
 def login(request: Request):
-    app_id = 1190161828611459
+    app_id = 3796703967222950
     code = request.query_params["code"]
     token = request.query_params["state"]
 
