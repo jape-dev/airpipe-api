@@ -104,7 +104,7 @@ def user(token: str) -> UserWithId:
     user_with_id = get_user_with_id(user.email)
     return user_with_id
 
-@router.post('/loops_events')
+@router.get('/loops_events')
 def send_loops_events():
     users = get_all_users()
     current_datetime = datetime.datetime.now()
