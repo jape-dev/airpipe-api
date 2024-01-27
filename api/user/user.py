@@ -24,6 +24,7 @@ def create_customer(user: UserInDB):
         hashed_password=hashed_password,
         onboarding_stage=user.onboarding_stage,
         role=user.role,
+        created_at=datetime.datetime.now(),
     )
     try:
         exsiting_user = session.query(UserDB).filter(UserDB.email == user.email).first()

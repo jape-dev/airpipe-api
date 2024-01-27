@@ -19,7 +19,7 @@ class UserDB(Base):
     google_sheets_refresh_token = Column(String(), nullable=True)
     youtube_refresh_token = Column(String(), nullable=True)
     instagram_access_token = Column(String(), nullable=True)
-    created_at = Column(DateTime(), default=datetime.datetime.now())
+    created_at = Column(DateTime())
     onboarding_stage_updated_at = Column(DateTime(), nullable=True)
 
 
