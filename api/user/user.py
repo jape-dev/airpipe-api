@@ -107,7 +107,7 @@ def user(token: str) -> UserWithId:
 @router.post('/loops_events')
 def send_loops_events():
     users = get_all_users()
-    current_datetime = datetime.now()
+    current_datetime = datetime.datetime.now()
 
     for user in users:
 
