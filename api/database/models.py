@@ -20,6 +20,8 @@ class UserDB(Base):
     youtube_refresh_token = Column(String(), nullable=True)
     instagram_access_token = Column(String(), nullable=True)
     created_at = Column(DateTime(), default=datetime.datetime.now())
+    onboarding_stage_updated_at = Column(DateTime(), nullable=True)
+
 
 
 class DataSourceDB(Base):

@@ -15,7 +15,7 @@ from api.models.data import (
 )
 from api.database.database import engine, session
 from api.database.crud import get_user_by_email, get_chart_by_chart_id
-from api.core.static_data import ChannelType, get_enum_member_by_value
+from api.core.static_data import ChannelType, get_enum_member_by_value, OnboardingStage
 from api.core.data import (
     create_field_list,
     fetch_data,
@@ -25,7 +25,10 @@ from api.core.data import (
     airpipe_field_option
 )
 from api.core.auth import get_user_with_id
+from api.email.email import send_added_data_source_event
 from api.models.data import DataSourceInDB, JoinCondition, View, ViewInDB
+from api.models.loops import Contact
+
 from api.models.user import User
 from api.database.models import DataSourceDB, ViewDB, JoinConditionDB, ChartDB
 from api.database.crud import get_data_sources_by_user_id, get_views_by_user_id
@@ -176,6 +179,26 @@ def add_data_source(data_source: DataSource) -> SuccessResponse:
             status_code=400,
             detail=f"Could not save data_source_row to database. {e}",
         )
+    
+    if db_user.onboarding_stage == OnboardingStage.connected:
+        
+        contact = Contact(
+            email=db_user.email
+        )
+        send_added_data_source_event(contact)
+
+        db_user.onboarding_stage = OnboardingStage.data_added
+
+        try:
+            session.add(db_user)
+            session.commit()
+        except Exception as e:
+            print(e)
+            session.rollback()
+            raise HTTPException(
+                status_code=400,
+                detail=f"Could not update onboarding stage of user. {e}",
+            )
 
     return SuccessResponse(detail="Data written to db and data source record added.")
 

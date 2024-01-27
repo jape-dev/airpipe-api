@@ -25,10 +25,9 @@ class FieldType(str, Enum):
 
 
 class OnboardingStage(str, Enum):
-    connect = "connect"
-    add_data = "add_data"
-    ask = "ask"
-    complete = "complete"
+    signed_up = "signed_up"
+    connected = "connected"
+    data_added = "data_added"
 
 
 class Environment(str, Enum):
@@ -233,6 +232,24 @@ facebook_metrics = [
     #     "img": "facebook-icon",
     #     "default": True,
     # }
+    {
+        "value": "video_view",
+        "label": "3 Second Video View",
+        "alt_value": "facebook_three_second_video_view",
+        "type": FieldType.metric,
+        "channel": ChannelType.facebook,
+        "img": "facebook-icon",
+        "default": True,
+    },
+    {
+        "value": "post",
+        "label": "Post Shares",
+        "alt_value": "facebook_post_shares",
+        "type": FieldType.metric,
+        "channel": ChannelType.facebook,
+        "img": "facebook-icon",
+        "default": True,
+    }
 ]
 
 facebook_dimensions = [

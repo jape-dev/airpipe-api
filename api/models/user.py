@@ -15,7 +15,7 @@ class TokenData(BaseModel):
 
 class User(BaseModel):
     email: str
-    onboarding_stage: OnboardingStage = OnboardingStage.connect
+    onboarding_stage: OnboardingStage = OnboardingStage.signed_up
     role: Optional[UserRoleType]
     facebook_access_token: Optional[str] = None
     google_refresh_token: Optional[str] = None

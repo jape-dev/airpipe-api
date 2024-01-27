@@ -11,6 +11,11 @@ def fetch_facebook_data(current_user: User, query: FacebookQuery) -> List[object
     fields = query.dimensions + query.metrics
     if "date" in fields:
         fields.remove("date")
+    if "video_view" in fields or "post" in fields:
+        fields.remove("video_view")
+        fields.remove("post")
+        fields.append("actions")
+
     fields = ",".join(fields)
 
     if query.start_date is None or query.end_date is None:
@@ -27,6 +32,7 @@ def fetch_facebook_data(current_user: User, query: FacebookQuery) -> List[object
         end_date = end_datetime.strftime("%Y-%m-%d")
 
     url = f"https://graph.facebook.com/v17.0/{query.account_id}/insights?level=ad&fields={fields}&time_range={{'since':'{start_date}','until':'{end_date}'}}&time_increment=1&access_token={current_user.facebook_access_token}"
+    print(url)
 
     response = requests.get(url)
     if response.status_code != 200:
@@ -34,6 +40,7 @@ def fetch_facebook_data(current_user: User, query: FacebookQuery) -> List[object
         raise HTTPException(status_code=400, detail="Facebook query failed")
     json = response.json()
     data = json["data"]
+    print(data)
 
     for datum in data:
         # check if metric doe snot exist in the datum keys and set it to 0.
@@ -54,7 +61,23 @@ def fetch_facebook_data(current_user: User, query: FacebookQuery) -> List[object
             if isinstance(value, list):
                 # Extract the video_view from the list
                 video_view = next((item['value'] for item in value if item['action_type'] == 'video_view'), None)
+                # Extract post shares from the list
+                post_shares = next((item['value'] for item in value if item['action_type'] == 'post'), None)
                 if video_view is not None:
-                    datum[key] = video_view
+                    if key != "actions":
+                        datum[key] = video_view
+                    else:
+                        datum["video_view"] = video_view
+                if post_shares is not None:
+                    if key != "actions":
+                        datum[key] = post_shares
+                    else:
+                        datum["post"] = post_shares
+        
+        # Remove the action key from each datum
+        for datum in data:
+            # Remove the action key from each datum
+            if "actions" in datum:
+                del datum["actions"]
     
     return data

@@ -1,15 +1,15 @@
 from api.database.database import session
-from api.database.crud import insert_new_user
+from api.database.crud import insert_new_user, get_all_users
 from api.database.models import UserDB
 from api.models.user import User, UserInDB, UserWithId
 from api.core.auth import get_password_hash, get_user_with_id, get_current_user
-from api.core.static_data import ChannelType
-from api.email.email import add_contact_to_loops
+from api.core.static_data import ChannelType, OnboardingStage
+from api.email.email import add_contact_to_loops, send_remind_connect_event, send_remind_data_source_event
 from api.models.loops import Contact
 from api.core.static_data import Environment, get_enum_member_by_value
 from api.config import Config
 
-
+import datetime
 from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
@@ -46,9 +46,15 @@ def create_customer(user: UserInDB):
 
 
 @router.post("/update_onboarding_stage", response_model=User)
-def update_onboarding_stage(user: User):
+def update_onboarding_stage(user: User, new_stage: OnboardingStage) -> UserDB:
     try:
-        exsiting_user = session.query(UserDB).filter(UserDB.email == user.email).first()
+        existing_user = session.query(UserDB).filter(UserDB.email == user.email).first()
+        if existing_user:
+            existing_user.onboarding_stage = new_stage
+            existing_user.onboarding_stage_updated_at = datetime.datetime.now()
+            session.add(existing_user)
+            session.commit()
+            return user
     except BaseException as e:
         print(e)
         session.rollback()
@@ -56,12 +62,9 @@ def update_onboarding_stage(user: User):
     finally:
         session.close()
         session.remove()
-    if exsiting_user:
-        exsiting_user.onboarding_stage = user.onboarding_stage
-        session.add(exsiting_user)
-        session.commit()
-        return user
-    
+
+    return existing_user
+
 @router.post('/clear_access_token', response_model=User)
 def clear_access_token(token: str, channel: ChannelType):
     user = get_current_user(token)
@@ -100,4 +103,21 @@ def user(token: str) -> UserWithId:
     user_with_id = get_user_with_id(user.email)
     return user_with_id
 
+@router.post('/loops_events')
+def send_loops_events():
+    users = get_all_users()
+    current_datetime = datetime.now()
 
+    for user in users:
+
+        contact = Contact(email=user.email)
+
+        time_delta = current_datetime - user.onboarding_stage_updated_at
+        time_delta_seconds = time_delta.total_seconds()
+
+        if time_delta_seconds > 24 * 3600 and time_delta_seconds < 48 * 3600:
+            if user.onboarding_stage == OnboardingStage.signed_up:
+                send_remind_connect_event(contact)
+            elif user.onboarding_stage == OnboardingStage.connected:
+                send_remind_data_source_event(contact)
+    

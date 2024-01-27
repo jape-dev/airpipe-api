@@ -32,6 +32,20 @@ def get_user_by_email(email: str) -> UserDB:
         session.remove()
     if user:
         return user
+    
+
+def get_all_users() -> List[UserDB]:
+    try:
+        users = session.query(UserDB).all()
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+        session.remove()
+    if users:
+        return users
 
 
 def get_data_sources_by_user_id(user_id: int) -> List[DataSourceDB]:
