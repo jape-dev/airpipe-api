@@ -31,6 +31,7 @@ def login(request: Request):
     redirect_uri = redirect_uri.replace("www.", "")
     auth_url = f"https://graph.facebook.com/v17.0/oauth/access_token?client_id={app_id}&redirect_uri={redirect_uri}&code={code}&client_secret={FB_CLIENT_SECRET}"
 
+    print(auth_url)
     # Save the access token to the user's database.
     response = requests.get(auth_url)
 
@@ -49,7 +50,7 @@ def login(request: Request):
 
     try:
         user = session.query(UserDB).filter(UserDB.email == user.email).first()
-        user.facebook_refresh_token = access_token
+        user.facebook_access_token = access_token
         session.add(user)
         session.commit()
     except Exception as e:
