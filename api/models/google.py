@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 
@@ -9,3 +9,4 @@ class GoogleQuery(BaseModel):
     dimensions: List[str]
     start_date: datetime
     end_date: datetime
+    manager_id: Optional[str]

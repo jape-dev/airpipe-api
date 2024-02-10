@@ -73,21 +73,23 @@ def fetch_google_data(
     headers = {
         "Authorization": f"Bearer {access_token}",
         "developer-token": GOOGLE_ADS_DEVELOPER_TOKEN,
+        "login-customer-id": query.manager_id,
     }
+
     response = requests.post(url, headers=headers, data=body)
     stream = response.json()
+
 
     data = []
     for batch in stream:
         try:
             results = batch["results"]
         except KeyError as e:
-            print(e)
             print(response.text)
             print(batch)
             raise HTTPException(
                 status_code=400,
-                detail=f"Could not get data. {response.text}",
+                detail=f"Could not get results in Google Ads data. {response.text}",
             )
         for row in results:
             data_row = {}
@@ -98,9 +100,8 @@ def fetch_google_data(
                     data_row[metric] = convert_metric(
                         row["metrics"][metric_name], metric_name
                     )
-                except BaseException as e:
-                    print(row)
-                    print("Error in metrics", e)
+                except KeyError as e:
+                    print("KeyError: could not find metrics", e)
                     pass
             for dimension in query.dimensions:
                 dimension_components = dimension.split(".")
@@ -110,8 +111,8 @@ def fetch_google_data(
                             data_row[dimension] = row["segments"]["keyword"]["info"][
                                 "text"
                             ]
-                        except BaseException as e:
-                            print(e)
+                        except KeyError as e:
+                            print("KeyError: could not find segments keyword", e)
 
                     else:
                         dimension_name = dimension.replace("segments.", "")
@@ -119,29 +120,30 @@ def fetch_google_data(
                         try:
                             data_row[dimension] = row["segments"][dimension_name]
                         except BaseException as e:
-                            print(e)
+                            print("KeyError: could not find segments", e)
                 elif dimension_components[0] == "ad_group":
                     dimension_name = dimension.replace("ad_group.", "")
                     dimension_name = underscore_to_camel_case(dimension_name)
                     try:
                         data_row[dimension] = row["adGroup"][dimension_name]
                     except BaseException as e:
-                        print(e)
+                        print("KeyError: could not find ad_group dimension", e)
                 elif dimension_components[0] == "ad_group_ad":
                     dimension_name = dimension.replace("ad_group_ad.ad.", "")
                     dimension_name = underscore_to_camel_case(dimension_name)
 
                     try:
                         data_row[dimension] = row["adGroupAd"]["ad"][dimension_name]
-                    except Exception as e:
-                        print(e)
+                    except KeyError as e:
+                        print("KeyError: could not find ad_group_ad.ad dimension", e)
+
                 elif dimension_components[0] == "campaign":
                     dimension_name = dimension.replace("campaign.", "")
                     dimension_name = underscore_to_camel_case(dimension_name)
                     try:
                         data_row[dimension] = row["campaign"][dimension_name]
-                    except:
-                        pass
+                    except KeyError as e:
+                        print("KeyError: could not find campaign dimension", e)
                 else:
                     raise HTTPException(
                         status_code=400, detail=f"Invalid dimension: {dimension}"
@@ -164,6 +166,6 @@ def get_access_token(refresh_token: str):
     response = requests.post(url, headers=headers, data=data)
 
     if response.status_code != 200:
-        raise HTTPException(status_code=400, detail="Could not get access token")
+        raise HTTPException(status_code=400, detail=f"Could not get access token: {response.text}")
     else:
         return response.json()["access_token"]

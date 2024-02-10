@@ -108,18 +108,17 @@ def ad_accounts(token: str):
         "developer-token": GOOGLE_ADS_DEVELOPER_TOKEN,
     }
     response = requests.get(url, headers=headers)
-    print(response.json())
     resource_names = response.json()["resourceNames"]
 
     ad_accounts = []
     for resource_name in resource_names:
         id = resource_name.replace("customers/", "")
-        query = "SELECT customer_client.id, customer_client.descriptive_name, customer_client.client_customer FROM customer_client WHERE customer_client.manager = False "
-        # query = "SELECT customer_client.id, customer_client.descriptive_name, customer_client.client_customer FROM customer_client  "
+        query = "SELECT customer_client.id, customer_client.descriptive_name, customer_client.client_customer, customer_client.manager FROM customer_client WHERE customer_client.manager = False "
         url = f"https://googleads.googleapis.com/v14/customers/{id}/googleAds:searchStream"
         body = {"query": query}
         response = requests.post(url, headers=headers, data=body)
         stream = response.json()
+
         for batch in stream:
             try:
                 results = batch["results"]

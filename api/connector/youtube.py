@@ -54,17 +54,23 @@ def ad_accounts(token: str):
     ad_accounts = []
     if response.status_code == 200:
         results = response.json()
-        for account in results["items"]:
-            id = account["id"]
-            name = account["snippet"]["title"]
-            ad_accounts.append(
-                AdAccount(
-                    id=id,
-                    account_id=id,
-                    channel=ChannelType.youtube,
-                    name=name,
-                    img="youtube-icon",
+        try:
+            for account in results["items"]:
+                id = account["id"]
+                name = account["snippet"]["title"]
+                ad_accounts.append(
+                    AdAccount(
+                        id=id,
+                        account_id=id,
+                        channel=ChannelType.youtube,
+                        name=name,
+                        img="youtube-icon",
+                    )
                 )
+        except KeyError as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Could not get ad accounts. {e}",
             )
     else:
         raise HTTPException(

@@ -156,7 +156,7 @@ def fetch_data(data_source: DataSource):
     """
     data_list = []
     for adAccount in data_source.adAccounts:
-        account_id = adAccount.id
+        account_id = adAccount.id 
         fields, metrics, dimensions = create_field_list(
             data_source.fields, channel=adAccount.channel
         )
@@ -169,11 +169,12 @@ def fetch_data(data_source: DataSource):
                 end_date=data_source.end_date,
             )
             query = GoogleQuery(
-                account_id=account_id,
+                account_id=adAccount.account_id, #  Use account id instead of id
                 metrics=metrics,
                 dimensions=dimensions,
                 start_date=data_source.start_date,
                 end_date=data_source.end_date,
+                manager_id=adAccount.id
             )
             data = fetch_google_data(
                 current_user=data_source.user, query=query, data_query=data_query
