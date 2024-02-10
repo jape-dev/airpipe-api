@@ -87,6 +87,7 @@ class DataSourceInDB(BaseModel):
     ad_account_id: str
     start_date: datetime
     end_date: datetime
+    dh_connection_id: Optional[str]
 
 
 class DataPrompt(BaseModel):
@@ -119,6 +120,7 @@ class ViewInDB(BaseModel):
     fields: str
     start_date: datetime
     end_date: datetime
+    dh_connection_id: Optional[str]
 
     class Config:
         orm_mode = True

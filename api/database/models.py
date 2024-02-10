@@ -38,6 +38,7 @@ class DataSourceDB(Base):
     channel_img = Column(String())
     ad_account_id = Column(String())
     start_date = Column(DateTime())
+    dh_connection_id = Column(String(), nullable=True)
     end_date = Column(DateTime())
     created_at = Column(DateTime(), default=datetime.datetime.now())
 
@@ -64,6 +65,7 @@ class ViewDB(Base):
     db_schema = Column(String())
     table_name = Column(String())
     fields = Column(String())
+    dh_connection_id = Column(String(), nullable=True)
     start_date = Column(DateTime())
     end_date = Column(DateTime())
     created_at = Column(DateTime(), default=datetime.datetime.now())
