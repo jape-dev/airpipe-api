@@ -66,6 +66,33 @@ def get_data_sources_by_user_id(user_id: int) -> List[DataSourceDB]:
         session.remove()
     if data_sources:
         return data_sources
+    
+def get_data_sources_by_id(data_source_id: int) -> DataSourceDB:
+    try:
+        data_source = session.query(DataSourceDB).filter(DataSourceDB.id == data_source_id).first()
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+        session.remove()
+    if data_source:
+        return data_source
+    
+
+def get_view_by_id(view_id: int) -> ViewDB:
+    try:
+        view = session.query(ViewDB).filter(ViewDB.id == view_id).first()
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+        session.remove()
+    if view:
+        return view
 
 
 def get_views_by_user_id(user_id: int) -> List[DataSourceDB]:

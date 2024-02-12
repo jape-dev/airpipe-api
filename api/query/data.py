@@ -14,7 +14,10 @@ from api.models.data import (
     ChartData
 )
 from api.database.database import engine, session
-from api.database.crud import get_user_by_email, get_chart_by_chart_id
+from api.database.crud import (
+    get_user_by_email, get_chart_by_chart_id, 
+    get_data_sources_by_id, get_view_by_id
+)
 from api.core.static_data import ChannelType, get_enum_member_by_value, OnboardingStage
 from api.core.data import (
     create_field_list,
@@ -126,8 +129,14 @@ def table_results(
     return current_results
 
 
-@router.post("/add_data_source", response_model=SuccessResponse, status_code=200)
-def add_data_source(data_source: DataSource) -> SuccessResponse:
+@router.post("/add_data_source", response_model=DataSourceInDB, status_code=200)
+def add_data_source(data_source: DataSource) -> DataSourceInDB:
+
+    def model_to_dict(instance):
+        return {c.key: getattr(instance, c.key)
+                for c in sqlalchemy.inspect(instance).mapper.column_attrs}
+
+
     # Reads data source
     data_list = fetch_data(data_source)
     data_list = [insert_alt_values(data, data_source.fields) for data in data_list]
@@ -199,8 +208,11 @@ def add_data_source(data_source: DataSource) -> SuccessResponse:
                 status_code=400,
                 detail=f"Could not update onboarding stage of user. {e}",
             )
+        
+    data_source_dict = model_to_dict(data_source_row)
+    data_source_in_db = DataSourceInDB(**data_source_dict)
 
-    return SuccessResponse(detail="Data written to db and data source record added.")
+    return data_source_in_db
 
 
 @router.get("/data_sources", response_model=List[DataSourceInDB], status_code=200)
@@ -222,11 +234,33 @@ def data_sources(token: str):
             ad_account_id=data_source.ad_account_id,
             start_date=data_source.start_date,
             end_date=data_source.end_date,
+            dh_connection_id=data_source.dh_connection_id
         )
         for data_source in data_sources
     ]
 
     return data_sources_db
+
+
+@router.get("/data_source", response_model=DataSourceInDB, status_code=200)
+def data_source(token: str, data_source_id: int):
+    current_user: User = get_current_user(token)
+    data_source = get_data_sources_by_id(data_source_id)
+
+    return DataSourceInDB(
+        id=data_source.id,
+        db_schema=data_source.db_schema,
+        name=data_source.name,
+        table_name=data_source.table_name,
+        user_id=data_source.user_id,
+        fields=data_source.fields,
+        channel=data_source.channel,
+        channel_img=data_source.channel_img,
+        ad_account_id=data_source.ad_account_id,
+        start_date=data_source.start_date,
+        end_date=data_source.end_date,
+        dh_connection_id=data_source.dh_connection_id
+    )
 
 
 @router.get("/views", response_model=List[ViewInDB])
@@ -244,11 +278,29 @@ def views(token: str):
             fields=view.fields,
             start_date=view.start_date,
             end_date=view.end_date,
+            dh_connection_id=view.dh_connection_id
         )
         for view in views
     ]
 
     return views_db
+
+@router.get("/view", response_model=ViewInDB)
+def view(token: str, view_id: int):
+    current_user: User = get_current_user(token)
+    view = get_view_by_id(view_id)
+
+    return ViewInDB(
+        id=view.id,
+        user_id=view.user_id,
+        db_schema=view.db_schema,
+        name=view.name,
+        table_name=view.table_name,
+        fields=view.fields,
+        start_date=view.start_date,
+        end_date=view.end_date,
+        dh_connection_id=view.dh_connection_id
+    )
 
 
 @router.get("/tables", response_model=List[Table])
@@ -276,7 +328,8 @@ def tables(token: str) -> List[Table]:
                     ad_account_id=data_source.ad_account_id,
                     fields=data_source.fields,
                     start_date=data_source.start_date,
-                    end_date=data_source.end_date
+                    end_date=data_source.end_date,
+                    dh_connection_id=data_source.dh_connection_id
                     )
                 )
     if views:
@@ -290,7 +343,8 @@ def tables(token: str) -> List[Table]:
                       label=view.name,
                       fields=view.fields,
                       start_date=view.start_date,
-                      end_date=view.end_date
+                      end_date=view.end_date,
+                      dh_connection_id=view.dh_connection_id
                       )
                 )
 

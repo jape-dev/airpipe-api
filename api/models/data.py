@@ -139,6 +139,8 @@ class Table(BaseModel):
     channel: Optional[ChannelType]
     channel_img: Optional[str]
     ad_account_id: Optional[str]
+    dh_connection_id: Optional[str]
+
 
 class ChartData(BaseModel):
     chart_id: str
