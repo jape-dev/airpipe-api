@@ -106,8 +106,8 @@ class JoinCondition(BaseModel):
 class View(BaseModel):
     name: str
     fields: List[FieldOption]
-    start_date: datetime
-    end_date: datetime
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
     join_conditions: Optional[List[JoinCondition]]
 
 
@@ -118,8 +118,8 @@ class ViewInDB(BaseModel):
     name: str
     table_name: str
     fields: str
-    start_date: datetime
-    end_date: datetime
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
     dh_connection_id: Optional[str]
 
     class Config:
@@ -134,8 +134,8 @@ class Table(BaseModel):
     table_name: str
     label: str
     fields: str
-    start_date: datetime
-    end_date: datetime
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
     channel: Optional[ChannelType]
     channel_img: Optional[str]
     ad_account_id: Optional[str]

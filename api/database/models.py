@@ -66,8 +66,8 @@ class ViewDB(Base):
     table_name = Column(String())
     fields = Column(String())
     dh_connection_id = Column(String(), nullable=True)
-    start_date = Column(DateTime())
-    end_date = Column(DateTime())
+    start_date = Column(DateTime(), nullable=True)
+    end_date = Column(DateTime(), nullable=True)
     created_at = Column(DateTime(), default=datetime.datetime.now())
 
 
