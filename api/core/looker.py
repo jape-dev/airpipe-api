@@ -1,6 +1,9 @@
+from fastapi import HTTPException
+
 from api.core.static_data import LookerFieldType, FieldType
 from api.models.looker import LookerField
 from api.core.data import all_fields
+
 
 postgres_to_looker_mapping = {
     "bigint": LookerFieldType.number,
@@ -61,7 +64,7 @@ postgres_to_looker_mapping = {
 }
 
 
-def map_postgres_type_to_looker_type(schema: dict):
+def map_postgres_type_to_looker_type(schema: dict) -> dict:
     """
     Generates a mapping of Postgres types to Looker types based on the provided schema.
 
@@ -80,6 +83,8 @@ def map_postgres_type_to_looker_type(schema: dict):
     return mapping
 
 
+
+
 def get_looker_fields(schema: dict):
     """
     Generates the list of Looker fields based on the given schema.
@@ -89,6 +94,7 @@ def get_looker_fields(schema: dict):
 
     Returns:
         list: A list of LookerField objects.
+
     """
 
     looker_fields = []
@@ -102,18 +108,30 @@ def get_looker_fields(schema: dict):
             )
             looker_fields.append(looker_field)
 
+
         else:
-            matching_field = [
+            matches = [
                 channel_field
                 for channel_field in all_fields
                 if channel_field.alt_value == field
-            ][0]
+            ]
+        
+        if matches:
+            matching_field = matches[0]
             looker_field = LookerField(
                 id=field,
                 name=matching_field.label,
                 looker_field_type=type,
                 field_type=matching_field.type,
             )
-            looker_fields.append(looker_field)
+        else:
+            looker_field = LookerField(
+                id=field,
+                name=field,
+                looker_field_type=schema[field],
+                field_type=FieldType.metric if schema[field] == LookerFieldType.number else FieldType.dimension,
+            )
+
+        looker_fields.append(looker_field)
 
     return looker_fields
