@@ -6,7 +6,7 @@ from starlette.responses import RedirectResponse
 
 from api.config import Config
 from api.core.auth import get_current_user
-from api.core.static_data import ChannelType, google_metrics, google_dimensions
+from api.core.static_data import ChannelType, ReportType, google_metrics, google_dimensions, google_video_metrics, google_video_dimensions
 from api.core.google import get_access_token
 from api.database.database import session
 from api.utilities.google.auth import authorize, oauth2callback
@@ -156,15 +156,24 @@ def ad_accounts(token: str):
 
 @router.get("/fields", response_model=List[FieldOption])
 def fields(
-    default: bool = False, metrics: bool = False, dimensions: bool = False
+    default: bool = False, metrics: bool = False, dimensions: bool = False, report_type: ReportType = ReportType.google_standard
 ) -> List[FieldOption]:
     fields_options = None
-    if metrics:
-        fields_options = google_metrics
-    elif dimensions:
-        fields_options = google_dimensions
-    else:
-        fields_options = google_metrics + google_dimensions
+
+    if report_type == ReportType.google_standard:
+        if metrics:
+            fields_options = google_metrics
+        elif dimensions:
+            fields_options = google_dimensions
+        else:
+            fields_options = google_metrics + google_dimensions
+    elif report_type == ReportType.google_video:
+        if metrics:
+            fields_options = google_video_metrics
+        elif dimensions:
+            fields_options = google_video_dimensions
+        else:
+            fields_options = google_video_metrics + google_video_dimensions
 
     if default:
         fields_options = [f for f in fields_options if f["default"]]

@@ -10,6 +10,7 @@ def get_enum_member_by_value(enum_cls, value):
 
 class ChannelType(str, Enum):
     google = "google"
+    google_video = "google_video"
     facebook = "facebook"
     google_analytics = "google_analytics"
     sheets = "sheets"
@@ -59,6 +60,12 @@ class UserRoleType(str, Enum):
     data = "Data Engineer / Analyst / Scientist"
     software = "Software Engineer"
     other = "Other"
+
+class ReportType(str, Enum):
+    google_standard = "Standard"
+    google_video = "Video"
+    instagram_media = "Media"
+    instagram_account = "Account"
 
 facebook_metrics = [
     {
@@ -1628,4 +1635,46 @@ instagram_media_dimensions = [
     #     "img": "instagram-icon",
     #     "default": True,
     # }
+]
+
+google_video_metrics = [
+    {"value": "metrics.all_conversions", "label": "All Conversions", "alt_value": "google_video_all_conversions", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.all_conversions_from_interactions_rate", "label": "All Conversions From Interactions Rate", "alt_value": "google_video_all_conversions_from_interactions_rate", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.all_conversions_value", "label": "All Conversions Value", "alt_value": "google_video_all_conversions_value", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.average_cpc", "label": "CPC", "alt_value": "google_video_average_cpc", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.average_cpe", "label": "CPE", "alt_value": "google_video_average_cpe", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.average_cpm", "label": "CPM", "alt_value": "google_video_average_cpm", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.average_cpv", "label": "CPV", "alt_value": "google_video_average_cpv", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.clicks", "label": "Clicks", "alt_value": "google_video_clicks", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.conversions", "label": "Conversions", "alt_value": "google_video_conversions", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.conversions_from_interactions_rate", "label": "Conversions From Interactions Rate", "alt_value": "google_video_conversions_from_interactions_rate", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.conversions_from_interactions_value_per_interaction", "label": "Conversions From Interactions Value Per Interaction", "alt_value": "google_video_conversions_from_interactions_value_per_interaction", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.conversions_value", "label": "Conversions Value", "alt_value": "google_video_conversions_value", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.conversions_value_per_cost", "label": "Conversions Value Per Cost", "alt_value": "google_video_conversions_value_per_cost", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.cost_micros", "label": "Cost Micros", "alt_value": "google_video_cost_micros", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.cost_per_all_conversions", "label": "Cost Per All Conversions", "alt_value": "google_video_cost_per_all_conversions", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.cost_per_conversion", "label": "Cost Per Conversion", "alt_value": "google_video_cost_per_conversion", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.cross_device_conversions", "label": "Cross Device Conversions", "alt_value": "google_video_cross_device_conversions", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.ctr", "label": "CTR", "alt_value": "google_video_ctr", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.engagement_rate", "label": "Engagement Rate", "alt_value": "google_video_engagement_rate", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.engagements", "label": "Engagements", "alt_value": "google_video_engagements", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.impressions", "label": "Impressions", "alt_value": "google_video_impressions", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.value_per_all_conversions", "label": "Value Per All Conversions", "alt_value": "google_video_value_per_all_conversions", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.value_per_conversion", "label": "Value Per Conversion", "alt_value": "google_video_value_per_conversion", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.video_quartile_p100_rate", "label": "Video Quartile P100 Rate", "alt_value": "google_video_video_quartile_p100_rate", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.video_quartile_p25_rate", "label": "Video Quartile P25 Rate", "alt_value": "google_video_video_quartile_p25_rate", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.video_quartile_p50_rate", "label": "Video Quartile P50 Rate", "alt_value": "google_video_video_quartile_p50_rate", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.video_quartile_p75_rate", "label": "Video Quartile P75 Rate", "alt_value": "google_video_video_quartile_p75_rate", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.video_view_rate", "label": "Video View Rate", "alt_value": "google_video_video_view_rate", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.video_views", "label": "Video Views", "alt_value": "google_video_video_views", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "metrics.view_through_conversions", "label": "View Through Conversions", "alt_value": "google_video_view_through_conversions", "type": FieldType.metric, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True}
+]
+
+google_video_dimensions = [
+    {"value": "video.channel_id", "label": "Channel Id", "alt_value": "google_video_channel_id", "type": FieldType.dimension, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "video.duration_millis", "label": "Duration Millis", "alt_value": "google_video_duration_millis", "type": FieldType.dimension, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "video.id", "label": "Id", "alt_value": "google_video_id", "type": FieldType.dimension, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "video.resource_name", "label": "Resource Name", "alt_value": "google_video_resource_name", "type": FieldType.dimension, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "video.title", "label": "Title", "alt_value": "google_video_title", "type": FieldType.dimension, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True},
+    {"value": "segments.date", "label": "Date", "alt_value": "google_video_date", "type": FieldType.dimension, "channel": ChannelType.google_video, "img": "google-ads-icon", "default": True}
 ]

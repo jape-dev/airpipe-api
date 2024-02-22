@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 
 from api.models.connector import AdAccount
 from api.models.user import User
-from api.core.static_data import ChannelType, FieldType, JoinType
+from api.core.static_data import ChannelType, FieldType, JoinType, ReportType
 
 
 class TableColumns(BaseModel):

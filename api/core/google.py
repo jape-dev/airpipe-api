@@ -63,6 +63,20 @@ def build_google_query(
 
     return data_query
 
+def build_google_video_query(
+    fields: List[str], start_date: datetime, end_date: datetime
+) -> str:
+    fields = ",".join(fields)
+
+    data_query = f"""
+        SELECT {fields}
+        FROM video
+        WHERE segments.date BETWEEN "{start_date.strftime("%Y-%m-%d")}" AND "{end_date.strftime("%Y-%m-%d")}"
+    """
+
+    return data_query
+
+
 
 def fetch_google_data(
     current_user: User, query: GoogleQuery, data_query: str
@@ -144,6 +158,13 @@ def fetch_google_data(
                         data_row[dimension] = row["campaign"][dimension_name]
                     except KeyError as e:
                         print("KeyError: could not find campaign dimension", e)
+                elif dimension_components[0] == "video":
+                    dimension_name = dimension.replace("video.", "")
+                    dimension_name = underscore_to_camel_case(dimension_name)
+                    try:
+                        data_row[dimension] = row["video"][dimension_name]
+                    except KeyError as e:
+                        print("KeyError: could not find video dimension", e)
                 else:
                     raise HTTPException(
                         status_code=400, detail=f"Invalid dimension: {dimension}"

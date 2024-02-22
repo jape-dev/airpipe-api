@@ -3,7 +3,7 @@ from fastapi import HTTPException
 import pandas as pd
 from typing import List, Optional
 
-from api.core.google import build_google_query, fetch_google_data
+from api.core.google import build_google_query, fetch_google_data, build_google_video_query
 from api.core.facebook import fetch_facebook_data
 from api.core.instagram import fetch_instagram_data
 from api.core.youtube import fetch_youtube_data
@@ -24,6 +24,8 @@ from api.core.static_data import (
     ChannelType,
     google_metrics,
     google_dimensions,
+    google_video_metrics,
+    google_video_dimensions,
     google_analytics_metrics,
     google_analytics_dimensions,
     facebook_metrics,
@@ -51,7 +53,9 @@ all_fields: List[FieldOption] = (
     [FieldOption(**item) for item in instagram_account_metrics] +
     [FieldOption(**item) for item in instagram_account_dimensions] +
     [FieldOption(**item) for item in instagram_media_metrics] +
-    [FieldOption(**item) for item in instagram_media_dimensions]
+    [FieldOption(**item) for item in instagram_media_dimensions] +
+    [FieldOption(**item) for item in google_video_metrics] +
+    [FieldOption(**item) for item in google_video_dimensions]
 )
 
 
@@ -154,6 +158,7 @@ def fetch_data(data_source: DataSource):
         HTTPException: If the channel type is not supported.
 
     """
+    print(data_source.adAccounts)
     data_list = []
     for adAccount in data_source.adAccounts:
         account_id = adAccount.id 
@@ -164,6 +169,23 @@ def fetch_data(data_source: DataSource):
         # Builds query depending on the channel type
         if adAccount.channel == ChannelType.google:
             data_query = build_google_query(
+                fields=fields,
+                start_date=data_source.start_date,
+                end_date=data_source.end_date,
+            )
+            query = GoogleQuery(
+                account_id=adAccount.account_id, #  Use account id instead of id
+                metrics=metrics,
+                dimensions=dimensions,
+                start_date=data_source.start_date,
+                end_date=data_source.end_date,
+                manager_id=adAccount.id
+            )
+            data = fetch_google_data(
+                current_user=data_source.user, query=query, data_query=data_query
+            )
+        elif adAccount.channel == ChannelType.google_video:
+            data_query = build_google_video_query(
                 fields=fields,
                 start_date=data_source.start_date,
                 end_date=data_source.end_date,

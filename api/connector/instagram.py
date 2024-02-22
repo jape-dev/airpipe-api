@@ -1,7 +1,7 @@
 from api.config import Config
 
 from api.models.connector import AdAccount
-from api.core.static_data import ChannelType, instagram_account_metrics, instagram_account_dimensions, instagram_media_dimensions, instagram_media_metrics
+from api.core.static_data import ChannelType, ReportType, instagram_account_metrics, instagram_account_dimensions, instagram_media_dimensions, instagram_media_metrics
 from api.models.user import User
 from api.core.auth import get_current_user
 from api.database.database import session
@@ -113,11 +113,11 @@ def ad_accounts(token: str):
 
 @router.get("/fields", response_model=List[FieldOption])
 def fields(
-    default: bool = False, metrics: bool = False, dimensions: bool = False, media: bool = False
+    default: bool = False, metrics: bool = False, dimensions: bool = False, report_type: ReportType = ReportType.instagram_media
 ) -> List[FieldOption]:
     fields_options = None
 
-    if media:
+    if report_type == ReportType.instagram_media:
         if metrics:
             fields_options = instagram_media_metrics
         elif dimensions:

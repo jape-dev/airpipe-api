@@ -54,7 +54,6 @@ def fetch_youtube_data(
 ) -> List[object]:
     access_token = get_access_token(current_user.youtube_refresh_token)
     url = f"https://youtubeanalytics.googleapis.com/v2/reports"
-    print(query)
     params = {
         'ids': f'channel=={query.account_id}',
         'startDate': query.start_date.strftime("%Y-%m-%d"),
@@ -62,7 +61,6 @@ def fetch_youtube_data(
         'metrics': ','.join(query.metrics),
         'dimensions': ','.join(query.dimensions),
     }
-    print(params)
     headers = {
         "Authorization": f"Bearer {access_token}",
         "developer-token": GOOGLE_ADS_DEVELOPER_TOKEN,

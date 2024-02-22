@@ -12,6 +12,7 @@ from api.models.data import (
     FieldOptionWithDataSourceId,
     JoinType,
     JoinCondition,
+    ReportType,
 )
 from api.models.conversation import Message
 from api.models.user import User
@@ -66,7 +67,8 @@ def custom_openapi() -> Dict[str, Any]:
         FieldOptionWithDataSourceId,
         JoinType,
         JoinCondition,
-        UserRoleType
+        UserRoleType,
+        ReportType
     ]
     model_name_map = get_model_name_map(flat_models)  # type: ignore
     definitions = get_model_definitions(
