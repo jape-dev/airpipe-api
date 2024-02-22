@@ -174,6 +174,7 @@ def add_data_source(data_source: DataSource) -> DataSourceInDB:
         channel=channel_type,
         channel_img=channel_img,
         ad_account_id=data_source.adAccounts[0].id,
+        ad_account_name=data_source.adAccounts[0].name,
         start_date=data_source.start_date,
         end_date=data_source.end_date,
     )
@@ -232,6 +233,7 @@ def data_sources(token: str):
             channel=data_source.channel,
             channel_img=data_source.channel_img,
             ad_account_id=data_source.ad_account_id,
+            ad_account_name=data_source.ad_account_name,
             start_date=data_source.start_date,
             end_date=data_source.end_date,
             dh_connection_id=data_source.dh_connection_id
@@ -257,6 +259,7 @@ def data_source(token: str, data_source_id: int):
         channel=data_source.channel,
         channel_img=data_source.channel_img,
         ad_account_id=data_source.ad_account_id,
+        ad_account_name=data_source.ad_account_name,
         start_date=data_source.start_date,
         end_date=data_source.end_date,
         dh_connection_id=data_source.dh_connection_id
@@ -326,6 +329,7 @@ def tables(token: str) -> List[Table]:
                     channel=data_source.channel, 
                     channel_img=data_source.channel_img,
                     ad_account_id=data_source.ad_account_id,
+                    ad_account_name=data_source.ad_account_name,
                     fields=data_source.fields,
                     start_date=data_source.start_date,
                     end_date=data_source.end_date,

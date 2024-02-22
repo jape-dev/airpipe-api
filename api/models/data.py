@@ -85,6 +85,7 @@ class DataSourceInDB(BaseModel):
     channel: str
     channel_img: str
     ad_account_id: str
+    ad_account_name: Optional[str]
     start_date: datetime
     end_date: datetime
     dh_connection_id: Optional[str]
@@ -139,6 +140,7 @@ class Table(BaseModel):
     channel: Optional[ChannelType]
     channel_img: Optional[str]
     ad_account_id: Optional[str]
+    ad_account_name: Optional[str]
     dh_connection_id: Optional[str]
 
 
