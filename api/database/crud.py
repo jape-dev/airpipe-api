@@ -54,7 +54,7 @@ def get_data_sources_by_user_id(user_id: int) -> List[DataSourceDB]:
             session.query(DataSourceDB)
             .filter(
                 DataSourceDB.user_id == user_id
-            )
+            ).order_by(DataSourceDB.id)
             .all()
         )
     except BaseException as e:
