@@ -67,6 +67,10 @@ class ReportType(str, Enum):
     instagram_media = "Media"
     instagram_account = "Account"
 
+
+class CustomField(str, Enum):
+    thumb_stop_ratio = "thumb_stop_ratio"
+
 facebook_metrics = [
     {
         "value": "clicks",

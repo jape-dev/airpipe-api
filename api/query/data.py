@@ -112,6 +112,7 @@ def table_results(
     query = f'SELECT * FROM {schema}."{name}" '
     if date_column is not None and start_date is not None and end_date is not None:
         query += f"WHERE {date_column} BETWEEN '{start_date.strftime('%Y-%m-%d')}' AND '{end_date.strftime('%Y-%m-%d')}'"
+    query += 'LIMIT 1000'
     connection = engine.connect()
     try:
         results = connection.execute(query)
@@ -136,14 +137,17 @@ def add_data_source(data_source: DataSource) -> DataSourceInDB:
         return {c.key: getattr(instance, c.key)
                 for c in sqlalchemy.inspect(instance).mapper.column_attrs}
 
-
     # Reads data source
     data_list = fetch_data(data_source)
+    print('data list successfully fetched: ', len(data_list))
+    # Going to have to make this more efficient too.
     data_list = [insert_alt_values(data, data_source.fields) for data in data_list]
+    print('data list alt values inserted')
     df = pd.DataFrame(data_list[0])
-
+    print('data frame created')
     # Convert the DataFrame numerica values to numeric
     df = df.apply(pd.to_numeric, errors="ignore")
+    print('dataframe applied')
 
     db_user = get_user_by_email(data_source.user.email)
     name = data_source.name.replace(" ", "_")
@@ -153,6 +157,7 @@ def add_data_source(data_source: DataSource) -> DataSourceInDB:
 
     # Saves table to the dataabase
     add_table_to_db(db_schema, name, df)
+    print('table added to the database')
 
     columns, metrics, dimensions = create_field_list(
         data_source.fields, use_alt_value=True, split_value=True

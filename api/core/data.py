@@ -265,7 +265,7 @@ def add_table_to_db(schema: str, table_name: str, df: pd.DataFrame):
         schema=schema,
         if_exists="replace",
         index=False,
-        chunksize=100,
+        chunksize=100000,
     )
     connection.close()
 

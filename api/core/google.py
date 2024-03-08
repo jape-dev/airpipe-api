@@ -8,8 +8,12 @@ from api.utilities.data import convert_metric
 
 from datetime import datetime
 from fastapi import HTTPException
+import gzip
+import ijson
 import requests
+from requests.exceptions import HTTPError
 from typing import List
+import io
 
 REFRESH_ERROR = "Invalid refresh token"
 
@@ -90,89 +94,93 @@ def fetch_google_data(
         "login-customer-id": query.manager_id,
     }
 
-    response = requests.post(url, headers=headers, data=body)
-    stream = response.json()
+    # try:
+    with requests.post(url, headers=headers, json=body, stream=True) as response:
+        response.raise_for_status()  # Raises HTTPError if the response code was unsuccessful
+        data = process_response_stream(response, query)
+        return data
 
+def process_response_stream(response, query):
+    # Ensure the stream starts at the beginning, if it's not a fresh response
+
+    if response.headers.get('Content-Encoding') == 'gzip':
+        decompressed = gzip.open(response.raw, 'rt', encoding='utf-8')
+    else:
+        decompressed = response.raw
 
     data = []
-    for batch in stream:
-        try:
-            results = batch["results"]
-        except KeyError as e:
-            print(response.text)
-            print(batch)
-            raise HTTPException(
-                status_code=400,
-                detail=f"Could not get results in Google Ads data. {response.text}",
-            )
-        for row in results:
-            data_row = {}
-            for metric in query.metrics:
-                metric_name = metric.replace("metrics.", "")
-                metric_name = underscore_to_camel_case(metric_name)
-                try:
-                    data_row[metric] = convert_metric(
-                        row["metrics"][metric_name], metric_name
-                    )
-                except KeyError as e:
-                    print("KeyError: could not find metrics", e)
-                    pass
-            for dimension in query.dimensions:
-                dimension_components = dimension.split(".")
-                if dimension_components[0] == "segments":
-                    if dimension_components[1] == "keyword":
-                        try:
-                            data_row[dimension] = row["segments"]["keyword"]["info"][
-                                "text"
-                            ]
-                        except KeyError as e:
-                            print("KeyError: could not find segments keyword", e)
-
-                    else:
-                        dimension_name = dimension.replace("segments.", "")
-                        dimension_name = underscore_to_camel_case(dimension_name)
-                        try:
-                            data_row[dimension] = row["segments"][dimension_name]
-                        except BaseException as e:
-                            print("KeyError: could not find segments", e)
-                elif dimension_components[0] == "ad_group":
-                    dimension_name = dimension.replace("ad_group.", "")
-                    dimension_name = underscore_to_camel_case(dimension_name)
-                    try:
-                        data_row[dimension] = row["adGroup"][dimension_name]
-                    except BaseException as e:
-                        print("KeyError: could not find ad_group dimension", e)
-                elif dimension_components[0] == "ad_group_ad":
-                    dimension_name = dimension.replace("ad_group_ad.ad.", "")
-                    dimension_name = underscore_to_camel_case(dimension_name)
-
-                    try:
-                        data_row[dimension] = row["adGroupAd"]["ad"][dimension_name]
-                    except KeyError as e:
-                        print("KeyError: could not find ad_group_ad.ad dimension", e)
-
-                elif dimension_components[0] == "campaign":
-                    dimension_name = dimension.replace("campaign.", "")
-                    dimension_name = underscore_to_camel_case(dimension_name)
-                    try:
-                        data_row[dimension] = row["campaign"][dimension_name]
-                    except KeyError as e:
-                        print("KeyError: could not find campaign dimension", e)
-                elif dimension_components[0] == "video":
-                    dimension_name = dimension.replace("video.", "")
-                    dimension_name = underscore_to_camel_case(dimension_name)
-                    try:
-                        data_row[dimension] = row["video"][dimension_name]
-                    except KeyError as e:
-                        print("KeyError: could not find video dimension", e)
-                else:
-                    raise HTTPException(
-                        status_code=400, detail=f"Invalid dimension: {dimension}"
-                    )
-
-            data.append(data_row)
+    for item in ijson.items(decompressed, 'item.results.item'):
+        dataum = process_row(item, query)
+        data.append(dataum)
 
     return data
+
+
+def process_row(row, query):
+    data_row = {}
+    for metric in query.metrics:
+        metric_name = metric.replace("metrics.", "")
+        metric_name = underscore_to_camel_case(metric_name)
+        try:
+            data_row[metric] = convert_metric(
+                row["metrics"][metric_name], metric_name
+            )
+        except KeyError as e:
+            print("KeyError: could not find metrics", e)
+            pass
+    for dimension in query.dimensions:
+        dimension_components = dimension.split(".")
+        if dimension_components[0] == "segments":
+            if dimension_components[1] == "keyword":
+                try:
+                    data_row[dimension] = row["segments"]["keyword"]["info"][
+                        "text"
+                    ]
+                except KeyError as e:
+                    print("KeyError: could not find segments keyword", e)
+
+            else:
+                dimension_name = dimension.replace("segments.", "")
+                dimension_name = underscore_to_camel_case(dimension_name)
+                try:
+                    data_row[dimension] = row["segments"][dimension_name]
+                except BaseException as e:
+                    print("KeyError: could not find segments", e)
+        elif dimension_components[0] == "ad_group":
+            dimension_name = dimension.replace("ad_group.", "")
+            dimension_name = underscore_to_camel_case(dimension_name)
+            try:
+                data_row[dimension] = row["adGroup"][dimension_name]
+            except BaseException as e:
+                print("KeyError: could not find ad_group dimension", e)
+        elif dimension_components[0] == "ad_group_ad":
+            dimension_name = dimension.replace("ad_group_ad.ad.", "")
+            dimension_name = underscore_to_camel_case(dimension_name)
+
+            try:
+                data_row[dimension] = row["adGroupAd"]["ad"][dimension_name]
+            except KeyError as e:
+                print("KeyError: could not find ad_group_ad.ad dimension", e)
+
+        elif dimension_components[0] == "campaign":
+            dimension_name = dimension.replace("campaign.", "")
+            dimension_name = underscore_to_camel_case(dimension_name)
+            try:
+                data_row[dimension] = row["campaign"][dimension_name]
+            except KeyError as e:
+                print("KeyError: could not find campaign dimension", e)
+        elif dimension_components[0] == "video":
+            dimension_name = dimension.replace("video.", "")
+            dimension_name = underscore_to_camel_case(dimension_name)
+            try:
+                data_row[dimension] = row["video"][dimension_name]
+            except KeyError as e:
+                print("KeyError: could not find video dimension", e)
+        else:
+            raise HTTPException(
+                status_code=400, detail=f"Invalid dimension: {dimension}"
+            )
+    return data_row
 
 
 def get_access_token(refresh_token: str):

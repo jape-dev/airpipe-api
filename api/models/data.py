@@ -4,7 +4,8 @@ from typing import List, Dict, Optional
 
 from api.models.connector import AdAccount
 from api.models.user import User
-from api.core.static_data import ChannelType, FieldType, JoinType, ReportType
+from api.core.static_data import ChannelType, FieldType, JoinType, ReportType, CustomField
+from api.core.custom_fields import thumb_stop_ratio
 
 
 class TableColumns(BaseModel):
@@ -60,6 +61,13 @@ class FieldOption(BaseModel):
     alt_value: Optional[str] = None
     img: Optional[str]
     default: Optional[bool] = None
+    custom_field: Optional[CustomField] = None
+
+
+    def create_custom_field(self, table_id):
+        
+        if self.custom_field==CustomField.thumb_stop_ratio:
+            return thumb_stop_ratio(table_id)
 
 
 class FieldOptionWithDataSourceId(FieldOption):
