@@ -1,20 +1,23 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import HTTPException
 import pandas as pd
 from typing import List, Optional
+import uuid
 
 from api.core.google import build_google_query, fetch_google_data, build_google_video_query
 from api.core.facebook import fetch_facebook_data
 from api.core.instagram import fetch_instagram_data
 from api.core.youtube import fetch_youtube_data
-from api.database.database import engine
+from api.database.database import engine, session
 from api.models.data import (
     FieldOption,
     DataSource,
     JoinCondition,
     DataSourceInDB,
     FieldOptionWithDataSourceId,
+    AdAccount
 )
+from api.database.models import DataSourceDB, UserDB
 from api.models.google import GoogleQuery
 from api.models.facebook import FacebookQuery
 from api.models.youtube import YoutubeQuery
@@ -343,3 +346,55 @@ def airpipe_field_option(field_name: str, value = None):
                        channel=ChannelType.airpipe,
                        alt_value=field_name,
                        img="airpipe-field-icon")
+
+
+def add_data_source_row_to_db(user: UserDB, ad_account: AdAccount, airbyte_source_id: Optional[str]) -> DataSourceDB: 
+    """
+    Inserts a new data source row into the database for the given user and ad account.
+    
+    Args:
+        user (UserWithId): The user with id.
+        ad_account (AdAccount): The ad account.
+        airbyte_source_id (Optional[str]): The airbyte source id.
+        
+    Returns:
+        DataSourceInDB: The data source row added to the database.
+    """
+    
+    db_schema = f"_{user.id}"
+    name = uuid.uuid4()
+    table_name = f"{db_schema}.{name}"
+
+    start_date = datetime.now()
+    end_date = start_date - timedelta(days=365.25*2)
+
+    data_source_row = DataSourceDB(
+        user_id=user.id,
+        db_schema=db_schema,
+        name=name,
+        table_name=table_name,
+        fields='',
+        channel=ad_account.channel,
+        channel_img=ad_account.img,
+        ad_account_id=ad_account.id,
+        ad_account_name=ad_account.name,
+        start_date=start_date, 
+        end_date=end_date,
+    )
+
+    if airbyte_source_id:
+        data_source_row.airbyte_source_id = airbyte_source_id
+
+    try:
+        session.add(data_source_row)
+        session.commit()
+    except Exception as e:
+        print(e)
+        session.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not save data_source_row to database. {e}",
+    )
+
+    return data_source_row
+

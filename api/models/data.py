@@ -89,6 +89,8 @@ class DataSourceInDB(BaseModel):
     start_date: datetime
     end_date: datetime
     dh_connection_id: Optional[str]
+    airbyte_source_id: Optional[str]
+    airbyte_connection_id: Optional[str]
 
 
 class DataPrompt(BaseModel):

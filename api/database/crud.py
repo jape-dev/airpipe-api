@@ -67,6 +67,29 @@ def get_data_sources_by_user_id(user_id: int) -> List[DataSourceDB]:
     if data_sources:
         return data_sources
     
+
+def get_data_source_by_airbyte_source_id(source_id: str) -> DataSourceDB:
+    try:
+        data_sources = (
+            session.query(DataSourceDB)
+            .filter(
+                DataSourceDB.airbyte_source_id == source_id
+            )
+            .first()
+        )
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+        session.remove()
+    if data_sources:
+        return data_sources
+    
+
+
+    
 def get_data_sources_by_id(data_source_id: int) -> DataSourceDB:
     try:
         data_source = session.query(DataSourceDB).filter(DataSourceDB.id == data_source_id).first()

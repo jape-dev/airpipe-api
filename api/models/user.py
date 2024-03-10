@@ -23,6 +23,7 @@ class User(BaseModel):
     google_sheets_refresh_token: Optional[str] = None
     youtube_refresh_token: Optional[str] = None
     instagram_access_token: Optional[str] = None
+    airbyte_destination_id: Optional[str] = None
 
 
 class UserWithId(User):

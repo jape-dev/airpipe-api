@@ -68,7 +68,7 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     return encoded_jwt
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(token: str = Depends(oauth2_scheme)) -> UserInDB:
     """
     Retrieves the current user based on the provided token.
 
@@ -76,7 +76,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     - token (str): The authentication token.
 
     Returns:
-    - User: The current user.
+      UserInDB: The current user.
 
     Raises:
     - HTTPException: If the token is expired or invalid.
@@ -98,6 +98,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     user = get_user(username=token_data.username)
     if user is None:
         raise credentials_exception
+    
     return user
 
 

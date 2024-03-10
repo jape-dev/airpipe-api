@@ -21,6 +21,7 @@ class UserDB(Base):
     instagram_access_token = Column(String(), nullable=True)
     created_at = Column(DateTime())
     onboarding_stage_updated_at = Column(DateTime(), nullable=True)
+    airbyte_destination_id = Column(String(), nullable=True)
 
 
 
@@ -40,6 +41,8 @@ class DataSourceDB(Base):
     ad_account_name = Column(String(), nullable=True)
     start_date = Column(DateTime())
     dh_connection_id = Column(String(), nullable=True)
+    airbyte_source_id = Column(String(), nullable=True)
+    airbyte_connection_id = Column(String(), nullable=True)
     end_date = Column(DateTime())
     created_at = Column(DateTime(), default=datetime.datetime.now())
 
