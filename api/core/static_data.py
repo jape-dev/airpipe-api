@@ -67,6 +67,11 @@ class ReportType(str, Enum):
     instagram_media = "Media"
     instagram_account = "Account"
 
+
+class StreamType(str, Enum):
+    google_account = "account_performance_report"
+
+
 facebook_metrics = [
     {
         "value": "clicks",
@@ -353,6 +358,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": False,
+        "airbyte_value": "metrics_average_cpc"
     },
     {
         "value": "metrics.average_cpe",
@@ -362,6 +368,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": False,
+        "airbyte_value": "metrics_average_cpe"
     },
     {
         "value": "metrics.average_cpm",
@@ -371,6 +378,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": False,
+        "airbyte_value": "metrics_average_cpm"
     },
     {
         "value": "metrics.average_cpv",
@@ -380,6 +388,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": False,
+        "airbyte_value": "metrics_average_cpv"
     },
     {
         "value": "metrics.clicks",
@@ -389,6 +398,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": True,
+        "airbyte_value": "metrics_clicks"
     },
     {
         "value": "metrics.conversions",
@@ -398,6 +408,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": True,
+        "airbyte_value": "metrics_conversions"
     },
     {
         "value": "metrics.cost_micros",
@@ -407,6 +418,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": True,
+        "airbyte_value": "metrics_cost_micros"
     },
     {
         "value": "metrics.cost_per_conversion",
@@ -416,6 +428,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": False,
+        "airbyte_value": "metrics_cost_per_conversion"
     },
     {
         "value": "metrics.engagements",
@@ -425,6 +438,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": False,
+        "airbyte_value": "metrics_engagements"
     },
     {
         "value": "metrics.impressions",
@@ -434,6 +448,7 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": True,
+        "airbyte_value": "metrics_impressions"
     },
     {
         "value": "metrics.interactions",
@@ -443,24 +458,17 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": False,
+        "airbyte_value": "metrics_interactions"
     },
-    # {
-    #     "value": "metrics.search_impression_share",
-    #     "label": "Search Impression Share",
-    #     "alt_value": "google_search_impression_share",
-    #     "type": FieldType.metric,
-    #     "channel": ChannelType.google,
-    #     "img": "google-ads-icon",
-    #     "default": True,
-    # },
     {
-       "value": "metrics.ctr",
-       "label": "CTR",
-       "alt_value": "google_ctr",
-       "type": FieldType.metric,
-       "channel": ChannelType.google,
-       "img": "google-ads-icon",
-       "default": True 
+        "value": "metrics.ctr",
+        "label": "CTR",
+        "alt_value": "google_ctr",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": True,
+        "airbyte_value": "metrics_ctr"
     },
     {
         "value": "metrics.top_impression_percentage",
@@ -470,8 +478,763 @@ google_metrics = [
         "channel": ChannelType.google,
         "img": "google-ads-icon",
         "default": True,
-    },
+        "airbyte_value": "metrics_top_impression_percentage"
+    }
 ]
+
+google_fields = [
+    {
+        "value": "customer.id",
+        "label": "ID",
+        "alt_value": "google_id",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_id",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.ctr",
+        "label": "CTR",
+        "alt_value": "google_ctr",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_ctr",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "segments.date",
+        "label": "Date",
+        "alt_value": "google_date",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "segments_date",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "segments.week",
+        "label": "Week",
+        "alt_value": "google_week",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "segments_week",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "segments.year",
+        "label": "Year",
+        "alt_value": "google_year",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "segments_year",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.clicks",
+        "label": "Clicks",
+        "alt_value": "google_clicks",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_clicks",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "segments.month",
+        "label": "Month",
+        "alt_value": "google_month",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "segments_month",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "segments.device",
+        "label": "Device",
+        "alt_value": "google_device",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "segments_device",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "customer.manager",
+        "label": "Manager",
+        "alt_value": "google_manager",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_manager",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "segments.quarter",
+        "label": "Quarter",
+        "alt_value": "google_quarter",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "segments_quarter",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "customer.time_zone",
+        "label": "Time Zone",
+        "alt_value": "google_time_zone",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_time_zone",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.average_cpc",
+        "label": "Average CPC",
+        "alt_value": "google_average_cpc",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False, 
+        "airbyte_value": "metrics_average_cpc",
+        "stream": StreamType.google_account
+    },
+        {
+        "value": "metrics.average_cpe",
+        "label": "Average CPE",
+        "alt_value": "google_average_cpe",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_average_cpe",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.average_cpm",
+        "label": "Average CPM",
+        "alt_value": "google_average_cpm",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_average_cpm",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.average_cpv",
+        "label": "Average CPV",
+        "alt_value": "google_average_cpv",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_average_cpv",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.conversions",
+        "label": "Conversions",
+        "alt_value": "google_conversions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_conversions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.cost_micros",
+        "label": "Cost Micros",
+        "alt_value": "google_cost_micros",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_cost_micros",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.engagements",
+        "label": "Engagements",
+        "alt_value": "google_engagements",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_engagements",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.impressions",
+        "label": "Impressions",
+        "alt_value": "google_impressions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_impressions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.video_views",
+        "label": "Video Views",
+        "alt_value": "google_video_views",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_video_views",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.average_cost",
+        "label": "Average Cost",
+        "alt_value": "google_average_cost",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_average_cost",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.interactions",
+        "label": "Interactions",
+        "alt_value": "google_interactions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_interactions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "segments.day_of_week",
+        "label": "Day of Week",
+        "alt_value": "google_day_of_week",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "segments_day_of_week",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "customer.test_account",
+        "label": "Test Account",
+        "alt_value": "google_test_account",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_test_account",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "customer.currency_code",
+        "label": "Currency Code",
+        "alt_value": "google_currency_code",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_currency_code",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.active_view_cpm",
+        "label": "Active View CPM",
+        "alt_value": "google_active_view_cpm",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_active_view_cpm",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.active_view_ctr",
+        "label": "Active View CTR",
+        "alt_value": "google_active_view_ctr",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_active_view_ctr",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.all_conversions",
+        "label": "All Conversions",
+        "alt_value": "google_all_conversions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_all_conversions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.engagement_rate",
+        "label": "Engagement Rate",
+        "alt_value": "google_engagement_rate",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_engagement_rate",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.video_view_rate",
+        "label": "Video View Rate",
+        "alt_value": "google_video_view_rate",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_video_view_rate",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.interaction_rate",
+        "label": "Interaction Rate",
+        "alt_value": "google_interaction_rate",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_interaction_rate",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "segments.ad_network_type",
+        "label": "Ad Network Type",
+        "alt_value": "google_ad_network_type",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "segments_ad_network_type",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "customer.descriptive_name",
+        "label": "Descriptive Name",
+        "alt_value": "google_descriptive_name",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_descriptive_name",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.conversions_value",
+        "label": "Conversions Value",
+        "alt_value": "google_conversions_value",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_conversions_value",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "customer.test_account",
+        "label": "Test Account",
+        "alt_value": "google_test_account",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_test_account",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "customer.currency_code",
+        "label": "Currency Code",
+        "alt_value": "google_currency_code",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_currency_code",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.active_view_cpm",
+        "label": "Active View CPM",
+        "alt_value": "google_active_view_cpm",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_active_view_cpm",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.active_view_ctr",
+        "label": "Active View CTR",
+        "alt_value": "google_active_view_ctr",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_active_view_ctr",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.all_conversions",
+        "label": "All Conversions",
+        "alt_value": "google_all_conversions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_all_conversions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.engagement_rate",
+        "label": "Engagement Rate",
+        "alt_value": "google_engagement_rate",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_engagement_rate",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.video_view_rate",
+        "label": "Video View Rate",
+        "alt_value": "google_video_view_rate",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_video_view_rate",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.interaction_rate",
+        "label": "Interaction Rate",
+        "alt_value": "google_interaction_rate",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_interaction_rate",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "segments.ad_network_type",
+        "label": "Ad Network Type",
+        "alt_value": "google_ad_network_type",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "segments_ad_network_type",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "customer.descriptive_name",
+        "label": "Descriptive Name",
+        "alt_value": "google_descriptive_name",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_descriptive_name",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.conversions_value",
+        "label": "Conversions Value",
+        "alt_value": "google_conversions_value",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_conversions_value",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.cost_per_conversion",
+        "label": "Cost Per Conversion",
+        "alt_value": "google_cost_per_conversion",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_cost_per_conversion",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.value_per_conversion",
+        "label": "Value Per Conversion",
+        "alt_value": "google_value_per_conversion",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_value_per_conversion",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "customer.auto_tagging_enabled",
+        "label": "Auto Tagging Enabled",
+        "alt_value": "google_auto_tagging_enabled",
+        "type": FieldType.dimension,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "customer_auto_tagging_enabled",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.all_conversions_value",
+        "label": "All Conversions Value",
+        "alt_value": "google_all_conversions_value",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_all_conversions_value",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.active_view_impressions",
+        "label": "Active View Impressions",
+        "alt_value": "google_active_view_impressions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_active_view_impressions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.active_view_viewability",
+        "label": "Active View Viewability",
+        "alt_value": "google_active_view_viewability",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_active_view_viewability",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.interaction_event_types",
+        "label": "Interaction Event Types",
+        "alt_value": "google_interaction_event_types",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_interaction_event_types",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.search_impression_share",
+        "label": "Search Impression Share",
+        "alt_value": "google_search_impression_share",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_search_impression_share",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.content_impression_share",
+        "label": "Content Impression Share",
+        "alt_value": "google_content_impression_share",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_content_impression_share",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.cost_per_all_conversions",
+        "label": "Cost Per All Conversions",
+        "alt_value": "google_cost_per_all_conversions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_cost_per_all_conversions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.cross_device_conversions",
+        "label": "Cross Device Conversions",
+        "alt_value": "google_cross_device_conversions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_cross_device_conversions",
+        "stream": StreamType.google_account
+    },
+        {
+        "value": "metrics.view_through_conversions",
+        "label": "View Through Conversions",
+        "alt_value": "google_view_through_conversions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_view_through_conversions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.active_view_measurability",
+        "label": "Active View Measurability",
+        "alt_value": "google_active_view_measurability",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_active_view_measurability",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.value_per_all_conversions",
+        "label": "Value Per All Conversions",
+        "alt_value": "google_value_per_all_conversions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_value_per_all_conversions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.search_rank_lost_impression_share",
+        "label": "Search Rank Lost Impression Share",
+        "alt_value": "google_search_rank_lost_impression_share",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_search_rank_lost_impression_share",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.active_view_measurable_cost_micros",
+        "label": "Active View Measurable Cost Micros",
+        "alt_value": "google_active_view_measurable_cost_micros",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_active_view_measurable_cost_micros",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.active_view_measurable_impressions",
+        "label": "Active View Measurable Impressions",
+        "alt_value": "google_active_view_measurable_impressions",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_active_view_measurable_impressions",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.content_rank_lost_impression_share",
+        "label": "Content Rank Lost Impression Share",
+        "alt_value": "google_content_rank_lost_impression_share",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_content_rank_lost_impression_share",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.conversions_from_interactions_rate",
+        "label": "Conversions From Interactions Rate",
+        "alt_value": "google_conversions_from_interactions_rate",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_conversions_from_interactions_rate",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.search_budget_lost_impression_share",
+        "label": "Search Budget Lost Impression Share",
+        "alt_value": "google_search_budget_lost_impression_share",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_search_budget_lost_impression_share",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.search_exact_match_impression_share",
+        "label": "Search Exact Match Impression Share",
+        "alt_value": "google_search_exact_match_impression_share",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_search_exact_match_impression_share",
+        "stream": StreamType.google_account
+    },
+        {
+        "value": "metrics.content_budget_lost_impression_share",
+        "label": "Content Budget Lost Impression Share",
+        "alt_value": "google_content_budget_lost_impression_share",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_content_budget_lost_impression_share",
+        "stream": StreamType.google_account
+    },
+    {
+        "value": "metrics.all_conversions_from_interactions_rate",
+        "label": "All Conversions From Interactions Rate",
+        "alt_value": "google_all_conversions_from_interactions_rate",
+        "type": FieldType.metric,
+        "channel": ChannelType.google,
+        "img": "google-ads-icon",
+        "default": False,
+        "airbyte_value": "metrics_all_conversions_from_interactions_rate",
+        "stream": StreamType.google_account
+    }
+]
+
+
+
 
 google_dimensions = [
     {
@@ -546,6 +1309,7 @@ google_dimensions = [
         "img": "google-ads-icon",
         "default": True,
     },
+
 ]
 
 google_analytics_metrics = [

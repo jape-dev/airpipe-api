@@ -40,10 +40,12 @@ class DataSourceDB(Base):
     ad_account_id = Column(String())
     ad_account_name = Column(String(), nullable=True)
     start_date = Column(DateTime())
+    end_date = Column(DateTime())
     dh_connection_id = Column(String(), nullable=True)
     airbyte_source_id = Column(String(), nullable=True)
     airbyte_connection_id = Column(String(), nullable=True)
-    end_date = Column(DateTime())
+    load_completed = Column(Boolean(), nullable=True, default=False)
+
     created_at = Column(DateTime(), default=datetime.datetime.now())
 
 

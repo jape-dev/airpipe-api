@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 
 from api.models.connector import AdAccount
 from api.models.user import User
-from api.core.static_data import ChannelType, FieldType, JoinType, ReportType
+from api.core.static_data import ChannelType, FieldType, JoinType, StreamType, ReportType
 
 
 class TableColumns(BaseModel):
@@ -54,12 +54,14 @@ class DebugResponse(BaseModel):
 
 class FieldOption(BaseModel):
     value: str
+    airbyte_value: Optional[str]
     label: str
     type: FieldType
     channel: ChannelType
     alt_value: Optional[str] = None
     img: Optional[str]
     default: Optional[bool] = None
+    stream: Optional[StreamType] = None
 
 
 class FieldOptionWithDataSourceId(FieldOption):
@@ -91,6 +93,7 @@ class DataSourceInDB(BaseModel):
     dh_connection_id: Optional[str]
     airbyte_source_id: Optional[str]
     airbyte_connection_id: Optional[str]
+    load_completed: Optional[str]
 
 
 class DataPrompt(BaseModel):

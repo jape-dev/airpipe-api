@@ -13,6 +13,7 @@ from api.models.data import (
     JoinType,
     JoinCondition,
     ReportType,
+    StreamType
 )
 from api.models.conversation import Message
 from api.models.user import User
@@ -68,7 +69,8 @@ def custom_openapi() -> Dict[str, Any]:
         JoinType,
         JoinCondition,
         UserRoleType,
-        ReportType
+        ReportType,
+        StreamType
     ]
     model_name_map = get_model_name_map(flat_models)  # type: ignore
     definitions = get_model_definitions(
