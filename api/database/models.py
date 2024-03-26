@@ -42,6 +42,7 @@ class DataSourceDB(Base):
     start_date = Column(DateTime())
     end_date = Column(DateTime())
     dh_connection_id = Column(String(), nullable=True)
+    airbyte_stream = Column(String(), nullable=True)
     airbyte_source_id = Column(String(), nullable=True)
     airbyte_connection_id = Column(String(), nullable=True)
     load_completed = Column(Boolean(), nullable=True, default=False)

@@ -93,7 +93,8 @@ class DataSourceInDB(BaseModel):
     dh_connection_id: Optional[str]
     airbyte_source_id: Optional[str]
     airbyte_connection_id: Optional[str]
-    load_completed: Optional[str]
+    airbyte_stream: Optional[str]
+    load_completed: Optional[bool]
 
 
 class DataPrompt(BaseModel):
@@ -161,3 +162,18 @@ class ChartData(BaseModel):
     field_options: List[FieldOption]
     title:str
     caption:str
+
+class ProcParam(BaseModel):
+    name: str
+    channel: ChannelType
+
+
+class BlendTemplate(BaseModel):
+    id: int
+    name: str
+    channels: List[ChannelType]
+    streams: List[StreamType]
+    fields: List[FieldOption]
+    ad_account_ids: List[str | int] = []
+    proc: str
+    proc_params: List[ProcParam]
