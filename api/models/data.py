@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 from api.models.connector import AdAccount
 from api.models.user import User
@@ -174,6 +174,6 @@ class BlendTemplate(BaseModel):
     channels: List[ChannelType]
     streams: List[StreamType]
     fields: List[FieldOption]
-    ad_account_ids: List[str | int] = []
+    ad_account_ids: List[Union[str, int]] = []
     proc: str
     proc_params: List[ProcParam]
